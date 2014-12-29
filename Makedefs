@@ -204,15 +204,6 @@ CFLAGS += -DHANDLE_THREADS
 # status: unimplemented
 # CFLAGS += -DSYSCALL_POLICY_FILE
 
-# DynaRace settings
-# =================
-#
-# Enable dynamic file system race detection and removal
-# This is an EXPERIMENTAL setting.
-# default: # CFLAGS += -DDYNARACE
-# status: unimplemented
-#CFLAGS += -DDYNARACE
-
 
 ###############################################################################
 # Implementation specific stuff, selects correct flags depending              #
