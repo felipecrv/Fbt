@@ -6,3 +6,4 @@
 *.a
 *.pyc
 src/generated
+src/fbt_opcode_tables.h
