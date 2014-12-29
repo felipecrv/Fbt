@@ -57,7 +57,7 @@ PRODUCTION = 1
 # block and remove the call and return instructions to reduce overall overhead.
 #
 # default: CFLAGS += -DINLINE_CALLS
-# status: unimplemented
+# status: unimplemented for ARM
 CFLAGS += -DINLINE_CALLS
 
 # Add a predictor for indirect control flow transfers
@@ -70,7 +70,7 @@ CFLAGS += -DINLINE_CALLS
 # into a regular fast lookup.
 #
 # default: CFLAGS += -DICF_PREDICT
-# status: unimplemented
+# status: unimplemented for ARM
 CFLAGS += -DICF_PREDICT
 
 # Fast (mapping-)cache lookup
@@ -80,7 +80,7 @@ CFLAGS += -DICF_PREDICT
 # no-hits in assembly without switching back to the binary translator domain.
 #
 # default: CFLAGS += -DFAST_CACHE_LOOKUP
-# status: unimplemented
+# status: unimplemented for ARM
 CFLAGS += -DFAST_CACHE_LOOKUP
 
 ##############################################################################
@@ -106,7 +106,7 @@ CFLAGS+= -DHIJACKCONTROL
 # the security extensions.
 #
 # default: CFLAGS += -DAUTHORIZE_SYSCALLS
-# status: unimplemented
+# status: unimplemented for ARM
 CFLAGS += -DAUTHORIZE_SYSCALLS
 
 # Check signals as well
@@ -117,7 +117,7 @@ CFLAGS += -DAUTHORIZE_SYSCALLS
 # by default. Depends on AUTHORIZE_SYSCALLS.
 #
 # default: CFLAGS += -DHANDLE_SIGNALS 
-# status: unimplemented
+# status: unimplemented for ARM
 CFLAGS += -DHANDLE_SIGNALS 
 
 # Handle thread-/process-based system calls (clone)
@@ -132,7 +132,7 @@ CFLAGS += -DHANDLE_SIGNALS
 # the execution of the clone system call)
 #
 # default: CFLAGS += -DHANDLE_THREADS
-# status: unimplemented
+# status: unimplemented for ARM
 CFLAGS += -DHANDLE_THREADS
 
 
@@ -149,7 +149,7 @@ CFLAGS += -DHANDLE_THREADS
 # the right path. A security exception is triggered if there is a mismatch.
 #
 # default: # CFLAGS += -DSHADOWSTACK
-# status: unimplemented
+# status: unimplemented for ARM
 #CFLAGS += -DSHADOWSTACK
 
 # Should calls into and out of the loader be ignored?
@@ -179,7 +179,7 @@ CFLAGS += -DHANDLE_THREADS
 #
 # TODO: reference to paper
 # default: # CFLAGS += -DVERIFY_CFTX
-# status: unimplemented
+# status: unimplemented for ARM
 # CFLAGS += -DVERIFY_CFTX
 
 # Print all verified control flow transfers
@@ -191,7 +191,7 @@ CFLAGS += -DHANDLE_THREADS
 # VERIFY_CFTX and should not be used in production.
 #
 # default: # CFLAGS += -DPRINT_CFTX
-# status: unimplemented
+# status: unimplemented for ARM
 # CFLAGS += -DPRINT_CFTX
 
 # Parse external policy file
@@ -201,7 +201,7 @@ CFLAGS += -DHANDLE_THREADS
 # enforced.
 #
 # default: # CFLAGS += -DSYSCALL_POLICY_FILE
-# status: unimplemented
+# status: unimplemented for ARM
 # CFLAGS += -DSYSCALL_POLICY_FILE
 
 
