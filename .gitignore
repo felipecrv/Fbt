@@ -3,4 +3,6 @@
 *.swo
 *.o
 *.so
+*.a
 *.pyc
+src/generated

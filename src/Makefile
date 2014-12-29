@@ -15,36 +15,42 @@ LIBFLAGS=-fpic -c
 SHELL := /bin/bash -e
 
 # object files
-FILES+=generic/fbt_llio.c
+FILES+=libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_actions.c \
+	generic/fbt_llio.c generic/fbt_libc.c fbt_debug.c fbt_trampoline.c fbt_syscall.c \
+	fbt_dso.c fbt_mutex.c fbt_restart_transaction.c \
+	fbt_algorithms.c fbt_mem_pool.c
 
+CFLAGS += -I./ -I./generic
 # we include some kernel stuff as we directly call system calls.
-INCLUDEDIR=/lib/modules/$(shell uname -r)/build/arch/x86/include
+CFLAGS += -I/lib/modules/$(shell uname -r)/build/arch/x86/include
 
-GEN_DIR=generated/
+GEN_DIR=generated
 
 .PHONY: clean
 
 all: $(LIBNAME).so $(LIBNAME).a
 
-$(LIBNAME).so: *.h $(FILES)
+$(LIBNAME).so: *.h generic/*.h $(FILES)
 	mkdir -p $(GEN_DIR)
+	mkdir -p $(GEN_DIR)/generic
 	
 	for file in $(FILES); do \
-		gcc ${CFLAGS} -E $$file > $(GEN_DIR)$$file; \
+		gcc ${CFLAGS} -E $$file > $(GEN_DIR)/$$file; \
 	done
 
 	for file in $(FILES); do \
-		$(DSL_PATH) $(GEN_DIR)$$file $(GEN_DIR)$$file ; \
+		$(DSL_PATH) $(GEN_DIR)/$$file $(GEN_DIR)/$$file ; \
 	done
 	
 	cp *.h $(GEN_DIR)
+	cp generic/*.h $(GEN_DIR)/generic
 
-	${CC} ${CFLAGS} $(LIBFLAGS) -I$(INCLUDEDIR) generated/*.c
+	$(CC) $(CFLAGS) $(LIBFLAGS) generated/*.c generated/generic/*.c
 	$(CC) -shared -Wl,-soname,$(LIBNAME).so.$(LIBVERS) \
 		-o $(LIBNAME).so *.o $(LDFLAGS) 
 
 $(LIBNAME).a:
-		ar cru libfastbt.a libfastbt.o
+	ar cru $(LIBNAME).a libfastbt.o
 
 clean:
 	rm -rf $(GEN_DIR)
