@@ -49,9 +49,6 @@
 #include "fbt_mem_mgmt.h"
 #include "fbt_translate.h"
 #include "libfastbt.h"
-#ifdef LMEM
-#include "fbt_lmem.h"
-#endif
 
 #if defined(AUTHORIZE_SYSCALLS)
 /*
@@ -774,9 +771,6 @@ void fbt_init_syscalls(struct thread_local_data *tld) {
      linkat(2), mkdirat(2), mknodat(2), readlinkat(2), renameat(2),
      symlinkat(2), unlinkat(2), utimensat(2), mkfifoat(3) */
 #endif  /* DYNARACE */
-#if defined(LMEM)
-  tld->syscall_table[LMEM_SPECIAL_SYSCALL] = &lmem_syscall;
-#endif
 }
 
 /**

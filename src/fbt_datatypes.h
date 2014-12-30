@@ -269,12 +269,6 @@ struct thread_local_data {
   /** Thread identifier as returned by gettid syscall */
   ulong_t tid;
 #endif /* SHARED_DATA */
-
-#ifdef LMEM
-  //unsigned int saved_eflags;
-  unsigned int saved_arith_flags;
-  unsigned int saved_eax;
-#endif
 };
 
 /**

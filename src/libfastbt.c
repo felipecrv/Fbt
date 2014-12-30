@@ -47,10 +47,6 @@
 #include "fbt_statistic.h"
 #endif
 
-#ifdef LMEM
-#include "fbt_lmem.h"
-#endif
-
 /* forward declaration for the default opcode table */
 extern struct ia32_opcode opcode_table_onebyte[];
 
@@ -60,10 +56,6 @@ void _init() {
 #if defined(DEBUG) && !defined(SILENT_STARTUP)
   llprintf("Starting BT\n");
   llprintf("This is a debug build, so do not expect stellar performance!\n");
-#endif
-
-#ifdef LMEM
-  lmem_init();
 #endif
 
   //sleep(5);

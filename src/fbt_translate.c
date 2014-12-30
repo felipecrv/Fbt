@@ -88,17 +88,8 @@ static ulong_t check_inline(struct translate *ts);
 static void check_transl_allowed(void* orig_address, struct mem_info *info);
 #endif
 
-#ifdef LMEM
-void *fbt_lmem_translate_noexecute(struct thread_local_data *tld,
-                              void *orig_address);
-#endif
-
 void *fbt_translate_noexecute(struct thread_local_data *tld,
                               void *orig_address) {
-#ifdef LMEM
-  return fbt_lmem_translate_noexecute(tld, orig_address);
-#endif
-
   PRINT_DEBUG_FUNCTION_START("translate_noexecute(*tld=%p, *orig_address=%p)",
                              tld, orig_address);
 
