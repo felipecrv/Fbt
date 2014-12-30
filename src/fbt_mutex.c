@@ -58,16 +58,16 @@ int fbt_mutex_lock(fbt_mutex_t *futex) {
   if (current == FUTEX_UNLOCKED) {
     return 0;
   }
-  
+
   if (current == FUTEX_LOCKED) {
     current = __sync_lock_test_and_set(futex, FUTEX_CONTENDED);
   }
-  
+
   while (current != FUTEX_UNLOCKED) {
     sys_futex(futex, FUTEX_WAIT, FUTEX_CONTENDED, NULL, NULL, 0);
     current = __sync_lock_test_and_set(futex, FUTEX_CONTENDED);
   }
-  
+
   return 0;
 }
 
@@ -85,10 +85,10 @@ int fbt_mutex_unlock(fbt_mutex_t *futex) {
   } else if(__sync_lock_test_and_set(futex, FUTEX_UNLOCKED) == FUTEX_LOCKED) {
     return 0;
   }
-  
+
   // Wake up a waiting thread
   sys_futex(futex, FUTEX_WAKE, FUTEX_LOCKED, NULL, NULL, 0);
-  
+
   return 0;
 }
 

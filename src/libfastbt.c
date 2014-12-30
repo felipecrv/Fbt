@@ -77,11 +77,11 @@ void _init() {
 
   //sleep(5);
   tld = fbt_init(NULL);
-  
+
 #if defined(ONLINE_PATCHING)
   fbt_online_patching_init(tld);
-#endif /* ONLINE_PATCHING */  
-  
+#endif /* ONLINE_PATCHING */
+
   fbt_start_transaction(tld, fbt_commit_transaction);
 }
 
@@ -105,11 +105,11 @@ struct thread_local_data* fbt_init(struct ia32_opcode *opcode_table) {
   #endif
 
   fbt_initialize_trampolines(tld);
-  
+
   /* if the user program specifies a custom opcode table we overwrite the
    * default table overwriting is done because of performance reasons. this way
    * the position of the table_onebyte does not change in memory and therefore
-   * the address can be hardcoded at compile time */ 
+   * the address can be hardcoded at compile time */
   if (opcode_table != NULL) {
     fbt_memcpy(opcode_table_onebyte, opcode_table,
                0x100 * sizeof(struct ia32_opcode));
@@ -135,7 +135,7 @@ struct thread_local_data* fbt_init(struct ia32_opcode *opcode_table) {
 void fbt_exit(struct thread_local_data *tld) {
   PRINT_DEBUG_FUNCTION_START("fbt_exit(tld=%p)\n", tld);
   assert(tld != NULL);
-  
+
   fbt_mem_free(tld);
 
   PRINT_DEBUG_FUNCTION_END(" ");
@@ -154,10 +154,10 @@ void fbt_transaction_init(struct thread_local_data *tld,
    * entry when we flush the cache */
   tld->shared_data->commit_function = commit_function;
 #endif
-  
+
   /* These functions are not transaction safe, therefore we catch them inside of
    * transactions and execute our own cover-functions that take care to return
-   * to translated code */ 
+   * to translated code */
 #if defined(HIJACKCONTROL)
   /* if thread fails to exit from the BT then we force-exit it */
   fbt_ccache_add_entry(tld, (void*)fbt_exit, (void*)fbt_exit);
@@ -179,7 +179,7 @@ void fbt_start_transaction(struct thread_local_data *tld,
               (long)transl_begin, (long)orig_begin);
 
   /* use a jump-back trampoline to jump to the translated code in the code cache
-   */ 
+   */
   tld->ind_target = transl_begin;
   /* overwrite RIP to jump to tramp */
   *((ulong_t*)__builtin_frame_address(0)+1) = (ulong_t)tld->ret2app_trampoline;
@@ -201,5 +201,5 @@ void fbt_end_transaction() {
 #if defined(FBT_STATISTIC)
   fbt_print_statistics();
 #endif
-  __asm__ volatile(""); 
+  __asm__ volatile("");
 }

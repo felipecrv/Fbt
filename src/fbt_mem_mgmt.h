@@ -69,7 +69,7 @@ struct icf_prediction;
 #define PAGESIZE 0x1000
 
 #define NRPAGES(x) (((x) + (PAGESIZE-1)) & (~(PAGESIZE-1))) / PAGESIZE
-  
+
 /** we can fit 1024 trampolines of size 28/56 (7*4/8) into 7 pages (32b) or 14
    pages (64bit) */
 #define ALLOC_TRAMPOLINES 1024
@@ -104,9 +104,9 @@ enum mem_type {
 #if defined(SHARED_DATA)
   MT_SHARED_DATA, /** <  used for shared data (R[W]) */
 #endif /* SHARED_DATA */
-#if defined(ONLINE_PATCHING)  
+#if defined(ONLINE_PATCHING)
   MT_ONLINE_PATCHING_STACK, /** < stack used for online patching thread (R[W])*/
-#endif /* ONLINE_PATCHING */  
+#endif /* ONLINE_PATCHING */
 };
 
 /** Information about a memory chunk */
@@ -140,7 +140,7 @@ void fbt_reinit_new_process(struct thread_local_data *tld);
  * Allocates size bytes of thread local storage (RW). This memory is freed
  * whenever the thread exits.
  * @param tld pointer to thread local data
- * @param size number of bytes (must be smaller than 
+ * @param size number of bytes (must be smaller than
  * @return the address of the allocated (unaligned) memory
  */
 void *fbt_smalloc(struct thread_local_data *tld, long size);
@@ -180,7 +180,7 @@ void fbt_allocate_new_trampolines(struct thread_local_data *tld);
  * Free a given trampoline and enqueue it in the list of unused trampolines
  * @param tld thread local data of the current thread
  * @param tramp Trampoline that is about to be freed.
- */     
+ */
 void fbt_trampoline_free(struct thread_local_data *tld,
                          struct trampoline *trampo);
 
@@ -196,7 +196,7 @@ void fbt_allocate_new_icf_predictors(struct thread_local_data *tld);
  * Free a given icf_predict and enqueue it in the list of unused predictors.
  * @param tld thread local data of the current thread
  * @param icf_predict Predictor that is about to be freed.
- */     
+ */
 void fbt_icf_predictor_free(struct thread_local_data *tld,
                             struct icf_prediction *icf_predict);
 #endif  /* ICF_PREDICT */
@@ -210,7 +210,7 @@ void fbt_allocate_new_dynarace_files(struct thread_local_data *tld);
 #endif  /* DYNARACE */
 
 #ifdef SHARED_DATA
-/** 
+/**
  * Initializes the shared data for this tld. This should only be done once and
  * the structure should then be passed on to created threads.
  */

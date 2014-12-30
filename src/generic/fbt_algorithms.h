@@ -47,9 +47,9 @@ extern "C" {
 void fbt_print_int_array(int *begin, size_t num, int *highlight);
 
 /** Swaps two areas of memory with the same length
- * 
+ *
  * @param a Start of first memory region
- * @param b Start of second memory region 
+ * @param b Start of second memory region
  * @param length Number of bytes to swap
  */
 void fbt_swap_mem(void *a, void *b, size_t length);
@@ -60,20 +60,20 @@ void fbt_swap_mem(void *a, void *b, size_t length);
  *
  * @param begin Pointer to the first element in the array
  * @param num Number of elements in the array
- * @param pivot Index of the pivot 
+ * @param pivot Index of the pivot
  * @param size Size in bytes of each of the elements
  * @param comparator Comparator function that compares two elements and returns
  *                   -1: first smaller than second,
  *                   0:  first equal to second,
  *                   1:  first greater than second
  * @result Pointer to the pivot's final position. All elements before the pivot
- *         will be smaller-or-equal and all elements after the pivot will be 
+ *         will be smaller-or-equal and all elements after the pivot will be
  *         greater-or-equal than the pivot
  */
 void *fbt_partition(void *begin, size_t num, size_t pivot, size_t size, int (*comparator)(const void *, const void *));
 
 /** Sorts the elements of an array.
- * 
+ *
  * @param base Pointer to the first element in the array
  * @param num  Number of elements in the array
  * @param size Size in bytes of each element
@@ -81,20 +81,20 @@ void *fbt_partition(void *begin, size_t num, size_t pivot, size_t size, int (*co
  *                   The return value of this function represents whether the
  *                   first elements is smaller, equal to, or greater than
  *                   the second element by returning, a negative value, zero or
- *                   a positive value. 
+ *                   a positive value.
  */
 void fbt_qsort(void *base, size_t num, size_t size, int (*comparator)(const void *, const void *));
 
 /** Searches for an element in a sorted array.
- *  
+ *
  * @param base Pointer to the first element of the array
  * @param num Number of elements in the array
  * @param size Size in bytes of each element in the array
  * @param predicate Function that compares elements to the query. This function
  *                  shall follow this prototype:
- *                  
+ *
  *                  int predicate(const void *elem, const void* context)
- *                  
+ *
  *                  The return value of this function represents whether the
  *                  element pointed to by elem is considered smaller-than,
  *                  equal to or greater than the queried item by returning
@@ -108,12 +108,12 @@ void fbt_qsort(void *base, size_t num, size_t size, int (*comparator)(const void
  */
 void *fbt_binary_search(void *base, size_t num, size_t size, int (*predicate)(const void *, const void *), const void *context);
 
-/** Hashes an array of uint32_t members with the specified length and initial 
+/** Hashes an array of uint32_t members with the specified length and initial
     value
-    
+
     @param k Pointer to the start of the array to be hashed
     @param length Length of the array counted in uint32_ts
-    @param initval Initial value used to seed the hash computation. Has to be 
+    @param initval Initial value used to seed the hash computation. Has to be
                    the same among calls for fbt_hash to produce
                    consistent results
     @return Hash value of the array

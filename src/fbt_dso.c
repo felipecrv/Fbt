@@ -87,7 +87,7 @@ static long binary_search(struct sh_symbol *array, long low, long high,
                           long addr) {
   if (low >= high) {
     /* Not found, return index of smallest element > addr */
-    return high;   
+    return high;
   } else {
     long mid = (low + high) / 2;
     if (addr == (long)array[mid].start) {
@@ -163,13 +163,13 @@ void fbt_check_transfer(struct thread_local_data *tld, unsigned char *src,
       while (poffset >= 1 && (!(&srcdso->pages[poffset].syms[0])
                               || src < srcdso->pages[poffset].syms[0]->start))
         poffset--;
-      
+
       struct sh_symbol *symbols = *srcdso->pages[poffset].syms;
       if (symbols) {
         /* Perform a binary search on the symbols for symbol with start==src */
         long nr_symbols = srcdso->pages[poffset].nr_symbols;
         long index = binary_search(symbols, 0, nr_symbols, (long)src);
-        
+
         if (src == symbols[index].start) {
           /* Symbol found */
           src_symbol = &symbols[index];
@@ -183,11 +183,11 @@ void fbt_check_transfer(struct thread_local_data *tld, unsigned char *src,
               src_symbol = cur_symbol;
               src_nsymbol = &symbols[index+1];
               break;
-            } 
+            }
           }
         }
       }
-    }    
+    }
 
     /* Check if dst belongs to DSO */
     if (!dstdso && ((ulong_t)dst >= (ulong_t)cur->baseaddr)
@@ -202,7 +202,7 @@ void fbt_check_transfer(struct thread_local_data *tld, unsigned char *src,
       while (poffset >= 1 && (!(&dstdso->pages[poffset].syms[0])
                               || dst < dstdso->pages[poffset].syms[0]->start))
         poffset--;
-      
+
       struct sh_symbol *symbols = *dstdso->pages[poffset].syms;
       if (symbols) {
         /* Perform a binary search on the symbols for symbol with start==dst */
@@ -218,7 +218,7 @@ void fbt_check_transfer(struct thread_local_data *tld, unsigned char *src,
             if (PTR_IN_REGION(dst, cur_symbol->start, cur_symbol->size)) {
               dst_symbol = cur_symbol;
               break;
-            } 
+            }
           }
         }
       }
@@ -275,7 +275,7 @@ void fbt_check_transfer(struct thread_local_data *tld, unsigned char *src,
             /* Emit a warning */
             //warn("Could not verify inner module call dest, object stripped");
           }
-        }        
+        }
       }
     } else {
       /* We call to another module */
@@ -299,7 +299,7 @@ void fbt_check_transfer(struct thread_local_data *tld, unsigned char *src,
         if (!found) {
           warn("Call to unimported symbol");
           }*/
-        
+
         /* Check if symbol is exported in destination DSO */
         if (dst_symbol->binding != SB_GLOBAL) {
           /* Symbol local */
@@ -365,7 +365,7 @@ void fbt_check_transfer(struct thread_local_data *tld, unsigned char *src,
     }
   } else {
     llprintf("%p", src);
-  }    
+  }
 
   /* Type of the cft */
   switch(type) {
@@ -392,20 +392,20 @@ void fbt_check_transfer(struct thread_local_data *tld, unsigned char *src,
              (char *)dst-((dstdso->exec) ? 0 : dstdso->baseaddr));
     if (dst_symbol) {
       llprintf(": <%s", dst_symbol->name);
-      
+
       unsigned long offset = dst-dst_symbol->start;
       if (offset != 0) {
         llprintf("+0x%x>", offset);
       } else {
         llprintf(">");
-      }  
-    } 
+      }
+    }
   } else {
     llprintf("%p", dst);
   }
   llprintf("\n");
-  
-#endif /* PRINT_CFTX */  
+
+#endif /* PRINT_CFTX */
 }
 
 

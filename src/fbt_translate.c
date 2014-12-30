@@ -106,7 +106,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 #ifdef LMEM
   return fbt_lmem_translate_noexecute(tld, orig_address);
 #endif
-                              
+
   PRINT_DEBUG_FUNCTION_START("translate_noexecute(*tld=%p, *orig_address=%p)",
                              tld, orig_address);
 
@@ -126,7 +126,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
     if ((orig_address >= code_block->ptr) &&
         (orig_address < (code_block->ptr + code_block->size))) {
       llprintf("Translating translated code: %p (%p len: 0x%x (%p) type: %d (syscall=%d))\n",
-               orig_address, code_block->ptr, code_block->size, code_block, 
+               orig_address, code_block->ptr, code_block->size, code_block,
                code_block->type, MT_SYSCALL_TABLE);
       fbt_suicide(255);
     }
@@ -140,7 +140,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
   struct mem_info curr_section;
   check_transl_allowed(orig_address, &curr_section);
 #endif
-  
+
   /* we need to translate TU, add to ccache index,
      jump to the translated code */
   enum translation_state tu_state = NEUTRAL;
@@ -153,7 +153,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
   if ((long)(ts->code_cache_end - ts->transl_instr) < MAX_BLOCK_SIZE) {
     PRINT_DEBUG("Not enough memory for new code block - allocating more!");
     unsigned char *prev_transl_instr = ts->transl_instr;
-    
+
     fbt_allocate_new_code_cache(tld);
 
     /* add a jmp connect old and new tcache memory blocks */
@@ -263,7 +263,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
 #if defined(TRACK_BASIC_BLOCKS)
     basic_block->original_length += (ts->next_instr - ts->cur_instr);
-#endif  
+#endif
 
 #if defined(TRACK_INSTRUCTIONS)
     fbt_track_instruction(tld, ts->transl_instr, ts->cur_instr);
@@ -318,14 +318,14 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
   PRINT_DEBUG_FUNCTION_END("-> %p,   next_tu=%p (len: %d)", transl_address,
                            ts->next_instr, bytes_translated);
-  
+
   /* Store the basic block */
 #ifdef TRACK_BASIC_BLOCKS
   basic_block->next = tld->basic_blocks;
   basic_block->length = bytes_translated;
   tld->basic_blocks = basic_block;
 #endif
-  
+
   return transl_address;
 }
 
@@ -469,7 +469,7 @@ void fbt_disasm_instr(struct translate *ts) {
       ts->dest_operand_size = 0;
       ts->src_operand_size = 0;
       ts->aux_operand_size = 0;
-      
+
 #ifdef __LP64__
       if (rex && (rex&REXW)) {
         /* rex.b size extenstion */
@@ -483,15 +483,15 @@ void fbt_disasm_instr(struct translate *ts) {
         /* read info regarding immediate arguments (imms, code offset, etc.) */
         if (hasImmOp(opcode->destFlags)) {
           ts->dest_operand_size = fbt_operand_size(opcode->destFlags, prefix);
-          cur += ts->dest_operand_size;  
+          cur += ts->dest_operand_size;
         }
         if (hasImmOp(opcode->srcFlags)) {
           ts->src_operand_size = fbt_operand_size(opcode->srcFlags, prefix);
-          cur += ts->src_operand_size;  
+          cur += ts->src_operand_size;
         }
         if (hasImmOp(opcode->auxFlags)) {
           ts->aux_operand_size = fbt_operand_size(opcode->auxFlags, prefix);
-          cur += ts->aux_operand_size;  
+          cur += ts->aux_operand_size;
         }
 #ifdef __LP64__
       }
@@ -613,7 +613,7 @@ static ulong_t check_inline(struct translate *ts) {
          function (in bytes) */
       if (myts.cur_instr_info->opcode.handler == action_ret)
         return function_length;
-      
+
       /* if (myts.action == action_call) ...
          if we have a call, then we might go into recursion and inline this
          call as well. But if we want to support recursion then we need to add
@@ -629,4 +629,4 @@ static ulong_t check_inline(struct translate *ts) {
   return 0;
 }
 #endif
- 
+

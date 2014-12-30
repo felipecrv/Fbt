@@ -195,18 +195,18 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
 
 void fbt_bootstrap_thread(struct thread_local_data *tld) {
 #if defined(SHARED_DATA)
-  PRINT_DEBUG("Adding new thread to thread list...\n"); 
+  PRINT_DEBUG("Adding new thread to thread list...\n");
   /* Add thread to our list */
   fbt_mutex_lock(&tld->shared_data->threads_mutex);
-  
+
   fbt_gettid(tld->tid);
 
   struct thread_entry *te = fbt_smalloc(tld, sizeof(struct thread_entry));
   te->next = tld->shared_data->threads;
   te->tld = tld;
   tld->shared_data->threads = te;
-  
-  fbt_mutex_unlock(&tld->shared_data->threads_mutex);    
+
+  fbt_mutex_unlock(&tld->shared_data->threads_mutex);
   PRINT_DEBUG("Done.\n");
 #endif /* SHARED_DATA */
 
@@ -294,7 +294,7 @@ static enum syscall_auth_response auth_signal(struct thread_local_data *tld,
     }
     return SYSCALL_AUTH_FAKE;
   }
-  
+
   if (syscall_nr == SYS_sigaction || syscall_nr == SYS_rt_sigaction) {
     *retval = 0x0;
     /* store the _old_ target for this signal */
@@ -354,7 +354,7 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
                          "movl %4, %%esi\n"
                          "movl %5, %%edi\n"
                          "movl $0x78, %%eax\n"
-                         "int $0x80\n" 
+                         "int $0x80\n"
                          "popl %%ebx\n"
                          "movl %%eax, %0\n"
                          : "=rmi"(local_ret)
@@ -370,7 +370,7 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
 #endif
 
 #if defined(ONLINE_PATCHING)
-    if (local_ret == 0) {      
+    if (local_ret == 0) {
       /* Reinitialize tld for new process */
       fbt_reinit_new_process(tld);
       /* We need to start an online patching thread in the forked process */
@@ -379,9 +379,9 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
 #endif /* ONLINE_PATCHING */
 
 
-    return SYSCALL_AUTH_FAKE;  
+    return SYSCALL_AUTH_FAKE;
   }
-  
+
   /* we start a new thread */
   if ((arg1 & CLONE_VM) && !is_sysenter) {
     long local_ret;
@@ -400,10 +400,10 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
     /* Copy chain of loaded DSOs from the parent thread */
     new_threads_tld->dso_objects = tld->dso_objects;
 #endif
-    
+
     fbt_ccache_add_entry(new_threads_tld, (void*)fbt_commit_transaction,
                          (void*)fbt_end_transaction);
-  
+
 #if defined(HIJACKCONTROL)
     fbt_ccache_add_entry(new_threads_tld, (void*)fbt_exit, (void*)fbt_exit);
 #endif  /* HIJACKCONTROL */
@@ -420,8 +420,8 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
     #else
     /* start translation in child through trampoline */
     *childsp = (ulong_t)trampo;
-    #endif /* SHARED_DATA */    
-    
+    #endif /* SHARED_DATA */
+
     /* start the new thread (execute system call) */
     /* the stack of the child is invalid after this system call,
        so better fix it! */
@@ -435,9 +435,9 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
                          "movl %5, %%edi\n"
                          "movl $0x78, %%eax\n"
                          "int $0x80\n"
-                         "cmpl $0x0, %%eax\n" 
+                         "cmpl $0x0, %%eax\n"
                          "popl %%ebx\n"
-                         "jne 1f\n" 
+                         "jne 1f\n"
                          /* ok, we are the child, let's bail out */
                          "ret\n"
                          "1:\n"
@@ -459,7 +459,7 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
 
   fbt_suicide_str("Unhandled combination of arguments for clone.\n");
   return SYSCALL_AUTH_FAKE;
-  
+
 }
 
 static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
@@ -476,7 +476,7 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
   if ((syscall_nr != SYS_exit) && (syscall_nr != SYS_exit_group)) {
     fbt_suicide_str("Invalid system call number in exit auth (fbt_syscall.c).");
   }
-  
+
   /* we are shutting down this thread -> clean up BT */
 #if defined(DEBUG)
   llprintf(
@@ -490,14 +490,14 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
 #if defined(SHARED_DATA)
   /* Make sure our list of threads reflects thread termination */
   fbt_mutex_lock(&tld->shared_data->threads_mutex);
-  
+
   struct thread_entry *te = tld->shared_data->threads;
   struct thread_entry *prev = NULL;
   while (te != NULL && te->tld != tld) {
-    prev = te;  
+    prev = te;
     te = te->next;
   }
-  
+
   if (te->tld == tld) {
     if (prev == NULL) {
       tld->shared_data->threads = te->next;
@@ -507,7 +507,7 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
   } else {
     PRINT_DEBUG("*** WARNING *** Couldn't find current thread in tld->shared_data->threads.\n");
   }
-  fbt_mutex_unlock(&tld->shared_data->threads_mutex);    
+  fbt_mutex_unlock(&tld->shared_data->threads_mutex);
 #endif
 
   /* we are in the context of the BT, but we might want to print some
@@ -549,8 +549,8 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
                          "m"(tld->chunk->size), "i"(SYS_exit_group), "r"(arg1)
                          : "memory", "eax", "ecx");
   }
-      
-  
+
+
   fbt_suicide_str("Failed to exit thread/process (fbt_syscall.c)\n");
   return SYSCALL_AUTH_FAKE;
 }
@@ -565,8 +565,8 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
 
 static enum syscall_auth_response __attribute__((unused))
 debug_syscall(struct thread_local_data *tld __attribute__((unused)),
-              ulong_t syscall_nr __attribute__((unused)), 
-							ulong_t arg1 __attribute__((unused)), 
+              ulong_t syscall_nr __attribute__((unused)),
+							ulong_t arg1 __attribute__((unused)),
 							ulong_t arg2 __attribute__((unused)),
 							ulong_t arg3 __attribute__((unused)),
               ulong_t arg4 __attribute__((unused)),
@@ -670,7 +670,7 @@ auth_mmap(struct thread_local_data *tld __attribute__((unused)),
   /* In this function mmap and mmap2 are treated equally, so the last parameter
      must be checked independently. */
   if (syscall_nr != SYS_mmap && syscall_nr != SYS_mmap2) {
-    fbt_suicide_str("Invalid system call number in mmap (fbt_syscall.c).");    
+    fbt_suicide_str("Invalid system call number in mmap (fbt_syscall.c).");
   }
 #if defined(SECU_ALLOW_RUNTIME_ALLOC)
   /* TODO: secu allow runtime code alloc */
@@ -714,7 +714,7 @@ auth_mprotect(struct thread_local_data *tld, ulong_t syscall_nr,
               ulong_t is_sysenter __attribute__((unused)),
               ulong_t *retval __attribute__((unused))) {
   if (syscall_nr != SYS_mprotect) {
-    fbt_suicide_str("Invalid system call number in mprotect (fbt_syscall.c).");    
+    fbt_suicide_str("Invalid system call number in mprotect (fbt_syscall.c).");
   }
 
   /* ensure we don't make memory structures of BT executable */
@@ -734,7 +734,7 @@ auth_mprotect(struct thread_local_data *tld, ulong_t syscall_nr,
   }
 
   /* TODO: add check for regions of elf files */
-  
+
 #if defined(SECU_ALLOW_RUNTIME_ALLOC)
   /* TODO: secu allow runtime code alloc */
     if (arg3 & PROT_EXEC) {
@@ -756,7 +756,7 @@ void fbt_init_syscalls(struct thread_local_data *tld) {
     tld->syscall_table[i] = &allow_syscall;
   }
   for (; i < MAX_SYSCALLS_TABLE; ++i) {
-    tld->syscall_table[i] = &deny_syscall;    
+    tld->syscall_table[i] = &deny_syscall;
   }
   /* deny a couple of system calls */
   tld->syscall_table[SYS_ptrace] = &deny_syscall;
@@ -766,7 +766,7 @@ void fbt_init_syscalls(struct thread_local_data *tld) {
   tld->syscall_table[SYS_unused2] = &deny_syscall;
   tld->syscall_table[SYS_unused3] = &deny_syscall;
   tld->syscall_table[SYS_sys_setaltroot] = &deny_syscall;
-  
+
   /* special handling for special system calls */
   tld->syscall_table[SYS_execve] = &auth_execve;
   tld->syscall_table[SYS_mmap] = &auth_mmap;

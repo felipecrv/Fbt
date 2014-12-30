@@ -43,7 +43,7 @@ void fbt_print_int_array(int *begin, size_t num, int *highlight) {
       llprintf("%d  ", *cur);
     }
     ++cur;
-  } 
+  }
   llprintf("]\n");
 }
 
@@ -52,14 +52,14 @@ void fbt_swap_mem(void *a, void *b, size_t length) {
   while (length >= sizeof(int)) {
     int *a_int = (int *)a;
     int *b_int = (int *)b;
-    
+
     int tmp = *a_int;
     *a_int++ = *b_int;
     *b_int++ = tmp;
-    
+
     a = a_int;
     b = b_int;
-    
+
     length -= sizeof(int);
   }
 
@@ -67,14 +67,14 @@ void fbt_swap_mem(void *a, void *b, size_t length) {
   while (length > 0) {
     char *a_char = (char *)a;
     char *b_char = (char *)b;
-    
+
     char tmp = *a_char;
     *a_char++ = *b_char;
     *b_char++ = tmp;
-    
+
     a = a_char;
     b = b_char;
-    
+
     length -= 1;
   }
 }
@@ -82,26 +82,26 @@ void fbt_swap_mem(void *a, void *b, size_t length) {
 void *fbt_partition(void *begin, size_t num, size_t pivot, size_t size, int (*comparator)(const void *, const void *)) {
   /* Move pivot to begin of array */
   fbt_swap_mem(begin, (char *)begin + (size * pivot), size);
-  
+
   void *insert_pos = (char *)begin + size;
   size_t cur = 1;
-  
+
   /* Iterate over all elements and swap elements smaller than the pivot to the
    * left side */
   while (cur < num) {
     void *cur_ptr = (char *)begin + cur * size;
-    
+
     if (comparator(cur_ptr, begin) < 0) {
       fbt_swap_mem(cur_ptr, insert_pos, size);
       insert_pos = (char *)insert_pos + size;
     }
-    
+
     cur += 1;
   }
-  
+
   /* Swap back pivot */
   fbt_swap_mem(begin, (char *)insert_pos - size, size);
-  
+
   return (char *)insert_pos - size;
 }
 
@@ -109,36 +109,36 @@ void fbt_qsort(void *base, size_t num, size_t size, int (*comparator)(const void
   size_t begin = 0;
   size_t end = num;
 
-  while (end > begin) {  
+  while (end > begin) {
     // TODO: use insertion sort for small array sizes
-  
-    size_t mid = (end - begin) / 2;  
+
+    size_t mid = (end - begin) / 2;
     void *pivot = fbt_partition(base, num, mid, size, comparator);
-    
-    //fbt_print_int_array((int *)base, num, (int *)pivot); 
-    
+
+    //fbt_print_int_array((int *)base, num, (int *)pivot);
+
     mid = ((char *)pivot - (char *)base) / size;
-    
+
     /* We determine the smaller partition and solve it recursively, and solve
-     the larger partition iteratively to keep the stack usage as small as 
+     the larger partition iteratively to keep the stack usage as small as
      possible*/
-    if (mid >= num-mid-1) {    
+    if (mid >= num-mid-1) {
       /* Recursion */
-      fbt_qsort((char *)base + (mid + 1)*size, num-mid-1, size, comparator);    
-      
+      fbt_qsort((char *)base + (mid + 1)*size, num-mid-1, size, comparator);
+
       /* Iteration */
       num = mid;
       begin = 0;
-      end = num;    
+      end = num;
     } else  {
       /* Recursion */
-      fbt_qsort(base, mid, size, comparator);          
-      
+      fbt_qsort(base, mid, size, comparator);
+
       /* Iteration */
       base = (char *)base + (mid + 1)*size;
       num = num - mid - 1;
       begin = 0;
-      end = num;    
+      end = num;
     }
   }
 
@@ -147,33 +147,33 @@ void fbt_qsort(void *base, size_t num, size_t size, int (*comparator)(const void
 void *fbt_binary_search(void *base, size_t num, size_t size, int (*predicate)(const void *, const void *), const void *context) {
   size_t begin = 0;
   size_t end = num;
-  
+
   while (end > begin) {
     size_t mid = begin + (end - begin) / 2;
-    
+
     void *ptr = (char *)base + (mid*size);
     int comp = predicate(ptr, context);
-    
+
     if (comp == 0) {
       return ptr;
     } else if (comp > 0) {
-      begin = mid + 1;  
+      begin = mid + 1;
     } else {
       end = mid;
     }
-  }  
+  }
 
   return (char *)base + (end*size) ;
 }
 
 /* -----------------------------------------------------------------------------
- The hashing code below is taken from http://burtleburtle.net/bob/c/lookup3.c 
+ The hashing code below is taken from http://burtleburtle.net/bob/c/lookup3.c
  which is in the Public Domain.
  * -----------------------------------------------------------------------------
  */
 
-#define rot(x,k) (((x)<<(k)) | ((x)>>(32-(k)))) 
- 
+#define rot(x,k) (((x)<<(k)) | ((x)>>(32-(k))))
+
 #define mix(a,b,c) \
 { \
   a -= c;  a ^= rot(c, 4);  c += b; \
@@ -201,7 +201,7 @@ void *fbt_binary_search(void *base, size_t num, size_t size, int (*predicate)(co
  -- that the key be an array of uint32_t's, and
  -- that the length be the number of uint32_t's in the key
 
- The length has to be measured in uint32_ts.  
+ The length has to be measured in uint32_ts.
 --------------------------------------------------------------------
 */
 uint32_t fbt_hash(
@@ -227,7 +227,7 @@ uint32_t        initval)         /* the previous hash, or an arbitrary value */
 
   /*------------------------------------------- handle the last 3 uint32_t's */
   switch(length)                     /* all the case statements fall through */
-  { 
+  {
   case 3 : c+=k[2];
   case 2 : b+=k[1];
   case 1 : a+=k[0];

@@ -39,7 +39,7 @@
 
 #define MAP_FAILED      ((void *)-1)
 
-  
+
 /**
  * Local implementation of memcpy. Copies one memory region to another address.
  * @param dest Destination memory region
@@ -96,7 +96,7 @@ char *fbt_itoa(int value, char* str, int base);
 /**
  * Fill the first 'len' bytes of the memory area pointed to by 'dest' with the
  * constant byte 'val'
- * 
+ *
  * @param dest Pointer to start of memory area to fill
  * @param val  Byte to fill with
  * @param len  Length of area in bytes

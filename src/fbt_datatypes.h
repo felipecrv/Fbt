@@ -147,7 +147,7 @@ typedef struct fbt_siginfo {
 } fbt_siginfo_t;
 
 #endif  /* HANDLE_SIGNALS */
-  
+
 #if defined(AUTHORIZE_SYSCALLS)
 /**
  * Possible values for the system call authorization.
@@ -197,13 +197,13 @@ struct thread_local_data {
   /** this trampoline is used for return instructions that additionally pop a
       couple of bytes from the stack */
   void *opt_ret_remove_trampoline;
-    
+
 #if defined(ICF_PREDICT)
   /** trampoline that handles a misprediction of an indirect control flow
-      transfer using an indirect jump instruction. */ 
+      transfer using an indirect jump instruction. */
   void *opt_ijump_predict_fixup;
   /** trampoline that handles a misprediction of an indirect control flow
-      transfer using an indirect call instruction. */ 
+      transfer using an indirect call instruction. */
   void *opt_icall_predict_fixup;
   /** Pointer to a free-list of icf predictions that can be used during the
       translation of new indirect control flow transfer locations. */
@@ -226,12 +226,12 @@ struct thread_local_data {
   // ==== vsyscall related ====
 
   /** Counter to keep track of number of items seen in dl_iterate_phdr */
-  ulong_t dl_iterate_phdr_counter;  
+  ulong_t dl_iterate_phdr_counter;
 
   /** Start of the vsyscall page */
   ulong_t vsyscall_page_begin;
 
-  /** End of vsyscall page */ 
+  /** End of vsyscall page */
   ulong_t vsyscall_page_end;
 
 #endif
@@ -267,7 +267,7 @@ struct thread_local_data {
   /** Trampoline used when starting a new thread so we can execute code in
     * the libdetox context before starting thread execution */
   void *bootstrap_thread_trampoline;
-    
+
 #endif  /* AUTHORIZE_SYSCALLS */
 #if defined(VERIFY_CFTX)
   struct dso_chain *dso_objects;
@@ -275,8 +275,8 @@ struct thread_local_data {
 #if defined(DUMP_CFTX)
   /** File identifier used to dump control flow transfers on a
     * thread local level */
-  long dump_cftx_file;  
-#endif /* DUMP_CFTX */  
+  long dump_cftx_file;
+#endif /* DUMP_CFTX */
 #endif  /* VERIFY_CFTX */
 #if defined(DYNARACE)
   /** free list with dynarace_file elements, used for the race protection */
@@ -291,7 +291,7 @@ struct thread_local_data {
   /** pointer to memory that can be used through the fbt_smalloc allocator */
   void *smalloc;
   /** amount of memory left available at smalloc above */
-  long smalloc_size;  
+  long smalloc_size;
   /** translation information for the current instruction that is currently being
       translated. */
   struct translate trans;
@@ -301,10 +301,10 @@ struct thread_local_data {
 
 #ifdef TRACK_BASIC_BLOCKS
   /**
-   * A linked list containing all the basic blocks created by the current 
+   * A linked list containing all the basic blocks created by the current
    * thread
    */
-  struct basic_block_node *basic_blocks;  
+  struct basic_block_node *basic_blocks;
 #endif /* TRACK_BASIC_BLOCK */
 
 #if defined(TRACK_INSTRUCTIONS)
@@ -349,13 +349,13 @@ struct thread_local_data {
 
 
   /** Memory used by cft trampolines */
-  struct mem_pool *cft_trampoline_mem_pool;  
+  struct mem_pool *cft_trampoline_mem_pool;
 
 #endif /* TRACK_CFTX */
 
 #if defined(ONLINE_PATCHING)
   /** Local patching information */
-  struct patching_information *patching_information;  
+  struct patching_information *patching_information;
 #endif
 
 #ifdef SHARED_DATA
@@ -390,10 +390,10 @@ enum origin_type {
 #if defined(SHADOWSTACK)
   /** replace all entries in the shadow stack with the newly
       translated version. do an OSR - on stack replacement. */
-  ORIGIN_SHADOWSTACK  
+  ORIGIN_SHADOWSTACK
 #endif
 };
-  
+
 /**
  * A trampoline as a placeholder of an untranslated code block.
  * These trampolines contain two locations (origin and target) and some code to
@@ -454,13 +454,13 @@ struct icf_prediction {
 struct shadowstack_entry {
   /** Return address for this call in binary translator space */
   ulong_t translated_return_address;
-  
+
   /** Return address for this call in user space */
   ulong_t return_address;
-  
+
   /* %esp at the time of the call */
   ulong_t stack_pointer;
-  
+
   /* original call target of this call */
   ulong_t call_target;
 };
@@ -478,19 +478,19 @@ more optimized instructions (as opposed to when using {offsetof(...)}). */
 #ifdef SHARED_DATA
 struct thread_entry;
 
-/** 
+/**
  * Structure that contains all the data that is shared among all threads. It
- * is only alloated once and then passed on when a new thread is generated. 
+ * is only alloated once and then passed on when a new thread is generated.
  */
 struct shared_data {
 
   /** A linked list containing all threads part of the current thread pool */
   struct thread_entry *threads;
-  
+
   /** Lock protecting the 'thread' member */
-  fbt_mutex_t threads_mutex;   
-  
-  #if defined(ONLINE_PATCHING) 
+  fbt_mutex_t threads_mutex;
+
+  #if defined(ONLINE_PATCHING)
     /** Global patching information */
     struct patching_information *patching_information;
 
@@ -502,7 +502,7 @@ struct shared_data {
   #endif
 
   /** The commit function when start_transaction was called */
-  void (*commit_function)();  
+  void (*commit_function)();
 };
 
 /** Stores information about a list of threads. Each node should be allocated
@@ -514,7 +514,7 @@ struct thread_entry {
   struct thread_entry *next;
 
   /** Can be used as temporary storage for thread-specific data */
-  long user;  
+  long user;
 };
 #endif /* SHARED_DATA */
 
@@ -533,10 +533,10 @@ struct basic_block_node {
 
   /** Next basic block or NULL if end of list */
   struct basic_block_node *next;
-  
+
   #ifdef BASIC_BLOCK_TRAMPOLINE
   void *stop_thread_trampoline;
-  #endif  
+  #endif
 };
 
 struct stop_thread_context {
@@ -573,7 +573,7 @@ enum CFTX_TYPE {
   CFTX_TYPE_JUMP_IND,
   CFTX_TYPE_CALL,
   CFTX_TYPE_CALL_IND,
-  CFTX_TYPE_JCC 
+  CFTX_TYPE_JCC
 };
 #endif /* TRACK_CFTX */
 

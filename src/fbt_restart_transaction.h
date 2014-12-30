@@ -1,7 +1,7 @@
 /**
  * @file fbt_restart_transaction.h
- * 
- * Code dealing with restarting a transaction, which resets the 
+ *
+ * Code dealing with restarting a transaction, which resets the
  * thread state such that translation starts anew.
  *
  * Copyright (c) 2011 ETH Zurich
@@ -48,7 +48,7 @@ int fbt_restart_transaction(struct thread_local_data *tld, struct thread_local_d
  * later reference.
  *
  * @param tld Thread local data
- * @param cft The control flow transfer to store. 
+ * @param cft The control flow transfer to store.
  *
  * @see control_flow_transfer
  */
@@ -56,7 +56,7 @@ void fbt_store_cftx(struct thread_local_data *tld, struct control_flow_transfer 
 
 
 /**
- * Interrupts all future control flow transfers by transfering to the trampoline 
+ * Interrupts all future control flow transfers by transfering to the trampoline
  * located at <code>interruption_target</code> instead.
  *
  * Control flow transfers captured include everything registered using
@@ -65,12 +65,12 @@ void fbt_store_cftx(struct thread_local_data *tld, struct control_flow_transfer 
  * of the interrupted control flow transfer instruction. If the variale is set to
  * NULL, the interrupted instruction was a jump out of a trampoline and
  * <code>tld->ind_target</code> should be used instead.
- * 
+ *
  * Note that this function will destroy the code cache as well as the trampolines
  * (reversible using <code>fbt_fix_trampolines_after_interrupt_cftx</code>).
- * 
+ *
  * @param tld Thread local data
- * @param interruption_target Trampoline to get control after interrupting 
+ * @param interruption_target Trampoline to get control after interrupting
  *                            a control flow transfer
  * @see fbt_store_cftx
  */
@@ -78,8 +78,8 @@ void fbt_interrupt_cftx(struct thread_local_data *tld, void *interruption_target
 
 /**
  * Fixes destroyed trampolines after using fbt_interrupt_cftx
- * 
- * @param tld Thread local data 
+ *
+ * @param tld Thread local data
  */
 void fbt_fix_trampolines_after_interrupt_cftx(struct thread_local_data *tld);
 

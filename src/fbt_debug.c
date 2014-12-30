@@ -104,37 +104,37 @@ void debug_start()
     fbt_suicide_str("Error creating thread local\n");
   }
   pthread_setspecific(thread_debug, (void *)0);
-  
+
   stream_references += 1;
-  
-  pthread_mutex_unlock(&debug_mutex);  
+
+  pthread_mutex_unlock(&debug_mutex);
 }
 
 void debug_end()
 {
   pthread_mutex_lock(&debug_mutex);
-  
+
   stream_references -= 1;
   if (stream_references < 0) {
     fbt_suicide_str("Unbalanced debug_start / debug_end.\n");
   }
-  
+
   int destroy = stream_references == 0;
   int old_debug_stream = debugStream;
-  
+
   if (destroy) {
     debugStream = 0;
   }
-  
+
   pthread_mutex_unlock(&debug_mutex);
-  
-  if (destroy) { 
-    //pthread_mutex_destroy(&debug_mutex);  
+
+  if (destroy) {
+    //pthread_mutex_destroy(&debug_mutex);
     fllprintf(old_debug_stream, "\nStop debugging\n");
     int ret;
     fbt_close(old_debug_stream, ret,
               "BT failed to close debug file (debug_end: fbt_debug.c)\n");
-    pthread_key_delete(thread_debug);    
+    pthread_key_delete(thread_debug);
   }
 }
 
@@ -148,7 +148,7 @@ void debug_print_function_start(char *str, ...)
 
   va_list ap;
   va_start(ap, str);
-  
+
   long i, n = (long)pthread_getspecific(thread_debug);
   for (i = 0; i < n; i++) {
     fllprintf(debugStream, "\t");
@@ -166,7 +166,7 @@ void debug_print_function_start(char *str, ...)
 }
 
 void debug_print_function_end(char *str, ...)
-{  
+{
   if (debugStream == 0) {
     fbt_suicide_str("Debug stream is not open.\n");
   }
@@ -192,7 +192,7 @@ void debug_print_function_end(char *str, ...)
 void debug_print(char *str, ...)
 {
   pthread_mutex_lock(&debug_mutex);
-  
+
   if (debugStream == 0) {
     fbt_suicide_str("Debug stream is not open.\n");
   }
@@ -204,7 +204,7 @@ void debug_print(char *str, ...)
   for (i = 0; i < n; i++) {
     fllprintf(debugStream, "\t");
   }
-  
+
   fllprintfva(debugStream, str, ap);
   fllprintf(debugStream, "\n");
   /*fflush(debugStream);*/
@@ -249,7 +249,7 @@ void debug_dump_start()
 {
   pthread_mutex_lock(&dump_mutex);
   dump_references += 1;
-  
+
   if (dumpCodeStream == 0) {
     fbt_open(CODE_DUMP_FILE_NAME,
              O_CREAT | O_TRUNC | O_WRONLY,
@@ -272,7 +272,7 @@ void debug_dump_end()
   pthread_mutex_lock(&dump_mutex);
   dump_references -= 1;
   int destroy = dump_references == 0;
-  pthread_mutex_unlock(&dump_mutex);  
+  pthread_mutex_unlock(&dump_mutex);
 
   if (destroy) {
     //pthread_mutex_destroy(&dump_mutex);
@@ -289,7 +289,7 @@ void debug_dump_end()
 void debug_dump_code(struct translate *ts, int instr_len, int transl_len)
 {
   if (dumpCodeStream == 0) {
-    fbt_suicide_str("Dump stream is not open.\n");  
+    fbt_suicide_str("Dump stream is not open.\n");
   }
 
   pthread_mutex_lock(&dump_mutex);
@@ -304,7 +304,7 @@ void debug_dump_code(struct translate *ts, int instr_len, int transl_len)
 void debug_dump_jmptable(char *orig_addr, char *transl_addr)
 {
   if (dumpCodeStream == 0) {
-    fbt_suicide_str("Jmptable stream is not open.\n");  
+    fbt_suicide_str("Jmptable stream is not open.\n");
   }
 
   pthread_mutex_lock(&dump_mutex);
@@ -352,7 +352,7 @@ static int printOperandString(int f, const unsigned int operandFlags,
     for (nriters = 0; nriters < ts->num_prefixes; ++nriters) {
       unsigned char cur_prefix = *(ts->cur_instr+nriters);
       if ((cur_prefix == PREFIX_ADDR_SZ_OVR) || (cur_prefix == PREFIX_OP_SZ_OVR))
-        prefix = cur_prefix; 
+        prefix = cur_prefix;
       if (prefix == PREFIX_ES_SEG_OVR) seg_ovr = register_names[5][0];
       if (prefix == PREFIX_CS_SEG_OVR) seg_ovr = register_names[5][1];
       if (prefix == PREFIX_SS_SEG_OVR) seg_ovr = register_names[5][2];
@@ -368,7 +368,7 @@ static int printOperandString(int f, const unsigned int operandFlags,
     len += fllprintf(f, seg_ovr);
     len += fllprintf(f, ":");
   }
-  
+
   if (implOperandFlags!=NONE) {
     /* implicit operands */
     if (!(implOperandFlags & REG_TYPE_MASK)) {
@@ -603,7 +603,7 @@ void print_disasm_inst(int f, struct translate* ts,
       fllprintf(f, " ");
     }
   } else {
-      fllprintf(f, " ");    
+      fllprintf(f, " ");
   }
 }
 

@@ -44,7 +44,7 @@ void fbt_mem_pool_init(struct mem_pool *mp) {
   mp->info_size = 0;
   mp->info_mem = 0;
   mp->info = NULL;
-  
+
   #if defined(DEBUG)
   mp->allocated = 0;
   #endif /* DEBUG */
@@ -60,7 +60,7 @@ struct mem_pool *fbt_mem_pool_bootstrap(struct mem_pool *init_pool) {
     sizeof(struct mem_pool)
   );
 
-  *result = *init_pool;  
+  *result = *init_pool;
   return result;
 }
 
@@ -75,7 +75,7 @@ static void mem_pool_add_info_node(struct mem_pool *mp, char *mem, long size) {
   mp->info_mem += sizeof(struct mem_pool_info);
   mp->info_size -= sizeof(struct mem_pool_info);
 
-  mp->info = new_node;  
+  mp->info = new_node;
 
   #if defined(DEBUG)
   mp->allocated += size;
@@ -88,7 +88,7 @@ static void mem_pool_map(struct mem_pool *mp, long size) {
   void *retval;
   fbt_mmap(NULL, alloc_size, mp->flags, MAP_PRIVATE|MAP_ANONYMOUS,  \
            -1, 0, retval, "BT failed to allocate memory (fbt_mem_pool_init: "
-           "fbt_mem_mgmt.c)\n");  
+           "fbt_mem_mgmt.c)\n");
   mp->mem = retval;
   mp->size = alloc_size;
 
@@ -99,7 +99,7 @@ static void mem_pool_map(struct mem_pool *mp, long size) {
     mp->info_size = NRPAGES(mp->info_size) * PAGESIZE;
     fbt_mmap(NULL, mp->info_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS,  \
              -1, 0, retval, "BT failed to allocate memory (fbt_mem_pool_init: "
-             "fbt_mem_mgmt.c)\n");      
+             "fbt_mem_mgmt.c)\n");
     mp->info_mem = retval;
 
     /* store information about the newly acquired information node */

@@ -50,7 +50,7 @@ enum translation_state {
      inserted as if the instruction limit is reached */
   CLOSE_GLUE
 };
-  
+
 /** Function definition for action functions. */
 typedef enum translation_state (*actionFunP_t)(struct translate *ts);
 

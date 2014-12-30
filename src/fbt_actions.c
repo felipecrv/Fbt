@@ -153,9 +153,9 @@ enum translation_state action_jmp(struct translate *ts) {
   #else
   unsigned char *original_addr = addr;
   #endif
-  
-  PRINT_DEBUG("original_addr=%x / addr=%x\n", original_addr, addr);  
-  
+
+  PRINT_DEBUG("original_addr=%x / addr=%x\n", original_addr, addr);
+
   unsigned char* transl_addr = ts->transl_instr;
   int length = ts->next_instr - ts->cur_instr;
 
@@ -178,7 +178,7 @@ enum translation_state action_jmp(struct translate *ts) {
     /* our argument is only an 8bit offset */
     jump_target = (int32_t)(*((char*)(addr + 1)) + original_addr + length);
   }
-  
+
   PRINT_DEBUG("original jmp_target: %p", (void*)jump_target);
 #if defined(VERIFY_CFTX)
   fbt_check_transfer(ts->tld, original_addr, (unsigned char*)jump_target, CFTX_JMP);
@@ -199,7 +199,7 @@ enum translation_state action_jmp(struct translate *ts) {
     #ifndef TRACK_BASIC_BLOCKS
     //fbt_ccache_add_entry(ts->tld, (void*)jump_target, ts->transl_instr);
     #endif
-    
+
     return OPEN;
   }
 
@@ -288,19 +288,19 @@ enum translation_state action_jmp_indirect(struct translate *ts) {
     popl %eax
     //popfl
     popl %esp
-  END_ASM    
+  END_ASM
 #endif
 
 #if !defined(ICF_PREDICT)
   JMP_REL32(transl_addr, (int32_t)(ts->tld->opt_ijump_trampoline));
-  
+
   #if defined(TRACK_CFTX)
   struct control_flow_transfer cft = {
     .location = transl_addr - 4,
     .original = addr
-  };    
+  };
   fbt_store_cftx(ts->tld, &cft);
-  #endif /* TRACK_CFTX */  
+  #endif /* TRACK_CFTX */
 
 #else  /* ICF_PREDICT */
   if (ts->tld->icf_predict == NULL)
@@ -309,7 +309,7 @@ enum translation_state action_jmp_indirect(struct translate *ts) {
   ts->tld->icf_predict = pred->pred.next;
 
   pred->pred.src = transl_addr;
-  
+
   BEGIN_ASM(transl_addr)
     pushfl
     cmpl $l0x0, 4(%esp)
@@ -330,14 +330,14 @@ enum translation_state action_jmp_indirect(struct translate *ts) {
   struct control_flow_transfer cft = {
     .location = transl_addr - 4,
     .original = addr
-  };  
+  };
   fbt_store_cftx(ts->tld, &cft);
-  #endif /* TRACK_CFTX */  
+  #endif /* TRACK_CFTX */
 
   pred->dst1 = (ulong_t*)(transl_addr - 4);
-  
+
   BEGIN_ASM(transl_addr)
-    movl ${pred}, {ts->tld->stack-11}    
+    movl ${pred}, {ts->tld->stack-11}
     jmp_abs {ts->tld->opt_ijump_predict_fixup}
   END_ASM
 
@@ -345,21 +345,21 @@ enum translation_state action_jmp_indirect(struct translate *ts) {
   struct control_flow_transfer cft2 = {
     .location = transl_addr - 4,
     .original = addr
-  };    
+  };
   fbt_store_cftx(ts->tld, &cft2);
   #endif /* TRACK_CFTX */
 
 #endif  /* ICF_PREDICT */
-  
+
   PRINT_DEBUG_FUNCTION_END("-> close, transl_length=%i",
                            transl_addr - ts->transl_instr);
   ts->transl_instr = transl_addr;
-  
+
   return CLOSE;
 }
 
 enum translation_state action_jcc(struct translate *ts) {
-  
+
   unsigned char *addr = ts->cur_instr;
   unsigned char* transl_addr = ts->transl_instr;
   int length = ts->next_instr - ts->cur_instr;
@@ -377,7 +377,7 @@ enum translation_state action_jcc(struct translate *ts) {
   #else
   /* Without online patching, the two values are always the same */
   unsigned char *virtual_fallthrough = ts->next_instr;
-  #endif /* ONLINE_PATCHING */  
+  #endif /* ONLINE_PATCHING */
 
   PRINT_DEBUG_FUNCTION_START("action_jcc(*addr=%p, *transl_addr=%p, length=%i)",
                              addr, transl_addr, length);
@@ -395,7 +395,7 @@ enum translation_state action_jcc(struct translate *ts) {
       length--;
     } else
       fbt_suicide_str("No prefixes handled in action_jcc! (fbt_actions.c)\n");
-  }  
+  }
   assert(((*addr == 0x0F && length == 6) || (length == 2)));
   /* no prefixes handled */
 
@@ -423,7 +423,7 @@ enum translation_state action_jcc(struct translate *ts) {
     struct control_flow_transfer cft = {
       .location = transl_addr - 4,
       .original = addr
-    };    
+    };
     fbt_store_cftx(ts->tld, &cft);
     #endif /* TRACK_CFTX */
 
@@ -432,7 +432,7 @@ enum translation_state action_jcc(struct translate *ts) {
       BEGIN_ASM(transl_addr)
         jmp_abs {transl_target}
       END_ASM
-    } else { 
+    } else {
       struct trampoline *trampo =
         fbt_create_trampoline(ts->tld, (void*)virtual_fallthrough,
                               (void*)((ulong_t)(transl_addr)+1), ORIGIN_RELATIVE);
@@ -466,9 +466,9 @@ enum translation_state action_jcc(struct translate *ts) {
       jump_target = *((ulong_t*) (addr + 2)) + fallthru_target;
 
     }
-  
+
     /* write: jump address to trampoline; create trampoline if one is needed,
-       otherwise lookup and go */         
+       otherwise lookup and go */
     transl_target = fbt_ccache_find(ts->tld, (void*)jump_target);
     if ( transl_target != NULL ) {
       JCC_2B(transl_addr, jcc_type, (ulong_t)transl_target);
@@ -483,7 +483,7 @@ enum translation_state action_jcc(struct translate *ts) {
     struct control_flow_transfer cft = {
       .location = transl_addr - 4,
       .original = addr
-    };    
+    };
     fbt_store_cftx(ts->tld, &cft);
     #endif /* TRACK_CFTX */
 
@@ -492,14 +492,14 @@ enum translation_state action_jcc(struct translate *ts) {
 #if defined(VERIFY_CFTX)
   fbt_check_transfer(ts->tld, addr, (unsigned char*)jump_target, CFTX_JMP);
 #endif  /* VERIFY_CFTX */
-  
+
   /* write: jump to trampoline for fallthrough address */
 
   #if defined(TRACK_CFTX)
   struct control_flow_transfer cft = {
     .location = transl_addr - 4,
     .original = addr
-  };    
+  };
   fbt_store_cftx(ts->tld, &cft);
   #endif /* TRACK_CFTX */
 
@@ -533,7 +533,7 @@ enum translation_state action_call(struct translate *ts) {
   #else
   unsigned char *original_addr = addr;
   #endif /* ONLINE_PATCHING */
-  
+
   unsigned char* transl_addr = ts->transl_instr;
   int length = ts->next_instr - ts->cur_instr;
 
@@ -591,8 +591,8 @@ enum translation_state action_call(struct translate *ts) {
     #endif /* ONLINE_PATCHING */
     return OPEN;
   }
-  
-#if defined(VERIFY_CFTX) 
+
+#if defined(VERIFY_CFTX)
   /* Skip if target is next instruction */
   if ((void*)call_target != return_addr) {
     /* If this is a plt call resolve destination address */
@@ -604,9 +604,9 @@ enum translation_state action_call(struct translate *ts) {
       /* No plt call, check the cft */
     fbt_check_transfer(ts->tld, original_addr, (unsigned char*)call_target, CFTX_CALL);
     }
-  } 
+  }
 #endif  /* VERIFY_CFTX */
-  
+
   /* write: push original EIP (we have to do this either way) */
   // TODO: 64bit needs a 64bit push!
   int32_t return_address = (int32_t)return_addr;
@@ -642,18 +642,18 @@ enum translation_state action_call(struct translate *ts) {
     pushl %ebx
     movl {&ts->tld->top_of_shadowstack}, %ebx
   END_ASM
-  
+
   /* If the next instruction has already been translated, we use the address
   of the translated code segment, otherwise we create a trampoline in BT space
   and use its address */
-  
+
   void *transl_next = fbt_ccache_find(ts->tld, ts->next_instr);
-  
+
   /* We want to take advantage of MODRM, so we hardcode the offset */
   assert(offsetof(struct shadowstack_entry, translated_return_address) == 0);
-  
+
   if (transl_next == NULL) {
-    /* next_instr + 2 as movl + modrm is 2 bytes long */  
+    /* next_instr + 2 as movl + modrm is 2 bytes long */
     struct trampoline *trampo =
       fbt_create_trampoline(ts->tld, (void*)(ts->next_instr),
                             (void*)((ulong_t)(transl_addr)+2),
@@ -662,7 +662,7 @@ enum translation_state action_call(struct translate *ts) {
         movl ${trampo->code}, (%ebx) // addr backpatched later on
     END_ASM
   } else {
-    BEGIN_ASM(transl_addr)  
+    BEGIN_ASM(transl_addr)
         movl ${transl_next}, (%ebx) // addr backpatched later on
     END_ASM
   }
@@ -676,31 +676,31 @@ enum translation_state action_call(struct translate *ts) {
     addl $ SHADOWSTACK_ENTRY_SIZE, {&ts->tld->top_of_shadowstack}
     popl %ebx
   END_ASM
-  
+
   #if defined(SHADOWSTACK_DEBUG)
   BEGIN_ASM(transl_addr)
     movl %esp, {ts->tld->stack-1}
     movl ${ts->tld->stack-1}, %esp
-    
+
     pusha
     pushl ${call_target}
     pushl ${ts->cur_instr}
     pushl ${ts->tld}
-    
+
     call_abs {fbt_shadowstack_debug_call}
-    
+
     leal 12(%esp), %esp
     popa
 
     popl %esp
   END_ASM
   #endif /* SHADOWSTACK_DEBUG */
-  
+
 #endif /* SHADOWSTACK */
 
   /* check if target is already translated; if not, do so now */
   void *transl_target = fbt_ccache_find(ts->tld, (void*)call_target);
-  
+
   if (transl_target == NULL) {
     /* we still have to translate the call target */
     PRINT_DEBUG_FUNCTION_END("-> open, transl_length=%i",
@@ -711,29 +711,29 @@ enum translation_state action_call(struct translate *ts) {
        This will put the body of the function right as the next instr in the
        translated code */
     ts->next_instr = (unsigned char*)call_target;
-    
+
     /* put the target into the tcache so later calls can use the translated
        code */
     #ifndef TRACK_BASIC_BLOCKS
     //fbt_ccache_add_entry(ts->tld, (void*)call_target, ts->transl_instr);
     #endif
-    
+
     return OPEN;
   }
 
   /* target is already translated */
   PRINT_DEBUG("translated call_target: %p", transl_target);
 
-  /* write: jump instruction to translated target */    
+  /* write: jump instruction to translated target */
   BEGIN_ASM(transl_addr)
     jmp_abs {transl_target}
   END_ASM
-  
+
   #if defined(TRACK_CFTX)
   struct control_flow_transfer cft = {
     .location = transl_addr - 4,
     .original = addr
-  };    
+  };
   fbt_store_cftx(ts->tld, &cft);
   #endif /* TRACK_CFTX */
 
@@ -761,7 +761,7 @@ enum translation_state action_call_indirect(struct translate *ts) {
   #if defined(ONLINE_PATCHING)
   /* We need to keep track of the return address in the virtual space of the patch */
   unsigned char *return_addr = ts->next_patch_instr;
-  
+
   /* also keep try to find a patch for the instruction right after this one */
   struct change *next_change = fbt_online_patching_find_change(ts->tld->patching_information, return_addr);
   unsigned char *next_instr;
@@ -790,17 +790,17 @@ enum translation_state action_call_indirect(struct translate *ts) {
     pushl %ebx
     movl {&ts->tld->top_of_shadowstack}, %ebx
   END_ASM
-  
+
   /* If the next instruction has already been translated, we use the address
   of the translated code segment, otherwise we create a trampoline in BT space
   and use its address */
   void *transl_next = fbt_ccache_find(ts->tld, return_addr);
-  
+
   /* We want to take advantage of MODRM, so we hardcode the offset */
   assert(offsetof(struct shadowstack_entry, translated_return_address) == 0);
-  
+
   if (transl_next == NULL) {
-    /* next_instr + 2 as movl + modrm is 2 bytes long */  
+    /* next_instr + 2 as movl + modrm is 2 bytes long */
     struct trampoline *trampo =
       fbt_create_trampoline(ts->tld, (void*)(return_addr),
                             (void*)((ulong_t)(transl_addr)+2),
@@ -809,7 +809,7 @@ enum translation_state action_call_indirect(struct translate *ts) {
         movl ${trampo->code}, (%ebx) // addr backpatched later on
     END_ASM
   } else {
-    BEGIN_ASM(transl_addr)  
+    BEGIN_ASM(transl_addr)
         movl ${return_addr}, (%ebx) // addr backpatched later on
     END_ASM
   }
@@ -869,7 +869,7 @@ enum translation_state action_call_indirect(struct translate *ts) {
      */
     char modrm = (*(first_byte_after_opcode) & 0xC7) | 0x30;
     char sib = *(first_byte_after_opcode+1);
-    
+
     if (((modrm&0x7)==4) && ((sib&0x7)==4)) {
       /* ModR/M SIB replacement (R/M==0x4) */
       /* SIB Byte (Base) == 0x4 -> ESP */
@@ -887,7 +887,7 @@ enum translation_state action_call_indirect(struct translate *ts) {
       }
       /* 1B displacement with %esp -> call *0xff(%esp) */
       /* NOTE: there is the special case *0x7c(%esp)
-       * 		- 0x7c+4 = 0x80 = 128 
+       * 		- 0x7c+4 = 0x80 = 128
        * 		- 0x80 has to be extended to a 4b displacement, else it will be translated to a "pushl  -0x80(%esp)"
        * 		- see examples below
        * 80483bf:	ff b4 24 80 00 00 00 	pushl  0x80(%esp)
@@ -936,15 +936,15 @@ enum translation_state action_call_indirect(struct translate *ts) {
     pushl 16(%esp) // target
     pushl ${original_addr}
     pushl ${ts->tld}
-    
+
     call_abs {&fbt_check_transfer}
-    
+
     leal 16(%esp), %esp
     //popa
     popl %edx
     popl %ecx
     popl %eax
-    
+
     popl %esp
   END_ASM
 #endif
@@ -959,15 +959,15 @@ enum translation_state action_call_indirect(struct translate *ts) {
     pushl 32(%esp)
     pushl ${original_addr}
     pushl ${ts->tld}
-    
+
     call_abs {fbt_shadowstack_debug_call}
-    
+
     leal 12(%esp), %esp
     popa
-    
+
     popl %esp
   END_ASM
-#endif /* SHADOWSTACK_DEBUG */  
+#endif /* SHADOWSTACK_DEBUG */
 
 #if !defined(ICF_PREDICT)
   /* write: jump instruction to trampoline */
@@ -982,7 +982,7 @@ enum translation_state action_call_indirect(struct translate *ts) {
   ts->tld->icf_predict = pred->pred.next;
 
   pred->pred.src = transl_addr;
-  
+
   BEGIN_ASM(transl_addr)
     pushfl
     cmpl $l0x0, 4(%esp)
@@ -1003,29 +1003,29 @@ enum translation_state action_call_indirect(struct translate *ts) {
   struct control_flow_transfer cft = {
     .location = transl_addr - 4,
     .original = original_addr
-  };    
+  };
   fbt_store_cftx(ts->tld, &cft);
   #endif /* TRACK_CFTX */
 
   pred->dst1 = (ulong_t*)(transl_addr - 4);
 
   BEGIN_ASM(transl_addr)
-    movl ${pred}, {ts->tld->stack-11}    
+    movl ${pred}, {ts->tld->stack-11}
     jmp_abs {ts->tld->opt_icall_predict_fixup}
   END_ASM
-  
+
   #if defined(TRACK_CFTX)
   {
     struct control_flow_transfer cft = {
       .location = transl_addr - 4,
       .original = original_addr
-    };    
+    };
     fbt_store_cftx(ts->tld, &cft);
   }
-  #endif /* TRACK_CFTX */  
+  #endif /* TRACK_CFTX */
 
 #endif  /* ICF_PREDICT */
-  
+
   ts->transl_instr = transl_addr;
   PRINT_DEBUG_FUNCTION_END("-> close");
   return CLOSE;
@@ -1046,7 +1046,7 @@ enum translation_state action_sysenter(struct translate *ts) {
 #endif
   /* write: jump instruction to trampoline */
   JMP_REL32(transl_addr, (ulong_t)(ts->tld->sysenter_trampoline));
-  
+
   ts->transl_instr = transl_addr;
   PRINT_DEBUG_FUNCTION_END("-> close");
   return CLOSE;
@@ -1113,7 +1113,7 @@ enum translation_state action_ret(struct translate *ts) {
 #endif
     PRINT_DEBUG_FUNCTION_END("-> open, inlined, transl_length=%i",
                              transl_addr - ts->transl_instr);
-    
+
     ts->transl_instr = transl_addr;
     return OPEN;
   }
@@ -1123,22 +1123,22 @@ enum translation_state action_ret(struct translate *ts) {
   /* switch to secured stack */
   /* Currently we do not check return statements in fbt_check_transfer, so we
      disable the call here */
-  
+
   BEGIN_ASM(transl_addr)
       movl %esp, {ts->tld->stack-2}
       movl ${ts->tld->stack-2}, %esp
-      
+
       pusha
       pushl ${CFTX_RET}
       pushl 36(%esp) // target
       pushl ${addr}
       pushl ${ts->tld}
-      
+
       call_abs {&fbt_check_transfer}
       leal 16(%esp), %esp
-      
+
       popa
-      
+
       popl %esp
   END_ASM
 #endif
@@ -1164,7 +1164,7 @@ enum translation_state action_ret(struct translate *ts) {
   if (*addr == 0xc3) {
     jmp_target = (int32_t)(ts->tld->opt_ret_trampoline);
   }
-  
+
 #if defined(SHADOWSTACK) & defined(SHADOWSTACK_IGNORE_LOADER)
   /* To give us more information when verifying return instructions,
      we store the address we are returning from */

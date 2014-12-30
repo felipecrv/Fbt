@@ -121,12 +121,12 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
   tld->mappingtable = fbt_lalloc(tld, (MAPPINGTABLE_SIZE / PAGESIZE) + 1,
                                  MT_MAPPING_TABLE);
   /* guard for find_fast-wraparound used in optimizations */
-  *(long*)((long)(tld->mappingtable)+MAPPINGTABLE_SIZE) = 0x1; 
+  *(long*)((long)(tld->mappingtable)+MAPPINGTABLE_SIZE) = 0x1;
 
   PRINT_DEBUG("allocated mappingtable: %p -> %p",
               tld->mappingtable, tld->mappingtable + MAPPINGTABLE_SIZE);
 
-  
+
   /* initialize trampolines */
   tld->ret2app_trampoline = NULL;
   tld->opt_ijump_trampoline = NULL;
@@ -140,13 +140,13 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
   tld->opt_icall_predict_fixup = NULL;
   tld->icf_predict = NULL;
 #endif  /* ICF_PREDICT */
-  
+
 #if defined(SHADOWSTACK)
   /* allocate shadow stack */
   /* enough for 1024 or 512 recursive stack frames - on 32/64 bit */
   tld->top_of_shadowstack = fbt_lalloc(tld, 2, MT_SHADOWSTACK);
   tld->shadowstack = tld->top_of_shadowstack;
-  
+
   /* We do not know the location of the loader yet */
   tld->shadowstack_loader_begin = 0;
   tld->shadowstack_loader_end = 0;
@@ -188,9 +188,9 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
       "Could not open file (fbt_mem_mgmt.c)"
   );
   tld->dump_cftx_file = dump_cftx_file;
-#endif /* DUMP_CFTX */  
+#endif /* DUMP_CFTX */
 #endif  /* VERIFY_CFTX */
-  
+
 #if defined(AUTHORIZE_SYSCALLS)
   tld->syscall_location = NULL;
   ulong_t table_size = (((MAX_SYSCALLS_TABLE*sizeof(void*)) + (PAGESIZE-1)) &
@@ -216,7 +216,7 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
 
 
 #if defined(TRACK_BASIC_BLOCKS)
-  tld->basic_blocks = NULL; 
+  tld->basic_blocks = NULL;
 #endif /* TRACK_BASIC_BLOCKS */
 
 #if defined(TRACK_INSTRUCTIONS)
@@ -243,7 +243,7 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
 
   /* add code cache */
   fbt_allocate_new_code_cache(tld);
-  
+
   return tld;
 }
 
@@ -251,20 +251,20 @@ void fbt_reinit_new_process(struct thread_local_data *tld) {
 #if defined(TRACK_CFTX)
   fbt_mutex_init(&tld->interrupt_cft_mutex);
   fbt_mutex_init(&tld->interrupted_cft_mutex);
-#endif /* TRACK_CFTX */  
-  
+#endif /* TRACK_CFTX */
+
   #if defined(SHARED_DATA)
   /* Reinitialize thread list */
   // TODO: we leak old thread list
   struct shared_data *sd = tld->shared_data;
   sd->threads = fbt_smalloc(tld, sizeof(struct thread_entry));
-  sd->threads->tld = tld; 
+  sd->threads->tld = tld;
   sd->threads->next = NULL;
 
   #if defined(ONLINE_PATCHING)
   fbt_mutex_init(&sd->patching_information_lock);
   #endif /* ONLINE_PATCHING */
-  
+
   fbt_mutex_init(&sd->threads_mutex);
   tld->shared_data = sd;
   #endif /* SHARED_DATA */
@@ -295,7 +295,7 @@ MT_TRAMPOLINE);
   }
   trampos->next = tld->trans.trampos;
 
-  tld->trans.trampos = (struct trampoline*)mem;  
+  tld->trans.trampos = (struct trampoline*)mem;
 }
 
 void fbt_trampoline_free(struct thread_local_data *tld,
@@ -308,7 +308,7 @@ void fbt_trampoline_free(struct thread_local_data *tld,
 void fbt_allocate_new_dynarace_files(struct thread_local_data *tld) {
   ulong_t alloc_size = (((ALLOC_DYNARACE * sizeof(struct dynarace_file)) +
                          (PAGESIZE-1)) & (~(PAGESIZE-1))) / PAGESIZE;
-  
+
   void *mem = fbt_lalloc(tld, alloc_size, MT_INTERNAL);
   struct dynarace_file *dynfile = (struct dynarace_file*)mem;
 
@@ -320,8 +320,8 @@ void fbt_allocate_new_dynarace_files(struct thread_local_data *tld) {
   }
   dynfile->next = tld->dynfile_free;
 
-  tld->dynfile_free = (struct dynarace_file*)mem;  
-}  
+  tld->dynfile_free = (struct dynarace_file*)mem;
+}
 #endif  /* DYNARACE */
 
 #if defined(ICF_PREDICT)
@@ -340,7 +340,7 @@ void fbt_allocate_new_icf_predictors(struct thread_local_data *tld) {
   }
   icf_preds->pred.next = tld->icf_predict;
 
-  tld->icf_predict = (struct icf_prediction*)mem;  
+  tld->icf_predict = (struct icf_prediction*)mem;
 }
 
 void fbt_icf_predictor_free(struct thread_local_data *tld,
@@ -377,7 +377,7 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
   assert(pages > 0);
   if (pages <= 0)
     fbt_suicide_str("Trying to allocate 0 pages (fbt_lalloc: fbt_mem_mgmt.c)\n");
-  
+
   /* TODO: add guard pages for stack, mapping table, code cache */
   int alloc_size = pages * PAGESIZE;
 
@@ -405,13 +405,13 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
 #endif  /* ICF_PREDICT */
       flags = PROT_READ|PROT_WRITE;
       break;
-      
+
     case MT_CODE_CACHE:
     case MT_TRAMPOLINE:
       flags = PROT_READ|PROT_WRITE|PROT_EXEC;
       break;
   }
-  
+
   void *retval;
   fbt_mmap(NULL, alloc_size, flags, MAP_PRIVATE|MAP_ANONYMOUS,  \
            -1, 0, retval, "BT failed to allocate memory (fbt_lalloc: "
@@ -470,9 +470,9 @@ void *fbt_smalloc(struct thread_local_data *tld, long size) {
   void *mem = tld->smalloc;
   tld->smalloc += size;
   tld->smalloc_size -= size;
-  
+
   assert(((long)tld->smalloc) == ((long)mem)+size);
-  
+
   return mem;
 }
 
@@ -482,22 +482,22 @@ void fbt_init_shared_data(struct thread_local_data *tld) {
 
   fbt_gettid(tld->tid);
 
-  struct shared_data *sd = fbt_lalloc(tld, 
+  struct shared_data *sd = fbt_lalloc(tld,
                                       NRPAGES(sizeof(struct shared_data)),
                                       MT_SHARED_DATA);
-  
+
   sd->threads = fbt_smalloc(tld, sizeof(struct thread_entry));
-  sd->threads->tld = tld; 
+  sd->threads->tld = tld;
   sd->threads->next = NULL;
 
   #if defined(ONLINE_PATCHING)
   sd->patching_information = NULL;
   #endif /* ONLINE_PATCHING */
-  
+
   fbt_mutex_init(&sd->threads_mutex);
 
   tld->shared_data = sd;
-  
+
   PRINT_DEBUG_FUNCTION_END("");
 }
 #endif /* SHARED_DATA */

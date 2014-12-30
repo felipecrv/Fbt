@@ -35,7 +35,7 @@ struct thread_local_data;
  * This enum defines the possible bindings of a symbol in a DSO
  */
 enum sh_sym_binding {
-  SB_LOCAL, 
+  SB_LOCAL,
   SB_GLOBAL
 };
 
@@ -87,13 +87,13 @@ struct dso_chain {
   long init_size;       /* size of init section */
   char *fini;           /* pointer to fini section */
   long fini_size;       /* size of fini section */
-  
+
   unsigned char stripped;     /* is the DSO stripped? */
   unsigned char exec;         /* is this the executable? */
-  
+
   struct code_page *pages;    /* list of pages belonging to this DSO */
   long nr_pages;              /* number of pages */
-  
+
   struct sh_symbol *isymbols;   /* array of symbols imported in this object */
   long nr_isymbols;             /* number of imported symbols */
 

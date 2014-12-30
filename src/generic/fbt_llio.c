@@ -157,7 +157,7 @@ int fllprintfva(int fd, const char* format, va_list app)
         }
         if (abs_d == 0) revbuf[--i] = '0';
         /* fill leading 0s */
-        if (len!=0) while (len>(BUFSIZE_S-i)) revbuf[--i]='0'; 
+        if (len!=0) while (len>(BUFSIZE_S-i)) revbuf[--i]='0';
         length = MIN(BUFSIZE_L - bi, BUFSIZE_S - i);
         if (length>len && len!=0) {
           /* ensure that we stay in buffer */

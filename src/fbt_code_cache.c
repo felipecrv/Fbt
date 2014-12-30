@@ -47,7 +47,7 @@ struct ccache_entry {
   ulong_t *src;
   ulong_t *dst;
 };
-  
+
 void *fbt_ccache_find(struct thread_local_data *tld, void *orig_address) {
   PRINT_DEBUG_FUNCTION_START("fbt_ccache_find(*tld=%p, *orig_address=%p)",
                              tld, orig_address);
@@ -106,7 +106,7 @@ void fbt_ccache_add_entry(struct thread_local_data *tld, void *orig_address,
   struct ccache_entry *entry = tld->mappingtable + offset;
 
   int count = 0;
-  
+
 #ifdef INLINE_CALLS
   if (tld->trans.inline_call_RIP != NULL) {
     PRINT_DEBUG("We are currently inlining, it would be a bad idea to add this "
@@ -238,14 +238,14 @@ struct trampoline *fbt_create_trampoline(struct thread_local_data *tld,
   if (tld->trans.trampos == NULL) {
     fbt_allocate_new_trampolines(tld);
   }
-  
+
   struct trampoline *trampo = tld->trans.trampos;
   tld->trans.trampos = tld->trans.trampos->next;
 
   trampo->target = call_target;
   trampo->origin = origin;
   trampo->origin_t = origin_t;
-  
+
   unsigned char *code = (unsigned char*)&(trampo->code);
 
   PRINT_DEBUG("allocated trampoline: %p, target: %p, origin: %p", trampo,
@@ -255,7 +255,7 @@ struct trampoline *fbt_create_trampoline(struct thread_local_data *tld,
   MOV_ESP_MEM32(code, (tld->stack-1));  /* 6 bytes long */
   MOV_IMM32_ESP(code, (tld->stack-1));  /* 5 bytes long */
   CALL_REL32(code, tld->unmanaged_code_trampoline); /* 5 bytes long */
-  
+
   return trampo;
 }
 
@@ -264,11 +264,11 @@ void* fbt_map_instruction_reverse(struct thread_local_data *tld, void *translate
   ulong_t *table = tld->instructions;
   ulong_t translated_long = (ulong_t)translated;
   ulong_t i;
-  
+
   for (i = 0; i < sizeof(ulong_t) - 1; ++i) {
     ulong_t byte = translated_long & 0xFF;
     translated_long = translated_long / 256;
-    
+
     ulong_t *next_table = (ulong_t *)table[byte];
 
     /* We need to allocate the table */
@@ -288,11 +288,11 @@ void fbt_track_instruction(struct thread_local_data *tld, void *translated, void
   ulong_t *table = tld->instructions;
   ulong_t translated_long = (ulong_t)translated;
   ulong_t i;
-  
+
   for (i = 0; i < sizeof(ulong_t) - 1; ++i) {
     ulong_t byte = translated_long & 0xFF;
     translated_long = translated_long / 256;
-    
+
     ulong_t *next_table = (ulong_t *)table[byte];
 
     /* We need to allocate the table */

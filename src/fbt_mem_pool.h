@@ -38,7 +38,7 @@ struct mem_pool_info;
 struct mem_pool;
 
 /** Initializes a memory pool at the location pointed to by <code>mp</code>
-  * 
+  *
   * @param mp The memory pool to initialize. Must have <code>allocation_size</code>
   *           and <code>flags</code> already initialized.
   */
@@ -60,7 +60,7 @@ void fbt_mem_pool_init(struct mem_pool *mp);
 struct mem_pool *fbt_mem_pool_bootstrap(struct mem_pool *mp);
 
 /** Allocates a chunk of memory
-  * 
+  *
   * @param size Number of bytes to allocate
   * @return Pointer to the start of memory region
   */
@@ -69,9 +69,9 @@ void *fbt_mem_pool_allocate(struct mem_pool *mp, unsigned long size);
 /** Frees a thread pool with all its allocated pages */
 void fbt_mem_pool_free(struct mem_pool *mp);
 
-/** A memory pool allows allocating of memory chunks of arbitrary size. It therefore 
+/** A memory pool allows allocating of memory chunks of arbitrary size. It therefore
   * can be used like both fbt_smalloc and fbt_malloc. Memory pools group together
-  * memory that is used for a specific task and is not stored in a tld's memory 
+  * memory that is used for a specific task and is not stored in a tld's memory
   * chunk list and instead is freed explicitly by calling mem_pool_free.
   * */
 struct mem_pool {

@@ -36,7 +36,7 @@ struct thread_local_data;
 /** maximum amount of system calls that are supported. if the syscall number is
    higher then we abort the program */
 #define MAX_SYSCALLS_TABLE 512
-  
+
 /**
  * Initialize the system call tables used to authorize system calls.
  * Every system call passes through the thread local authorization table.
@@ -47,7 +47,7 @@ void fbt_init_syscalls(struct thread_local_data *tld);
 
 #if defined(HANDLE_SIGNALS)
 
-// TODO: move exports into other file 
+// TODO: move exports into other file
 #ifdef __cplusplus
 extern "C" {
 #endif

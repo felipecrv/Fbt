@@ -47,7 +47,7 @@ $(LIBNAME).so: *.h generic/*.h $(FILES)
 
 	$(CC) $(CFLAGS) $(LIBFLAGS) generated/*.c generated/generic/*.c
 	$(CC) -shared -Wl,-soname,$(LIBNAME).so.$(LIBVERS) \
-		-o $(LIBNAME).so *.o $(LDFLAGS) 
+		-o $(LIBNAME).so *.o $(LDFLAGS)
 
 $(LIBNAME).a:
 	ar cru $(LIBNAME).a libfastbt.o

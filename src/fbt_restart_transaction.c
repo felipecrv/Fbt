@@ -1,6 +1,6 @@
 /**
  * @file fbt_restart_transaction.c
- * Code dealing with restarting a transaction, which resets the 
+ * Code dealing with restarting a transaction, which resets the
  * thread state such that translation starts anew.
  *
  * Copyright (c) 2011 ETH Zurich
@@ -71,11 +71,11 @@ static void cftx_handler(struct thread_local_data *tld) {
   /* Full memory barrier */
   __sync_synchronize();
 
-  
+
   fbt_mutex_unlock(&tld->interrupt_cft_mutex);
 
   /* Starting from this point, the patching has to request a fresh restart
-   * of this thread if it wants to guarantee that it has the most recent 
+   * of this thread if it wants to guarantee that it has the most recent
    * patching information */
 
   /* Retranslate ind_target */
@@ -98,11 +98,11 @@ static void cftx_handler(struct thread_local_data *tld) {
     struct ccache_entry *entry = tld->mappingtable + pos;
     entry->src = 0;
     entry->dst = 0;
-  }  
+  }
 
   /* Release pages allocated for code cache */
   /* we could walk through the tld pages and remove all that are of type
-   * MT_CODE_CACHE, but this would be kind of messy. By switching to 
+   * MT_CODE_CACHE, but this would be kind of messy. By switching to
    * using mem pools for the code cache, this could be simplified */
 
   fbt_allocate_new_code_cache(tld);
@@ -112,21 +112,21 @@ static void cftx_handler(struct thread_local_data *tld) {
 
   if (tld->interrupted_cft != NULL) {
     original = tld->interrupted_cft->original;
-  } 
+  }
 
   #if defined(TRACK_CFTX)
   /* Copy settings of old memory pool and free it */
   struct mem_pool settings = *tld->cft_trampoline_mem_pool;
   fbt_mem_pool_free(tld->cft_trampoline_mem_pool);
 
-  /* Boostrap new memory pool with same settings */  
+  /* Boostrap new memory pool with same settings */
   tld->cft_trampoline_mem_pool = fbt_mem_pool_bootstrap(&settings);
   #endif /* TRACK_CFTX */
-  
+
   /* Now we can translate the new target */
   tld->ind_target = fbt_translate_noexecute(tld, original);
   PRINT_DEBUG("ind_target + %x\n", tld->ind_target);
-  
+
 
   PRINT_DEBUG_FUNCTION_END("");
 }
@@ -147,7 +147,7 @@ int fbt_restart_transaction(struct thread_local_data *tld, struct thread_local_d
 
   /* Target thread can now flush cache */
   fbt_mutex_unlock(&target->interrupted_cft_mutex);
-   
+
   return 0;
 }
 
@@ -182,7 +182,7 @@ void fbt_fix_trampolines_after_interrupt_cftx(struct thread_local_data *tld) {
   while (tcft != tld->trampoline_cfts_end) {
     *((ulong_t *)tcft->addr) = (ulong_t)&tld->ind_target;
     ++tcft;
-  }  
+  }
 }
 
 void fbt_store_cftx(struct thread_local_data *tld, struct control_flow_transfer *cft)
