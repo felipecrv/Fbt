@@ -194,16 +194,6 @@ CFLAGS += -DHANDLE_THREADS
 # status: unimplemented for ARM
 # CFLAGS += -DPRINT_CFTX
 
-# Parse external policy file
-# ==========================
-#
-# Enable extern policy files that are automatically loaded, parsed, and
-# enforced.
-#
-# default: # CFLAGS += -DSYSCALL_POLICY_FILE
-# status: unimplemented for ARM
-# CFLAGS += -DSYSCALL_POLICY_FILE
-
 
 ###############################################################################
 # Implementation specific stuff, selects correct flags depending              #

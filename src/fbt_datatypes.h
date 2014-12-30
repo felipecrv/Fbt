@@ -160,51 +160,6 @@ enum syscall_auth_response {
   /** syscall rejected */
   SYSCALL_AUTH_DENIED
 } __attribute__((packed));
-
-#if defined(SYSCALL_POLICY_FILE)
-
-/**
- * Possible argument types for each parameter to a system call
- */
-enum syscall_argument_type {
-  /** an integer value */
-  SYSCALL_ARG_INT,
-  /** pointer to unspecified data */
-  SYSCALL_ARG_POINTER,
-  /** a string, \0 terminated */
-  SYSCALL_ARG_STRING,
-  /** a path (used by file-related system calls) */
-  SYSCALL_ARG_PATH,
-  /** ignored */
-  SYSCALL_ARG_IGNORE
-} __attribute__((packed));
-
-/**
- * Encoding for a single parameter of a system call
- */
-struct syscall_argument {
-  /** type, e.g., int, pointer, or string data */
-  enum syscall_argument_type type;
-  union {
-    ulong_t int_value;
-    void *pointer_value;
-    char *string_value;
-  } data;
-};
-
-/**
- * An single policy entry for a specific system call
- */
-struct syscall_policy_entry {
-  /** valid argument types for all potential syscall parameters */
-  struct syscall_argument *args[6];
-  /** what should we do if this policy rule matches? */
-  enum syscall_auth_response action;
-  ulong_t fake_value;
-  /** next argument combination in list */
-  struct syscall_policy_entry *next;
-};
-#endif  /* SYSCALL_POLICY_FILE */
 #endif  /* AUTHORIZE_SYSCALLS */
 
 #if defined(TRACK_INSTRUCTIONS)
@@ -288,12 +243,6 @@ struct thread_local_data {
                                                ulong_t*, ulong_t, ulong_t*);
   /** location of the system call in the original program */
   void *syscall_location;
-#if defined(SYSCALL_POLICY_FILE)
-  /** specifies an array of handlers that take care of application signals. The
-     pointers either point to an abort routine, to a trampoline or to a
-     translated code region */
-  struct syscall_policy_entry **policy_entries;
-#endif  /* SYSCALL_POLICY_FILE */
 #if defined(HANDLE_SIGNALS)
   /** specifies an array of handlers that take care of application signals. The
      pointers either point to an abort routine, to a trampoline or to a

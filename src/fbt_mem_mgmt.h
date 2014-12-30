@@ -95,9 +95,6 @@ enum mem_type {
 #endif  /* SHADOWSTACK */
 #if defined(AUTHORIZE_SYSCALLS)
   MT_SYSCALL_TABLE, /**< syscall table (R[W]) */
-#if defined(SYSCALL_POLICY_FILE)
-  MT_SYSCALL_POLICY,  /**< syscall policy table (R) */
-#endif  /* SYSCALL_POLICY_FILE */
 #endif  /* AUTHORIZE_SYSCALLS */
 #if defined(ICF_PREDICT)
   MT_ICF_PREDICT,  /**< prediction for indirect control flows (R[W]) */

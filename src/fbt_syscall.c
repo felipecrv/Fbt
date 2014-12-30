@@ -47,7 +47,6 @@
 #include "fbt_libc.h"
 #include "fbt_llio.h"
 #include "fbt_mem_mgmt.h"
-#include "fbt_syscall_list.h"
 #include "fbt_translate.h"
 #include "libfastbt.h"
 #ifdef LMEM
@@ -94,7 +93,6 @@ static enum syscall_auth_response deny_syscall(struct thread_local_data *tld,
                                                ulong_t is_sysenter,
                                                ulong_t *retval);
 
-#if !defined(SYSCALL_POLICY_FILE)
 /**
  * Allows the current system call.
  * @return Allows the current system call and passes control to the kernel.
@@ -106,20 +104,6 @@ static enum syscall_auth_response allow_syscall(struct thread_local_data *tld,
                                                 ulong_t *arg6,
                                                 ulong_t is_sysenter,
                                                 ulong_t *retval);
-#else  /* SYSCALL_POLICY_FILE */
-/**
- * Uses the loaded policy to check the parameters of a system call.
- * @return Allows the system call if parameters are OK.
- */
-static enum syscall_auth_response
-check_policy_syscall(struct thread_local_data *tld,
-                     ulong_t syscall_nr, ulong_t arg1,
-                     ulong_t arg2, ulong_t arg3,
-                     ulong_t arg4, ulong_t arg5,
-                     ulong_t *arg6,
-                     ulong_t is_sysenter,
-                     ulong_t *retval);
-#endif  /* SYSCALL_POLICY_FILE */
 
 /**
  * Catches an execve system call and checks the parameters. If the parameters
@@ -620,7 +604,6 @@ deny_syscall(struct thread_local_data *tld __attribute__((unused)),
   return SYSCALL_AUTH_FAKE;
 }
 
-#if !defined(SYSCALL_POLICY_FILE)
 static enum syscall_auth_response
 allow_syscall(struct thread_local_data *tld __attribute__((unused)),
               ulong_t syscall_nr __attribute__((unused)),
@@ -634,125 +617,6 @@ allow_syscall(struct thread_local_data *tld __attribute__((unused)),
               ulong_t *retval __attribute__((unused))) {
   return SYSCALL_AUTH_GRANTED;
 }
-#else  /* SYSCALL_POLICY_FILE */
-static enum syscall_auth_response
-check_policy_syscall(struct thread_local_data *tld,
-                     ulong_t syscall_nr, ulong_t arg1,
-                     ulong_t arg2, ulong_t arg3,
-                     ulong_t arg4, ulong_t arg5,
-                     ulong_t *arg6,
-                     ulong_t is_sysenter __attribute__((unused)),
-                     ulong_t *retval) {
-#define ARG_OK 0
-#define ARG_FAILED 1
-  /* internal check function that checks an individual argument */
-  ulong_t check_arg(struct syscall_argument *arg, ulong_t argv) {
-    switch (arg->type) {
-      case SYSCALL_ARG_INT:
-        if (argv == arg->data.int_value) {
-          return ARG_OK;
-        } else {
-          return ARG_FAILED;
-        }
-      case SYSCALL_ARG_POINTER:
-        if ((void*)(argv) == arg->data.pointer_value) {
-          return ARG_OK;
-        } else {
-          return ARG_FAILED;
-        }
-      case SYSCALL_ARG_STRING:
-        if (fbt_strncmp(arg->data.string_value, (char*)argv,
-                        fbt_strnlen(arg->data.string_value, 0))) {
-          return ARG_OK;
-        } else {
-          return ARG_FAILED;
-        }
-      case SYSCALL_ARG_PATH:
-        fbt_suicide_str("Illegal arg. for syscall check (fbt_syscall.c).\n");
-      case SYSCALL_ARG_IGNORE:
-        return ARG_OK;
-    }
-    return ARG_FAILED;
-  }  /* end of internal check function */
-  
-  if (syscall_nr >= I386_NR_SYSCALLS) {
-    fbt_suicide_str("Program tried to execute an illegal system call " \
-                    "(fbt_syscall.c).\n");
-  }
-  struct syscall_policy_entry *pol = tld->policy_entries[syscall_nr];
-  while (pol != NULL) {
-    unsigned char arg_check = 0;
-    arg_check += check_arg(pol->args[0], arg1);
-    arg_check += check_arg(pol->args[1], arg2);
-    arg_check += check_arg(pol->args[2], arg3);
-    arg_check += check_arg(pol->args[3], arg4);
-    arg_check += check_arg(pol->args[4], arg5);
-    /* guard against dereferencing illegal arguments */
-    if (pol->args[5]->type != SYSCALL_ARG_IGNORE) {
-      arg_check += check_arg(pol->args[5], *arg6);
-    }
-    /* did this policy rule match? */
-    if (arg_check == ARG_OK) {
-      switch (pol->action) {
-        case SYSCALL_AUTH_GRANTED:
-          /* we have a successful match */
-          return SYSCALL_AUTH_GRANTED;
-        case SYSCALL_AUTH_FAKE:
-          /* return a fake value */
-          *retval = pol->fake_value;
-          return SYSCALL_AUTH_FAKE;
-        case SYSCALL_AUTH_DENIED:
-          /* stop BT */
-          fbt_suicide_str("Policy rule matched and application is terminated " \
-                          "(fbt_syscall.c)\n");
-      }
-    }  // policy matched
-    /* no match yet, check next rule */
-    pol = pol->next;
-  }  // loop through all policy rules.
-
-  /* no rule matched, default is to halt the app */
-  /*fbt_suicide_str("Policy violation detected: no policy rule matched " \
-    "(fbt_syscall.c)\n");*/
-
-  void print_arg(const enum syscall_argument_type argt, const ulong_t argv,
-                 const ulong_t first) {
-    if (argt == SYSCALL_ARG_IGNORE)
-      return;
-    if (!first)
-      llprintf(", ");
-    switch (argt) {
-      case SYSCALL_ARG_IGNORE:
-        break;
-      case SYSCALL_ARG_INT:
-        llprintf("%d", argv);
-        break;
-      case SYSCALL_ARG_POINTER:
-        llprintf("0x%x", argv);
-        break;
-      case SYSCALL_ARG_STRING:
-      case SYSCALL_ARG_PATH:
-        llprintf("'%s'", (const char*)argv);
-    }
-  }
-  
-  llprintf("%s(", fbt_syscall_list[syscall_nr]);
-  print_arg(fbt_syscall_list[syscall_nr].args[0], arg1, 1);
-  print_arg(fbt_syscall_list[syscall_nr].args[1], arg2, 0);
-  print_arg(fbt_syscall_list[syscall_nr].args[2], arg3, 0);
-  print_arg(fbt_syscall_list[syscall_nr].args[3], arg4, 0);
-  print_arg(fbt_syscall_list[syscall_nr].args[4], arg5, 0);
-  if (fbt_syscall_list[syscall_nr].args[5] != SYSCALL_ARG_IGNORE)
-    print_arg(fbt_syscall_list[syscall_nr].args[5], *arg6, 0);
-  llprintf(");\n");
-  return SYSCALL_AUTH_GRANTED;
-  /*
-  llprintf("Syscall nr: %d\n", syscall_nr);
-  return SYSCALL_AUTH_GRANTED;
-  return SYSCALL_AUTH_FAKE;
-  */
-}
-#endif  /* SYSCALL_POLICY_FILE */
 
 static enum syscall_auth_response
 auth_execve(struct thread_local_data *tld __attribute__((unused)),
@@ -889,11 +753,7 @@ void fbt_init_syscalls(struct thread_local_data *tld) {
   PRINT_DEBUG("Syscall table: %p %p\n", tld->syscall_table, debug_syscall);
   for (i = 0; i <= I386_NR_SYSCALLS; ++i) {
     /* allow_syscall for production, debug_syscall for testing */
-#if defined(SYSCALL_POLICY_FILE)
-    tld->syscall_table[i] = &check_policy_syscall;
-#else
     tld->syscall_table[i] = &allow_syscall;
-#endif  /* SYSCALL_POLICY_FILE */
   }
   for (; i < MAX_SYSCALLS_TABLE; ++i) {
     tld->syscall_table[i] = &deny_syscall;    

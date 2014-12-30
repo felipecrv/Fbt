@@ -202,10 +202,6 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
                                      ulong_t, ulong_t*, ulong_t, ulong_t*))
     fbt_lalloc(tld, table_size, MT_SYSCALL_TABLE);
   assert(table_size == 1);
-#if defined(SYSCALL_POLICY_FILE)
-  tld->policy_entries = (struct syscall_policy_entry**) \
-    fbt_lalloc(tld, table_size, MT_SYSCALL_POLICY);
-#endif  /* SYSCALL_POLICY_FILE */
 #endif  /* AUTHORIZE_SYSCALLS */
 #if defined(SEL_DEBUG)
   if (tld->sdbg == NULL) {
@@ -403,9 +399,6 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
 #endif  /* SHADOWSTACK */
 #if defined(AUTHORIZE_SYSCALLS)
     case MT_SYSCALL_TABLE:
-#if defined(SYSCALL_POLICY_FILE)
-    case MT_SYSCALL_POLICY:
-#endif  /* SYSCALL_POLICY_FILE */
 #endif  /* AUTHORIZE_SYSCALLS */
 #if defined(ICF_PREDICT)
     case MT_ICF_PREDICT:
