@@ -51,10 +51,6 @@
 #include "fbt_statistic.h"
 #endif
 
-#if defined(TRACK_CTFX)
-#include "fbt_restart_transaction.h"
-#endif
-
 #ifdef LMEM
 #include "fbt_lmem.h"
 #endif
