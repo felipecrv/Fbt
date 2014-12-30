@@ -40,9 +40,6 @@
 #include "fbt_llio.h"
 #include "fbt_mem_pool.h"
 #include "fbt_syscall.h"
-#if defined(SEL_DEBUG)
-#include "fbt_sdbg.h"
-#endif
 #if defined(TRACK_BASIC_BLOCKS)
 #include "fbt_mutex.h"
 #endif /* TRACK_BASIC_BLOCKS */
@@ -147,11 +144,6 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
     fbt_lalloc(tld, table_size, MT_SYSCALL_TABLE);
   assert(table_size == 1);
 #endif  /* AUTHORIZE_SYSCALLS */
-#if defined(SEL_DEBUG)
-  if (tld->sdbg == NULL) {
-    tld->sdbg = sdbg_init(tld);
-  }
-#endif
 
 #if defined(TRACK_BASIC_BLOCKS)
   tld->basic_blocks = NULL;

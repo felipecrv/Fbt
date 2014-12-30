@@ -124,11 +124,6 @@ static void *icf_predict_fixup(struct thread_local_data *tld,
                                void *target);
 #endif  /* ICF_PREDICT */
 
-#if defined(SEL_DEBUG)
-static void initialize_ccache_flush_trampoline(struct thread_local_data *tld);
-static void initialize_fast_hashmap_search_trampoline(struct thread_local_data *tld);
-#endif
-
 #if defined(HANDLE_SIGNALS)
 /**
  * This trampoline is used for internal signals: we can compare the
@@ -330,11 +325,6 @@ void fbt_initialize_trampolines(struct thread_local_data *tld) {
 #if defined(AUTHORIZE_SYSCALLS)
   initialize_int80_trampoline(tld);
 #endif  /* AUTHORIZE_SYSCALLS */
-
-#if defined(SEL_DEBUG)
-  initialize_ccache_flush_trampoline(tld);
-  initialize_fast_hashmap_search_trampoline(tld);
-#endif
 
 #if defined(HANDLE_SIGNALS)
   initialize_signal_trampoline(tld);
@@ -1041,99 +1031,6 @@ static void initialize_int80_trampoline(struct thread_local_data *tld) {
 }
 
 #endif  /* AUTHORIZE_SYSCALLS */
-
-#if defined(SEL_DEBUG)
-static void initialize_ccache_flush_trampoline(struct thread_local_data *tld) {
-  unsigned char *transl_instr = tld->trans.transl_instr;
-  tld->sdbg->ccache_flush_trampoline = (void *)transl_instr;
-
-  PRINT_DEBUG("flush trampoline is at %p\n", transl_instr);
-
-  /* Generate trampoline.
-   * The stack looks as follows:
-   *   [ esp           ]
-   *   [ 32b regs      ]
-   *   [ flags         ]
-   * Prerequisites:
-   *   movl %esp, (tld->stack-1)
-   *   movl tld->stack-1, %esp
-   *   pusha
-   *   pushfl
-   *   jmp tld->sdbg->ccache_flush_trampoline
-   */
-  BEGIN_ASM(transl_instr)
-    pushl {&tld->ind_target}
-    pushl ${tld}
-    call_abs {&fbt_translate_noexecute}
-
-    movl %eax, {&tld->ind_target}
-    leal 8(%esp), %esp
-
-    popfl
-    popa
-    popl %esp
-    jmp *{&tld->ind_target}
-  END_ASM
-
-  /* forward pointer */
-  tld->trans.transl_instr = transl_instr;
-}
-
-static void initialize_fast_hashmap_search_trampoline(struct thread_local_data *tld) {
-  unsigned char *transl_instr = tld->trans.transl_instr;
-  tld->sdbg->fast_hashmap_search_trampoline = (void *)transl_instr;
-
-  PRINT_DEBUG("fast hashmap search trampoline is at %p\n", transl_instr);
-
-  /* Generate trampoline.
-   * The stack looks as follows:
-   *   [ esp           ]
-   *   [ 32b regs      ]
-   *   [ flags         ]
-   * Prerequisites:
-   *   movl %esp, (tld->stack-1)
-   *   movl tld->stack-1, %esp
-   *   pusha                                      WARNING:
-   *   pushfl                                     WARNING: This comment looks like it has been copy-pasted
-   *   jmp tld->sdbg->ccache_flush_trampoline     WARNING:
-   */
-  BEGIN_ASM(transl_instr)
-    pushl %ebx
-    pushl %ecx
-    // skip null pointer this would be a false hit in hash map
-    testl %eax, %eax
-    je hit
-    movl %eax, %ebx
-    // hashmap size has to be a power of 2 (original comment said multiple)
-    andl ${SDBG_HASHMAP_SIZE - 1}, %eax
-    // shift with immediate is not supported by DSL!?
-    shll %eax
-    // value_type should have size 16 (32-bit)
-    leal {tld->sdbg->watchpoints.map}(, %eax, 8), %eax
-   test:
-    cmpl (%eax), %ebx
-    je hit
-    movl 12(%eax), %ecx
-    testl %ecx, %ecx
-    je no_hit
-    // times 16
-    shll %ecx
-    leal (, %ecx, 8), %ecx
-    addl %ecx, %eax
-    jmp test
-   no_hit:
-    xorl %eax, %eax
-   hit:
-    popl %ecx
-    popl %ebx
-    ret
-  END_ASM
-
-  /* forward pointer */
-  tld->trans.transl_instr = transl_instr;
-}
-
-#endif
 
 #if defined(HANDLE_SIGNALS)
 static void initialize_signal_trampoline(struct thread_local_data *tld) {

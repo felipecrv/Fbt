@@ -41,10 +41,6 @@
 #include "fbt_llio.h"
 #include "fbt_mem_mgmt.h"
 #include "fbt_x86_opcode.h"
-#if defined(SEL_DEBUG)
-#include "fbt_sdbg.h"
-#endif
-
 #include "fbt_opcode_tables.h"
 
 #if defined(FBT_STATISTIC)
@@ -146,16 +142,8 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
   }
   PRINT_DEBUG("tld->ts.transl_instr: %p", ts->transl_instr);
 
-#if defined(SEL_DEBUG)
-  if (tld->sdbg->command.operation != CCACHE_FLUSH) {
-    /* add entry to ccache index */
-    fbt_ccache_add_entry(tld, orig_address, ts->transl_instr);
-  }
-#else
   /* add entry to ccache index */
   fbt_ccache_add_entry(tld, orig_address, ts->transl_instr);
-#endif
-
 
   /* look up address in translation cache index */
   void *transl_address = ts->transl_instr;
@@ -171,11 +159,6 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
   basic_block->original_length = 0;
 #endif
 
-  /*
-#if defined(SEL_DEBUG)
-  MOVB_IMM8_MEM8(ts->transl_instr, 0x05,  1, (int32_t)tld->sdbg->flag);
-#endif
-*/
   /* we translate as long as we
      - stay in the limit (MAX_BLOCK_SIZE)
      - or if we have an open TU (could happen if we are translating a call or
@@ -240,10 +223,6 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
     }
 #endif
 
-#if defined(SEL_DEBUG)
-    sdbg_handle_flush_and_breaks(tld);
-#endif
-
 #if defined(TRACK_BASIC_BLOCKS)
     basic_block->original_length += (ts->next_instr - ts->cur_instr);
 #endif
@@ -254,10 +233,6 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
     /* call the action specified for this instruction */
     tu_state = ts->cur_instr_info->opcode.handler(ts);
-
-#if defined(SEL_DEBUG)
-    sdbg_handle_watchpoints(tld);
-#endif
 
     bytes_translated += (ts->transl_instr - old_transl_instr);
 

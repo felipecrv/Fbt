@@ -28,10 +28,6 @@
 #ifndef FBT_DATATYPES_H
 #define FBT_DATATYPES_H
 
-#if defined(SEL_DEBUG)
-  #include "ipc.h"
-#endif
-
 typedef short int16_t;
 typedef unsigned short uint16_t;
 typedef int int32_t;
@@ -232,9 +228,6 @@ struct thread_local_data {
   /** translation information for the current instruction that is currently being
       translated. */
   struct translate trans;
-#if defined(SEL_DEBUG)
-  struct sdbg_thread_local_data *sdbg;
-#endif
 
 #ifdef TRACK_BASIC_BLOCKS
   /**
