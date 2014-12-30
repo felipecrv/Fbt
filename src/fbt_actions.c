@@ -43,10 +43,6 @@
 #include "fbt_mem_mgmt.h"
 #include "fbt_x86_opcode.h"
 
-#if defined(ONLINE_PATCHING)
-#include "patching/fbt_patching.h"
-#endif /* ONLINE_PATCHING */
-
 enum translation_state action_none(struct translate *ts __attribute__((unused))) {
   PRINT_DEBUG_FUNCTION_START("action_none(*ts=%p)", ts);
   /* do nothing */
@@ -139,11 +135,7 @@ enum translation_state action_fail(struct translate *ts __attribute__((unused)))
 enum translation_state action_jmp(struct translate *ts) {
   unsigned char *addr = ts->cur_instr;
 
-  #ifdef ONLINE_PATCHING
-  unsigned char *original_addr = ts->original_addr;
-  #else
   unsigned char *original_addr = addr;
-  #endif
 
   PRINT_DEBUG("original_addr=%x / addr=%x\n", original_addr, addr);
 
@@ -296,20 +288,9 @@ enum translation_state action_jcc(struct translate *ts) {
   unsigned char* transl_addr = ts->transl_instr;
   int length = ts->next_instr - ts->cur_instr;
 
-  #ifdef ONLINE_PATCHING
-  unsigned char *original_addr = ts->original_addr;
-  #else
   unsigned char *original_addr = addr;
-  #endif
 
-  #if defined(ONLINE_PATCHING)
-  /* We need to keep track of the fallthrough address in the virtual space of the patch */
-  unsigned char *virtual_fallthrough = ts->next_patch_instr;
-  /* also keep try to find a patch for the instruction right after this one */
-  #else
-  /* Without online patching, the two values are always the same */
   unsigned char *virtual_fallthrough = ts->next_instr;
-  #endif /* ONLINE_PATCHING */
 
   PRINT_DEBUG_FUNCTION_START("action_jcc(*addr=%p, *transl_addr=%p, length=%i)",
                              addr, transl_addr, length);
@@ -426,31 +407,13 @@ enum translation_state action_jcc(struct translate *ts) {
 enum translation_state action_call(struct translate *ts) {
   unsigned char *addr = ts->cur_instr;
 
-  #if defined(ONLINE_PATCHING)
-  unsigned char *original_addr = ts->original_addr;
-  #else
   unsigned char *original_addr = addr;
-  #endif /* ONLINE_PATCHING */
 
   unsigned char* transl_addr = ts->transl_instr;
   int length = ts->next_instr - ts->cur_instr;
 
-  #if defined(ONLINE_PATCHING)
-  /* We need to keep track of the return address in the virtual space of the patch */
-  unsigned char *return_addr = ts->next_patch_instr;
-  /* also keep try to find a patch for the instruction right after this one */
-  struct change *next_change = fbt_online_patching_find_change(ts->tld->patching_information, return_addr);
-  unsigned char *next_instr;
-  if (next_change == NULL) {
-    next_instr = ts->next_instr;
-  } else {
-    next_instr = (unsigned char *)next_change->machine_code;
-  }
-  #else
-  /* Without online patching, the two values are always the same */
   unsigned char *return_addr = ts->next_instr;
   unsigned char *next_instr = ts->next_instr;
-  #endif /* ONLINE_PATCHING */
 
   PRINT_DEBUG_FUNCTION_START("action_call(*addr=%p, *transl_addr=%p," \
                              " length=%i)", addr, transl_addr, length);

@@ -102,8 +102,7 @@ CFLAGS+= -DHIJACKCONTROL
 # Redirects all system calls to an authorization function. This is needed for
 # signal redirection, signal handling, exception handling, thread creation
 # handling, and process creation handling.
-# Additionally we need this to load profiles to verify allowed system calls for
-# the security extensions.
+# Additionally this is useful in implementing security extensions.
 #
 # default: CFLAGS += -DAUTHORIZE_SYSCALLS
 # status: unimplemented for ARM
