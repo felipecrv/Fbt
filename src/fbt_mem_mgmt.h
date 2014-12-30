@@ -79,13 +79,6 @@ struct icf_prediction;
 #define ALLOC_PREDICTIONS (PAGESIZE/sizeof(struct icf_prediction))
 #endif  /* ICF_PREDICT */
 
-#if defined(DYNARACE)
-/* one page full of dynarace file descriptors */
-#define ALLOC_DYNARACE (PAGESIZE/sizeof(struct dynarace_file))
-/* one page full of dynarace dir descriptors */
-#define ALLOC_DYNARACE_DIRS (PAGESIZE/sizeof(struct dynarace_dir))
-#endif  /* DYNARACE */
-
 /** different types for memory chunks */
 enum mem_type {
   MT_CODE_CACHE,  /**< code cache (RX[W]) */
@@ -194,14 +187,6 @@ void fbt_allocate_new_icf_predictors(struct thread_local_data *tld);
 void fbt_icf_predictor_free(struct thread_local_data *tld,
                             struct icf_prediction *icf_predict);
 #endif  /* ICF_PREDICT */
-
-#if defined(DYNARACE)
-/**
- * Allocate a new set of dynarace file strucutes
- * @param tld thread local data of the current thread
- */
-void fbt_allocate_new_dynarace_files(struct thread_local_data *tld);
-#endif  /* DYNARACE */
 
 #ifdef SHARED_DATA
 /**

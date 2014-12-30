@@ -57,9 +57,6 @@ typedef void stop_thread_callback_t(struct thread_local_data *tld, void *context
 #if defined(ICF_PREDICT)
 struct icf_prediction;
 #endif  /* ICF_PREDICT */
-#if defined(DYNARACE)
-struct dynarace_file;
-#endif  /* DYNARACE */
 
 /**
  * This struct is used when a new instruction is parsed and translated.
@@ -224,12 +221,6 @@ struct thread_local_data {
   void *bootstrap_thread_trampoline;
 
 #endif  /* AUTHORIZE_SYSCALLS */
-#if defined(DYNARACE)
-  /** free list with dynarace_file elements, used for the race protection */
-  struct dynarace_file *dynfile_free;
-  /** list with cached file stats */
-  struct dynarace_file *dynfile_cache;
-#endif  /* DYNARACE */
   /** safe stack for the BT */
   ulong_t *stack;
   /** all allocated memory */

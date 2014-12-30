@@ -36,9 +36,6 @@
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
-#if defined(DYNARACE)
-#include "fbt_dynarace.h"
-#endif  /* DYNARACE */
 #include "fbt_libc.h"
 #include "fbt_llio.h"
 #include "fbt_mem_pool.h"
@@ -156,12 +153,6 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
   }
 #endif
 
-#if defined(DYNARACE)
-  tld->dynfile_free = NULL;
-  tld->dynfile_cache = NULL;
-#endif  /* DYNARACE */
-
-
 #if defined(TRACK_BASIC_BLOCKS)
   tld->basic_blocks = NULL;
 #endif /* TRACK_BASIC_BLOCKS */
@@ -224,26 +215,6 @@ void fbt_trampoline_free(struct thread_local_data *tld,
   trampo->next = tld->trans.trampos;
   tld->trans.trampos = trampo;
 }
-
-#if defined(DYNARACE)
-void fbt_allocate_new_dynarace_files(struct thread_local_data *tld) {
-  ulong_t alloc_size = (((ALLOC_DYNARACE * sizeof(struct dynarace_file)) +
-                         (PAGESIZE-1)) & (~(PAGESIZE-1))) / PAGESIZE;
-
-  void *mem = fbt_lalloc(tld, alloc_size, MT_INTERNAL);
-  struct dynarace_file *dynfile = (struct dynarace_file*)mem;
-
-  /* initialize linked list */
-  unsigned long i;
-  for (i = 0; i < (ALLOC_DYNARACE-1); ++i) {
-    dynfile->next = dynfile+1;
-    dynfile = dynfile->next;
-  }
-  dynfile->next = tld->dynfile_free;
-
-  tld->dynfile_free = (struct dynarace_file*)mem;
-}
-#endif  /* DYNARACE */
 
 #if defined(ICF_PREDICT)
 void fbt_allocate_new_icf_predictors(struct thread_local_data *tld) {

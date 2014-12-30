@@ -41,9 +41,6 @@
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
-#if defined(DYNARACE)
-#include "fbt_dynarace.h"
-#endif  /* DYNARACE */
 #include "fbt_libc.h"
 #include "fbt_llio.h"
 #include "fbt_mem_mgmt.h"
@@ -529,13 +526,6 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
 }
 #endif  /* HANDLE_THREADS */
 
-#if defined(DYNARACE)
-/* We want to have dynarace as a separate module so that we don't pollute this
-   file. But on the other hand we use ugly static functions in dynarace, so we
-   need to include it here. */
-#include "fbt_dynarace.c"
-#endif
-
 static enum syscall_auth_response __attribute__((unused))
 debug_syscall(struct thread_local_data *tld __attribute__((unused)),
               ulong_t syscall_nr __attribute__((unused)),
@@ -759,18 +749,6 @@ void fbt_init_syscalls(struct thread_local_data *tld) {
   tld->syscall_table[SYS_exit] = &auth_exit;
   tld->syscall_table[SYS_exit_group] = &auth_exit;
 #endif  /* HANDLE_THREADS */
-#if defined(DYNARACE)
-  tld->syscall_table[SYS_open] = &dynarace_open;
-  tld->syscall_table[SYS_access] = &dynarace_fstat;
-  tld->syscall_table[SYS_stat] = &dynarace_stat;
-  //tld->syscall_table[SYS_fstat64] = &dynarace_fstat;
-  tld->syscall_table[SYS_stat64] = &dynarace_fstat;
-  tld->syscall_table[SYS_creat] = &dynarace_creat;
-  tld->syscall_table[SYS_close] = &dynarace_close;
-  /* faccessat(2),  fchmodat(2),  fchownat(2),  fstatat(2),  futimesat(2),
-     linkat(2), mkdirat(2), mknodat(2), readlinkat(2), renameat(2),
-     symlinkat(2), unlinkat(2), utimensat(2), mkfifoat(3) */
-#endif  /* DYNARACE */
 }
 
 /**
