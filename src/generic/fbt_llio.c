@@ -29,24 +29,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-#include "fbt_llio.h"
-
-#if !defined(DEBUG)
 #include <stdarg.h>
-#endif
 
+#include "fbt_llio.h"
 #include "fbt_libc.h"
 
 #if !defined(DEBUG)
-/**
- * Write a formatted string to the file descriptor fd (might use a buffer). Used
- * only during debugging.
- * @param fd File descriptor that is written to.
- * @param format format string that is interpreted (including all varargs).
- * @param ap List of var args.
- * @return Number of bytes written.
- */
-int fllprintfva(int fd, const char* format, va_list ap);
+static int fllprintfva(int fd, const char* format, va_list ap);
 #endif
 
 /** minimum between two values */
@@ -90,6 +79,9 @@ int fllprintf(int fd, const char *format, ...)
   return ret;
 }
 
+#if !defined(DEBUG)
+static
+#endif
 int fllprintfva(int fd, const char* format, va_list app)
 {
   char buf[BUFSIZE_L+1];

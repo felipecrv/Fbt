@@ -29,16 +29,12 @@
 #ifndef FBT_LIBC_H
 #define FBT_LIBC_H
 
+#include <stdlib.h> /* for NULL */
+
 /* include ugliness of system call definition */
 #include "fbt_syscalls_impl.h"
 
-/** definition of NULL */
-#if !defined(NULL)
-#define NULL ((void *)0)
-#endif
-
 #define MAP_FAILED      ((void *)-1)
-
 
 /**
  * Local implementation of memcpy. Copies one memory region to another address.

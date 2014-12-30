@@ -29,10 +29,8 @@
 #include "fbt_syscall.h"
 
 #include <assert.h>
-
 #include <stddef.h>
 #include <ucontext.h>
-
 
 //#define size_t __kernel_size_t
 //#include <asm-generic/signal.h>

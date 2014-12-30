@@ -25,11 +25,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-
 #include <stddef.h> /* offsetof */
 
 #include "fbt_trampoline.h"
-
 #include "fbt_asm_macros.h"
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"

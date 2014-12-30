@@ -26,7 +26,6 @@
  * MA  02110-1301, USA.
  */
 
-
 #include <stdint.h>
 
 #include "fbt_algorithms.h"
@@ -238,4 +237,3 @@ uint32_t        initval)         /* the previous hash, or an arbitrary value */
   /*------------------------------------------------------ report the result */
   return c;
 }
-

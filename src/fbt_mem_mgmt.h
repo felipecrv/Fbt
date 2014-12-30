@@ -199,4 +199,5 @@ void fbt_init_shared_data(struct thread_local_data* tld);
 #ifdef __cplusplus
 }
 #endif
+
 #endif  /* FBT_MEM_MGMT_H */

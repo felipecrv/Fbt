@@ -28,7 +28,6 @@
  */
 
 #include "fbt_libc.h"
-
 #include "fbt_llio.h"
 
 /* functions from string.h */

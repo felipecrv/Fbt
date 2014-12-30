@@ -31,8 +31,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define LEN(x) (sizeof(x)/sizeof((x)[0]))
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -125,4 +123,3 @@ uint32_t fbt_hash(const uint32_t *k, size_t length, uint32_t initval);
 #endif
 
 #endif
-

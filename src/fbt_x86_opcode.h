@@ -26,7 +26,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-
 #ifndef FBT_X86_OPCODE_H
 #define FBT_X86_OPCODE_H
 

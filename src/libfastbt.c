@@ -25,11 +25,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-
-#include "libfastbt.h"
-
 #include <assert.h>
 
+#include "libfastbt.h"
 #include "fbt_code_cache.h"
 #include "fbt_debug.h"
 #include "fbt_libc.h"

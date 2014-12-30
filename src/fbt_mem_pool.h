@@ -115,4 +115,5 @@ struct mem_pool_info {
 #ifdef __cplusplus
 }
 #endif
+
 #endif  /* FBT_MEM_MGMT_H */

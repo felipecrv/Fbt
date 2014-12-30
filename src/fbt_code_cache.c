@@ -28,10 +28,9 @@
  * MA  02110-1301, USA.
  */
 
-#include "fbt_code_cache.h"
-
 #include <assert.h>
 
+#include "fbt_code_cache.h"
 #include "fbt_asm_macros.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"

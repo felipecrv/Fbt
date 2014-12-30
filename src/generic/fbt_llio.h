@@ -28,9 +28,7 @@
 #ifndef FBT_LLIO_H
 #define FBT_LLIO_H
 
-#if defined(DEBUG)
 #include <stdarg.h>
-#endif
 
 #define STDOUT_FILENO 1
 

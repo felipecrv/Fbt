@@ -34,7 +34,6 @@
 #include <assert.h>
 #include <asm-generic/mman.h>
 
-
 static void mem_pool_map(struct mem_pool *mp, long size);
 static void mem_pool_add_info_node(struct mem_pool *mp, char *mem, long size);
 

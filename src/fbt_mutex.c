@@ -96,4 +96,3 @@ int fbt_mutex_cleanup(fbt_mutex_t *futex) {
   *futex = FUTEX_INVALID;
   return 0;
 }
-

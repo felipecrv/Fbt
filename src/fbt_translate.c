@@ -25,13 +25,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-#include "fbt_translate.h"
-
-#ifdef SECU_ENFORCE_NX
-#endif
 
 #include <assert.h>
 
+#include "fbt_translate.h"
 #include "fbt_actions.h"
 #include "fbt_asm_macros.h"
 #include "fbt_code_cache.h"
@@ -587,4 +584,3 @@ static ulong_t check_inline(struct translate *ts) {
   return 0;
 }
 #endif
-
