@@ -54,16 +54,8 @@ struct thread_local_data;
 typedef void stop_thread_callback_t(struct thread_local_data *tld, void *context);
 #endif
 
-#if defined(TRACK_CFTX)
-struct control_flow_transfer;
-#endif /* TRACK_CFTX */
-
 #ifdef ONLINE_PATCHING
 struct patching_information;
-#endif
-
-#if defined(VERIFY_CFTX)
-struct symbol_cache;
 #endif
 
 #if defined(ICF_PREDICT)
@@ -243,15 +235,6 @@ struct thread_local_data {
   void *bootstrap_thread_trampoline;
 
 #endif  /* AUTHORIZE_SYSCALLS */
-#if defined(VERIFY_CFTX)
-  struct dso_chain *dso_objects;
-  struct symbol_cache *symb_cache;
-#if defined(DUMP_CFTX)
-  /** File identifier used to dump control flow transfers on a
-    * thread local level */
-  long dump_cftx_file;
-#endif /* DUMP_CFTX */
-#endif  /* VERIFY_CFTX */
 #if defined(DYNARACE)
   /** free list with dynarace_file elements, used for the race protection */
   struct dynarace_file *dynfile_free;
@@ -289,43 +272,6 @@ struct thread_local_data {
    * no mapping has been stored. Pages are created lazily. */
   ulong_t *instructions;
 #endif /* TRACK_INSTRUCTIONS */
-
-#if defined(TRACK_CFTX)
-  /** Linked list storing locations of relative control flow transfers in
-   * translated code */
-  struct control_flow_transfer *control_flow_transfers;
-  /** Location of handler trampoline executed after an interrupted control
-   * flow transfers using <code>fbt_interrupt_cftx</code> */
-  void *interruption_target;
-  /** Information datastructure for interrupted control flow transfer
-   * instruction */
-  struct control_flow_transfer *interrupted_cft;
-
-  /** Start of array storing locations of indirect jumps through ind_target
-   * in trampolines */
-  struct trampoline_cft* trampoline_cfts_begin;
-  /** End of array beginning at <code>trampoline_cfts_begin</code> */
-  struct trampoline_cft* trampoline_cfts_end;
-
-  /** Trampoline used to execute a callback function before returning from
-    * cft interruption */
-  void *interrupt_cft_trampoline;
-  void *interrupt_cft_from_ijump_trampoline;
-  void *interrupt_cft_from_user_code_trampoline;
-
-  /** Lock to make sure we can only interrupt cft one at the time */
-  fbt_mutex_t interrupt_cft_mutex;
-
-  /** Lock to make target thread of transaction restarting does not
-    * start deleting code cache before calling thread has finished
-    * overwriting control flow transfers */
-  fbt_mutex_t interrupted_cft_mutex;
-
-
-  /** Memory used by cft trampolines */
-  struct mem_pool *cft_trampoline_mem_pool;
-
-#endif /* TRACK_CFTX */
 
 #if defined(ONLINE_PATCHING)
   /** Local patching information */
@@ -486,38 +432,5 @@ struct stop_thread_context {
   void *next_instruction;
 };
 #endif /* TRACK_BASIC_BLOCKS */
-
-#if defined(TRACK_CFTX)
-
-/** Information regarding a control flow transfer used in a trampoline */
-struct trampoline_cft {
-  /** Address of the address used in the indirect jump */
-  void *addr;
-};
-
-/** Information regarding a relative jump inside translated user code */
-struct control_flow_transfer {
-  /** Location of relative address in translated code */
-  void *location;
-  /** Number of bytes used for the address (TODO: should always be 4) */
-  ulong_t size;
-  /** Type of control flow transfer (TODO: could be removed) */
-  ulong_t type;
-  /** Address of original address that caused translation of this jump */
-  void *original;
-  /** Trampoline generated for this control flow transfer */
-  void *trampoline;
-  /** Next entry in linked list or NULL if end of list */
-  struct control_flow_transfer *next;
-};
-
-enum CFTX_TYPE {
-  CFTX_TYPE_JUMP,
-  CFTX_TYPE_JUMP_IND,
-  CFTX_TYPE_CALL,
-  CFTX_TYPE_CALL_IND,
-  CFTX_TYPE_JCC
-};
-#endif /* TRACK_CFTX */
 
 #endif  /* FBT_DATATYPES_H */

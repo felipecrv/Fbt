@@ -137,35 +137,6 @@ CFLAGS += -DHANDLE_THREADS
 
 
 ###############################################################################
-# Security related features                                                   #
-###############################################################################
-
-# Verification of control flow transfers
-# ======================================
-#
-# Verifies all control flow transfers. Static control flow transfers are
-# verified during the translation of the corresponding basic block and dynamic
-# control flow transfers are verified during the dispatch.
-#
-# TODO: reference to paper
-# default: # CFLAGS += -DVERIFY_CFTX
-# status: unimplemented for ARM
-# CFLAGS += -DVERIFY_CFTX
-
-# Print all verified control flow transfers
-# =========================================
-#
-# Prints all loaded DSOs and all reachable symbol information as well. All
-# control flow transfers are also printed (in a dot-graph-like language for
-# visualization of the potential control flows). This feature depends on
-# VERIFY_CFTX and should not be used in production.
-#
-# default: # CFLAGS += -DPRINT_CFTX
-# status: unimplemented for ARM
-# CFLAGS += -DPRINT_CFTX
-
-
-###############################################################################
 # Implementation specific stuff, selects correct flags depending              #
 # on choices from above                                                       #
 ###############################################################################

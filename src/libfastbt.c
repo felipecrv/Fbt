@@ -32,7 +32,6 @@
 
 #include "fbt_code_cache.h"
 #include "fbt_debug.h"
-#include "fbt_dso.h"
 #if defined(DYNARACE)
 #include "fbt_dynarace.h"
 #endif  /* DYNARACE */
@@ -119,11 +118,6 @@ struct thread_local_data* fbt_init(struct ia32_opcode *opcode_table) {
   /* call init function for the secure system call mechanism */
   fbt_init_syscalls(tld);
 #endif
-
-#if defined(VERIFY_CFTX)
-  /* check if we loaded some new code */
-  fbt_rescan_dsos(tld);
-#endif  /* VERIFY_CFTX */
 
 #if defined(DYNARACE)
   fbt_dynarace_init(tld);

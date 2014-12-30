@@ -44,10 +44,6 @@
 #define _GNU_SOURCE
 #include <link.h>
 
-#if defined(TRACK_CFTX)
-#include "fbt_restart_transaction.h"
-#endif /* TRACK_CFTX */
-
 #ifdef TRACK_BASIC_BLOCKS
 #include "fbt_mutex.h"
 #endif /* TRACK_BASIC_BLOCKS */
@@ -150,11 +146,6 @@ static void initialize_signal_trampoline(struct thread_local_data *tld);
 
 static void initialize_bootstrap_thread_trampoline(struct thread_local_data *tld);
 #endif /* HANDLE_SIGNALS */
-
-#if defined(TRACK_CFTX)
-static void initialize_interrupt_cft_trampoline(struct thread_local_data *tld);
-static void initialize_interrupt_cft_from_ijump_trampoline(struct thread_local_data *tld);
-#endif /* TRACK_CFTX */
 
 /**
  * Special static function that is called from inside trampolines to translate
@@ -281,10 +272,6 @@ static unsigned char *asm_cache_lookup(struct thread_local_data *tld,
     jmp *{&tld->ind_target}
   END_ASM
 
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
-
   /* recover mode - there was no hit! */
   /************************************/
   *hitloc = (char)(((int32_t)transl_instr)-(((int32_t)hitloc)+1));
@@ -357,12 +344,6 @@ void fbt_initialize_trampolines(struct thread_local_data *tld) {
   initialize_signal_trampoline(tld);
   initialize_bootstrap_thread_trampoline(tld);
 #endif /* HANDLE_SIGNALS */
-
-#if defined(TRACK_CFTX)
-  initialize_interrupt_cft_trampoline(tld);
-  initialize_interrupt_cft_from_ijump_trampoline(tld);
-#endif /* TRACK_CFTX */
-
 }
 
 static void initialize_unmanaged_code_trampoline(struct thread_local_data *tld) {
@@ -418,10 +399,6 @@ static void initialize_unmanaged_code_trampoline(struct thread_local_data *tld) 
 
   END_ASM
 
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
-
   /* forward pointer */
   tld->trans.transl_instr = transl_instr;
 }
@@ -440,10 +417,6 @@ static void initialize_ret2app_trampoline(struct thread_local_data *tld) {
     leal 4(%esp), %esp
     jmp *({&tld->ind_target})
   END_ASM
-
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
 
   /* forward pointer */
   tld->trans.transl_instr = transl_instr;
@@ -593,10 +566,6 @@ static void initialize_ijump_trampoline(struct thread_local_data *tld) {
     jmp *{&tld->ind_target}
   END_ASM
 
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
-
   /* forward pointer */
   tld->trans.transl_instr = transl_instr;
 }
@@ -650,10 +619,6 @@ static void initialize_icall_trampoline(struct thread_local_data *tld) {
     popl %esp // restore esp (to original stack frame)
     jmp *{&tld->ind_target}
   END_ASM
-
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
 
   /* forward pointer */
   tld->trans.transl_instr = transl_instr;
@@ -747,10 +712,6 @@ static void initialize_ret_trampolines(struct thread_local_data *tld) {
     jmp *{&tld->ind_target}
   END_ASM
 
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
-
   /* recover mode - there was no hit! */
   /************************************/
   *hitloc = (char)(((int32_t)transl_instr)-(((int32_t)hitloc)+1));
@@ -786,10 +747,6 @@ static void initialize_ret_trampolines(struct thread_local_data *tld) {
     popl %esp
     jmp *{&tld->ind_target}
   END_ASM
-
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
 
   /* forward pointer */
   tld->trans.transl_instr = transl_instr;
@@ -945,10 +902,6 @@ static void initialize_ijump_predict_fixup(struct thread_local_data *tld) {
 
   END_ASM
 
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
-
   /* forward pointer */
   tld->trans.transl_instr = transl_instr;
 }
@@ -985,10 +938,6 @@ static void initialize_icall_predict_fixup(struct thread_local_data *tld) {
     leal 4(%esp), %esp
     jmp *{&tld->ind_target}
   END_ASM
-
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
 
   /* forward pointer */
   tld->trans.transl_instr = transl_instr;
@@ -1190,62 +1139,6 @@ static void initialize_fast_hashmap_search_trampoline(struct thread_local_data *
 
 #endif
 
-#if defined(TRACK_CFTX)
-static void initialize_interrupt_cft_trampoline(struct thread_local_data *tld) {
-  tld->interrupt_cft_trampoline = tld->trans.transl_instr;
-
-  unsigned char *transl_instr = tld->trans.transl_instr;
-  BEGIN_ASM(transl_instr)
-    movl ${0}, {&tld->interrupted_cft}
-  END_ASM
-
-  tld->interrupt_cft_from_user_code_trampoline = transl_instr;
-  BEGIN_ASM(transl_instr)
-    // Switch to secured stack
-    movl %esp, {tld->stack-1}
-    movl ${tld->stack-1}, %esp
-
-    pusha
-    pushfl
-
-    // Execute callback
-    pushl ${tld}
-    call *{&tld->interruption_target}
-    leal 4(%esp), %esp
-
-    popfl
-    popa
-
-    // Back to user stack
-    popl %esp
-
-    // Reset ret2app pointer
-    //movl ${&tld->ind_target}, {tld->ret2app_trampoline_ind_target}
-
-    jmp *{&tld->ind_target}
-  END_ASM
-
-  tld->trans.transl_instr = transl_instr;
-}
-
-static void initialize_interrupt_cft_from_ijump_trampoline(struct thread_local_data *tld) {
-  tld->interrupt_cft_from_ijump_trampoline = tld->trans.transl_instr;
-
-  unsigned char *transl_instr = tld->trans.transl_instr;
-  BEGIN_ASM(transl_instr)
-    // Pop target from stack so we can use other trampoline later
-    movl %eax, {tld->stack-1}
-    popl %eax
-    movl %eax, {&tld->ind_target}
-    movl {tld->stack-1}, %eax
-
-    jmp_abs {tld->interrupt_cft_trampoline}
-  END_ASM
-
-  tld->trans.transl_instr = transl_instr;
-}
-#endif /* TRACK_CFTX */
-
 #if defined(HANDLE_SIGNALS)
 static void initialize_signal_trampoline(struct thread_local_data *tld) {
   tld->signal_trampoline = tld->trans.transl_instr;
@@ -1318,10 +1211,6 @@ static void initialize_bootstrap_thread_trampoline(struct thread_local_data *tld
     jmp *{&tld->ind_target}
 
   END_ASM
-
-  #if defined(TRACK_CFTX)
-  (tld->trampoline_cfts_end++)->addr = transl_instr - 4;
-  #endif /* TRACK_CFTX */
 
   tld->trans.transl_instr = transl_instr;
 }

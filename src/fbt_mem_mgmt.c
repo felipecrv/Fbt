@@ -36,9 +36,6 @@
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
-#if defined(VERIFY_CFTX)
-#include "fbt_dso.h"
-#endif  /* VERIFY_CFTX */
 #if defined(DYNARACE)
 #include "fbt_dynarace.h"
 #endif  /* DYNARACE */
@@ -141,38 +138,6 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
   tld->icf_predict = NULL;
 #endif  /* ICF_PREDICT */
 
-#if defined(VERIFY_CFTX)
-  tld->dso_objects = NULL;
-  tld->symb_cache = fbt_smalloc(tld, SYMBOL_CACHE_SIZE*sizeof(struct symbol_cache));
-#if defined(DUMP_CFTX)
-  char path_name[128];
-  fbt_memset(path_name, 0, sizeof(path_name));
-  fbt_memcpy(path_name, "dump_cftx_", 10);
-  ulong_t pos = 10;
-  ulong_t rem = (ulong_t)tld;
-  char transl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-
-  /* Add tld address to path */
-  while (rem != 0) {
-    ulong_t i = rem % 16;
-    path_name[pos] = transl[i];
-    pos += 1;
-    rem /= 16;
-  }
-  path_name[pos] = '\0';
-
-  long dump_cftx_file;
-  fbt_open(
-      path_name,
-      O_CREAT | O_TRUNC | O_WRONLY,
-      S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-      dump_cftx_file,
-      "Could not open file (fbt_mem_mgmt.c)"
-  );
-  tld->dump_cftx_file = dump_cftx_file;
-#endif /* DUMP_CFTX */
-#endif  /* VERIFY_CFTX */
-
 #if defined(AUTHORIZE_SYSCALLS)
   tld->syscall_location = NULL;
   ulong_t table_size = (((MAX_SYSCALLS_TABLE*sizeof(void*)) + (PAGESIZE-1)) &
@@ -206,23 +171,6 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
   fbt_memset(tld->instructions, 0, sizeof(ulong_t) * 256);
 #endif /* TRACK_INSTRUCTIONS */
 
-#if defined(TRACK_CFTX)
-
-  tld->trampoline_cfts_begin = fbt_lalloc(tld, 1, MT_INTERNAL);
-  tld->trampoline_cfts_end = tld->trampoline_cfts_begin;
-
-  fbt_mutex_init(&tld->interrupt_cft_mutex);
-  fbt_mutex_init(&tld->interrupted_cft_mutex);
-
-  /* Bootstrap memory pool for CFTs trampolines */
-  struct mem_pool init_pool = {
-    .allocation_size = 2048,
-    .flags = PROT_READ | PROT_WRITE | PROT_EXEC
-  };
-  tld->cft_trampoline_mem_pool = fbt_mem_pool_bootstrap(&init_pool);
-
-#endif /* TRACK_CFTX */
-
   /* add code cache */
   fbt_allocate_new_code_cache(tld);
 
@@ -230,11 +178,6 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
 }
 
 void fbt_reinit_new_process(struct thread_local_data *tld) {
-#if defined(TRACK_CFTX)
-  fbt_mutex_init(&tld->interrupt_cft_mutex);
-  fbt_mutex_init(&tld->interrupted_cft_mutex);
-#endif /* TRACK_CFTX */
-
   #if defined(SHARED_DATA)
   /* Reinitialize thread list */
   // TODO: we leak old thread list

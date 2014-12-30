@@ -396,11 +396,6 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
     new_threads_tld->shared_data = tld->shared_data;
     #endif
 
-#if defined(VERIFY_CFTX)
-    /* Copy chain of loaded DSOs from the parent thread */
-    new_threads_tld->dso_objects = tld->dso_objects;
-#endif
-
     fbt_ccache_add_entry(new_threads_tld, (void*)fbt_commit_transaction,
                          (void*)fbt_end_transaction);
 

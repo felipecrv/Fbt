@@ -36,7 +36,6 @@
 #include "fbt_code_cache.h"
 #include "fbt_debug.h"
 #include "fbt_datatypes.h"
-#include "fbt_dso.h"
 #include "fbt_libc.h"
 #include "fbt_llio.h"
 #include "fbt_syscalls_impl.h"
@@ -47,10 +46,6 @@
 #if defined(ONLINE_PATCHING)
 #include "patching/fbt_patching.h"
 #endif /* ONLINE_PATCHING */
-
-#if defined(TRACK_CFTX)
-#include "fbt_restart_transaction.h"
-#endif /* TRACK_CFTX */
 
 enum translation_state action_none(struct translate *ts __attribute__((unused))) {
   PRINT_DEBUG_FUNCTION_START("action_none(*ts=%p)", ts);
@@ -176,9 +171,6 @@ enum translation_state action_jmp(struct translate *ts) {
   }
 
   PRINT_DEBUG("original jmp_target: %p", (void*)jump_target);
-#if defined(VERIFY_CFTX)
-  fbt_check_transfer(ts->tld, original_addr, (unsigned char*)jump_target, CFTX_JMP);
-#endif  /* VERIFY_CFTX */
 
   /* check if the target is already translated; if it is not, do so now */
   void *transl_target = fbt_ccache_find(ts->tld, (void*)jump_target);
@@ -202,14 +194,6 @@ enum translation_state action_jmp(struct translate *ts) {
   PRINT_DEBUG("translated jmp_target: %p", transl_target);
 
   /* write: jmp */
-  #if defined(TRACK_CFTX)
-  struct control_flow_transfer cft = {
-    .location = transl_addr + 1,
-    .original = addr
-  };
-  fbt_store_cftx(ts->tld, &cft);
-  #endif /* TRACK_CFTX */
-
   JMP_REL32(transl_addr, (int32_t)transl_target);
 
   PRINT_DEBUG_FUNCTION_END("-> close, transl_length=%i",
@@ -263,40 +247,8 @@ enum translation_state action_jmp_indirect(struct translate *ts) {
     transl_addr += length - 2;
   }
 
-#if defined(VERIFY_CFTX)
-  BEGIN_ASM(transl_addr)
-    movl %esp, {ts->tld->stack-2}
-    movl ${ts->tld->stack-2}, %esp
-    //pushfl
-    pushl %eax
-    pushl %ecx
-    pushl %edx
-    //pusha
-    pushl ${CFTX_JMP_IND}
-    pushl 16(%esp) // target
-    pushl ${addr}
-    pushl ${ts->tld}
-    call_abs {&fbt_check_transfer}
-    leal 16(%esp), %esp
-    //popa
-    popl %edx
-    popl %ecx
-    popl %eax
-    //popfl
-    popl %esp
-  END_ASM
-#endif
-
 #if !defined(ICF_PREDICT)
   JMP_REL32(transl_addr, (int32_t)(ts->tld->opt_ijump_trampoline));
-
-  #if defined(TRACK_CFTX)
-  struct control_flow_transfer cft = {
-    .location = transl_addr - 4,
-    .original = addr
-  };
-  fbt_store_cftx(ts->tld, &cft);
-  #endif /* TRACK_CFTX */
 
 #else  /* ICF_PREDICT */
   if (ts->tld->icf_predict == NULL)
@@ -322,28 +274,12 @@ enum translation_state action_jmp_indirect(struct translate *ts) {
     // NO HIT, we need to fix the prediction
   END_ASM
 
-  #if defined(TRACK_CFTX)
-  struct control_flow_transfer cft = {
-    .location = transl_addr - 4,
-    .original = addr
-  };
-  fbt_store_cftx(ts->tld, &cft);
-  #endif /* TRACK_CFTX */
-
   pred->dst1 = (ulong_t*)(transl_addr - 4);
 
   BEGIN_ASM(transl_addr)
     movl ${pred}, {ts->tld->stack-11}
     jmp_abs {ts->tld->opt_ijump_predict_fixup}
   END_ASM
-
-  #if defined(TRACK_CFTX)
-  struct control_flow_transfer cft2 = {
-    .location = transl_addr - 4,
-    .original = addr
-  };
-  fbt_store_cftx(ts->tld, &cft2);
-  #endif /* TRACK_CFTX */
 
 #endif  /* ICF_PREDICT */
 
@@ -415,14 +351,6 @@ enum translation_state action_jcc(struct translate *ts) {
 
     /* write: jump to trampoline for fallthrough address */
     /* create trampoline if one is needed, otherwise lookup and go */
-    #if defined(TRACK_CFTX)
-    struct control_flow_transfer cft = {
-      .location = transl_addr - 4,
-      .original = addr
-    };
-    fbt_store_cftx(ts->tld, &cft);
-    #endif /* TRACK_CFTX */
-
     transl_target = fbt_ccache_find(ts->tld, (void*)virtual_fallthrough);
     if ( transl_target != NULL ) {
       BEGIN_ASM(transl_addr)
@@ -474,31 +402,9 @@ enum translation_state action_jcc(struct translate *ts) {
                               (void*)(((ulong_t)transl_addr)+2), ORIGIN_RELATIVE);
       JCC_2B(transl_addr, jcc_type, (ulong_t)(trampo->code));
     }
-
-    #if defined(TRACK_CFTX)
-    struct control_flow_transfer cft = {
-      .location = transl_addr - 4,
-      .original = addr
-    };
-    fbt_store_cftx(ts->tld, &cft);
-    #endif /* TRACK_CFTX */
-
-
   }
-#if defined(VERIFY_CFTX)
-  fbt_check_transfer(ts->tld, addr, (unsigned char*)jump_target, CFTX_JMP);
-#endif  /* VERIFY_CFTX */
 
   /* write: jump to trampoline for fallthrough address */
-
-  #if defined(TRACK_CFTX)
-  struct control_flow_transfer cft = {
-    .location = transl_addr - 4,
-    .original = addr
-  };
-  fbt_store_cftx(ts->tld, &cft);
-  #endif /* TRACK_CFTX */
-
   transl_target = fbt_ccache_find(ts->tld, (void*)fallthru_target);
   if ( transl_target != NULL ) {
     JMP_REL32(transl_addr, (ulong_t)transl_target);
@@ -516,10 +422,6 @@ enum translation_state action_jcc(struct translate *ts) {
   ts->transl_instr = transl_addr;
   return CLOSE;
 }
-
-#if defined(VERIFY_CFTX)
-extern ulong_t sl_resolve_plt_call(ulong_t addr);
-#endif
 
 enum translation_state action_call(struct translate *ts) {
   unsigned char *addr = ts->cur_instr;
@@ -588,21 +490,6 @@ enum translation_state action_call(struct translate *ts) {
     return OPEN;
   }
 
-#if defined(VERIFY_CFTX)
-  /* Skip if target is next instruction */
-  if ((void*)call_target != return_addr) {
-    /* If this is a plt call resolve destination address */
-    unsigned long resolved_addr = call_target; /*sl_resolve_plt_call(call_target);*/
-    if (resolved_addr != call_target) {
-      /* PLT call, inline it */
-      call_target = resolved_addr;
-    } else {
-      /* No plt call, check the cft */
-    fbt_check_transfer(ts->tld, original_addr, (unsigned char*)call_target, CFTX_CALL);
-    }
-  }
-#endif  /* VERIFY_CFTX */
-
   /* write: push original EIP (we have to do this either way) */
   // TODO: 64bit needs a 64bit push!
   int32_t return_address = (int32_t)return_addr;
@@ -660,14 +547,6 @@ enum translation_state action_call(struct translate *ts) {
     jmp_abs {transl_target}
   END_ASM
 
-  #if defined(TRACK_CFTX)
-  struct control_flow_transfer cft = {
-    .location = transl_addr - 4,
-    .original = addr
-  };
-  fbt_store_cftx(ts->tld, &cft);
-  #endif /* TRACK_CFTX */
-
   PRINT_DEBUG_FUNCTION_END("-> close, transl_length=%i",
                            transl_addr - ts->transl_instr);
   ts->transl_instr = transl_addr;
@@ -683,10 +562,6 @@ enum translation_state action_call_indirect(struct translate *ts) {
 
   #if defined(ONLINE_PATCHING)
   unsigned char *original_addr = ts->original_addr;
-  #endif  /* ONLINE_PATCHING */
-
-  #if defined(TRACK_CFTX) || defined(VERIFY_CFTX)
-  unsigned char *original_addr = addr;
   #endif  /* ONLINE_PATCHING */
 
   #if defined(ONLINE_PATCHING)
@@ -813,33 +688,6 @@ enum translation_state action_call_indirect(struct translate *ts) {
     }
   }
 
-#if defined(VERIFY_CFTX)
-  /* switch to secured stack */
-  BEGIN_ASM(transl_addr)
-    movl %esp, {ts->tld->stack-2}
-    movl ${ts->tld->stack-2}, %esp
-
-    pushl %eax
-    pushl %ecx
-    pushl %edx
-    //pusha
-    pushl ${CFTX_CALL_IND}
-    pushl 16(%esp) // target
-    pushl ${original_addr}
-    pushl ${ts->tld}
-
-    call_abs {&fbt_check_transfer}
-
-    leal 16(%esp), %esp
-    //popa
-    popl %edx
-    popl %ecx
-    popl %eax
-
-    popl %esp
-  END_ASM
-#endif
-
 #if !defined(ICF_PREDICT)
   /* write: jump instruction to trampoline */
   BEGIN_ASM(transl_addr)
@@ -870,30 +718,12 @@ enum translation_state action_call_indirect(struct translate *ts) {
     // NO HIT, we need to fix the prediction
   END_ASM
 
-  #if defined(TRACK_CFTX)
-  struct control_flow_transfer cft = {
-    .location = transl_addr - 4,
-    .original = original_addr
-  };
-  fbt_store_cftx(ts->tld, &cft);
-  #endif /* TRACK_CFTX */
-
   pred->dst1 = (ulong_t*)(transl_addr - 4);
 
   BEGIN_ASM(transl_addr)
     movl ${pred}, {ts->tld->stack-11}
     jmp_abs {ts->tld->opt_icall_predict_fixup}
   END_ASM
-
-  #if defined(TRACK_CFTX)
-  {
-    struct control_flow_transfer cft = {
-      .location = transl_addr - 4,
-      .original = original_addr
-    };
-    fbt_store_cftx(ts->tld, &cft);
-  }
-  #endif /* TRACK_CFTX */
 
 #endif  /* ICF_PREDICT */
 
@@ -988,30 +818,6 @@ enum translation_state action_ret(struct translate *ts) {
     ts->transl_instr = transl_addr;
     return OPEN;
   }
-#endif
-
-#if defined(VERIFY_CFTX)
-  /* switch to secured stack */
-  /* Currently we do not check return statements in fbt_check_transfer, so we
-     disable the call here */
-
-  BEGIN_ASM(transl_addr)
-      movl %esp, {ts->tld->stack-2}
-      movl ${ts->tld->stack-2}, %esp
-
-      pusha
-      pushl ${CFTX_RET}
-      pushl 36(%esp) // target
-      pushl ${addr}
-      pushl ${ts->tld}
-
-      call_abs {&fbt_check_transfer}
-      leal 16(%esp), %esp
-
-      popa
-
-      popl %esp
-  END_ASM
 #endif
 
   /*
