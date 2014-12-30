@@ -43,10 +43,6 @@
 #include "fbt_trampoline.h"
 #include "fbt_x86_opcode.h"
 
-#if defined(ONLINE_PATCHING)
-#include "patching/fbt_patching.h"
-#endif
-
 #if defined(FBT_STATISTIC)
 #include "fbt_statistic.h"
 #endif
@@ -72,10 +68,6 @@ void _init() {
 
   //sleep(5);
   tld = fbt_init(NULL);
-
-#if defined(ONLINE_PATCHING)
-  fbt_online_patching_init(tld);
-#endif /* ONLINE_PATCHING */
 
   fbt_start_transaction(tld, fbt_commit_transaction);
 }

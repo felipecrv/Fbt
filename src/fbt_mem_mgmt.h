@@ -101,9 +101,6 @@ enum mem_type {
 #if defined(SHARED_DATA)
   MT_SHARED_DATA, /** <  used for shared data (R[W]) */
 #endif /* SHARED_DATA */
-#if defined(ONLINE_PATCHING)
-  MT_ONLINE_PATCHING_STACK, /** < stack used for online patching thread (R[W])*/
-#endif /* ONLINE_PATCHING */
 };
 
 /** Information about a memory chunk */

@@ -186,10 +186,6 @@ void fbt_reinit_new_process(struct thread_local_data *tld) {
   sd->threads->tld = tld;
   sd->threads->next = NULL;
 
-  #if defined(ONLINE_PATCHING)
-  fbt_mutex_init(&sd->patching_information_lock);
-  #endif /* ONLINE_PATCHING */
-
   fbt_mutex_init(&sd->threads_mutex);
   tld->shared_data = sd;
   #endif /* SHARED_DATA */
@@ -316,9 +312,6 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
 #if defined(SHARED_DATA)
     case MT_SHARED_DATA:
 #endif /* SHARED_DATA */
-#if defined(ONLINE_PATCHING)
-    case MT_ONLINE_PATCHING_STACK:
-#endif /* ONLINE_PATCHING */
 #if defined(AUTHORIZE_SYSCALLS)
     case MT_SYSCALL_TABLE:
 #endif  /* AUTHORIZE_SYSCALLS */
@@ -342,9 +335,6 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
   /* we do not track shared data, as it should never be freed */
   int track_chunk = 1;
   switch(type) {
-#if defined(ONLINE_PATCHING)
-    case MT_ONLINE_PATCHING_STACK:
-#endif /* ONLINE_PATCHING */
 #if defined(SHARED_DATA)
     case MT_SHARED_DATA:
 #endif /* SHARED_DATA */
@@ -411,10 +401,6 @@ void fbt_init_shared_data(struct thread_local_data *tld) {
   sd->threads = fbt_smalloc(tld, sizeof(struct thread_entry));
   sd->threads->tld = tld;
   sd->threads->next = NULL;
-
-  #if defined(ONLINE_PATCHING)
-  sd->patching_information = NULL;
-  #endif /* ONLINE_PATCHING */
 
   fbt_mutex_init(&sd->threads_mutex);
 

@@ -48,10 +48,6 @@
 #include "fbt_mutex.h"
 #endif /* TRACK_BASIC_BLOCKS */
 
-#ifdef ONLINE_PATCHING
-#include "patching/fbt_patching.h"
-#endif
-
 /**
  * Initializes the trampoline that controls context transfers from unmanaged to
  * managed code, used in, e.g., fbt_start_transaction.

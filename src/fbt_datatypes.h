@@ -54,10 +54,6 @@ struct thread_local_data;
 typedef void stop_thread_callback_t(struct thread_local_data *tld, void *context);
 #endif
 
-#ifdef ONLINE_PATCHING
-struct patching_information;
-#endif
-
 #if defined(ICF_PREDICT)
 struct icf_prediction;
 #endif  /* ICF_PREDICT */
@@ -98,13 +94,6 @@ struct translate {
   void *inline_call_RIP;
 #endif
 
-#if defined(ONLINE_PATCHING)
-  /** The original address at which we are replacing code during online patching */
-  unsigned char *original_addr;
-
-  /** Stores the next instruction, which might be the address of a patched instruction */
-  unsigned char *next_patch_instr;
-#endif
   /** pointer back to tld (for action functions) */
   struct thread_local_data *tld;
 };
@@ -273,11 +262,6 @@ struct thread_local_data {
   ulong_t *instructions;
 #endif /* TRACK_INSTRUCTIONS */
 
-#if defined(ONLINE_PATCHING)
-  /** Local patching information */
-  struct patching_information *patching_information;
-#endif
-
 #ifdef SHARED_DATA
   /** Data that is shared between all threads */
   struct shared_data *shared_data;
@@ -378,17 +362,6 @@ struct shared_data {
 
   /** Lock protecting the 'thread' member */
   fbt_mutex_t threads_mutex;
-
-  #if defined(ONLINE_PATCHING)
-    /** Global patching information */
-    struct patching_information *patching_information;
-
-    /** Thread-local data for the patching thread */
-    struct thread_local_data *patching_tld;
-
-    /** Protecting access to shared patching_information */
-    fbt_mutex_t patching_information_lock;
-  #endif
 
   /** The commit function when start_transaction was called */
   void (*commit_function)();

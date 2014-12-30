@@ -444,12 +444,6 @@ enum translation_state action_call(struct translate *ts) {
                              transl_addr - ts->transl_instr);
     ts->transl_instr = transl_addr;
 
-    /* We need to change the next instruction in case of online patching, otherwise
-     * it already points to the correct location in all cases (remember, this is not
-     * an actual call) */
-    #if defined(ONLINE_PATCHING)
-    ts->next_instr = return_addr;
-    #endif /* ONLINE_PATCHING */
     return OPEN;
   }
 
@@ -523,26 +517,8 @@ enum translation_state action_call_indirect(struct translate *ts) {
   int length = ts->next_instr - ts->cur_instr;
   int prefix_length = 0;
 
-  #if defined(ONLINE_PATCHING)
-  unsigned char *original_addr = ts->original_addr;
-  #endif  /* ONLINE_PATCHING */
 
-  #if defined(ONLINE_PATCHING)
-  /* We need to keep track of the return address in the virtual space of the patch */
-  unsigned char *return_addr = ts->next_patch_instr;
-
-  /* also keep try to find a patch for the instruction right after this one */
-  struct change *next_change = fbt_online_patching_find_change(ts->tld->patching_information, return_addr);
-  unsigned char *next_instr;
-  if (next_change == NULL) {
-    next_instr = ts->next_instr;
-  } else {
-    next_instr = (unsigned char *)next_change->machine_code;
-  }
-  #else
-  /* Without online patching, the two values are always the same */
   unsigned char *return_addr = ts->next_instr;
-  #endif /* ONLINE_PATCHING */
 
   PRINT_DEBUG_FUNCTION_START("action_call_indirect(*addr=%p, *transl_addr=%p," \
                              " length=%i)", ts->cur_instr, ts->transl_instr,

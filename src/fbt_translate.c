@@ -51,10 +51,6 @@
 #include "fbt_statistic.h"
 #endif
 
-#if defined(ONLINE_PATCHING)
-#include "patching/fbt_patching.h"
-#endif
-
 #if defined(INLINE_CALLS)
 #define INLINE_MAX_LENGTH 64
 #endif
@@ -99,10 +95,6 @@ void *fbt_lmem_translate_noexecute(struct thread_local_data *tld,
 
 void *fbt_translate_noexecute(struct thread_local_data *tld,
                               void *orig_address) {
-  #ifdef ONLINE_PATCHING
-  return fbt_online_patching_translate_noexecute(tld, orig_address);
-  #endif
-
 #ifdef LMEM
   return fbt_lmem_translate_noexecute(tld, orig_address);
 #endif

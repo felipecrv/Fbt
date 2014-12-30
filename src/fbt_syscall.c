@@ -53,10 +53,6 @@
 #include "fbt_lmem.h"
 #endif
 
-#if defined(ONLINE_PATCHING)
-#include "patching/fbt_patching.h"
-#endif /* ONLINE_PATCHING */
-
 #if defined(AUTHORIZE_SYSCALLS)
 /*
  * System call authorization functions must ensure a couple of things:
@@ -209,11 +205,6 @@ void fbt_bootstrap_thread(struct thread_local_data *tld) {
   fbt_mutex_unlock(&tld->shared_data->threads_mutex);
   PRINT_DEBUG("Done.\n");
 #endif /* SHARED_DATA */
-
-#if defined(ONLINE_PATCHING)
-  /* Copy current patching information */
-  fbt_online_patching_refresh(tld);
-#endif /* ONLINE_PATCHING */
 }
 
 void internal_sighandler(int signal __attribute__((unused)),
@@ -368,16 +359,6 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
       llprintf("New process (pid: %d)\n", local_ret);
     }
 #endif
-
-#if defined(ONLINE_PATCHING)
-    if (local_ret == 0) {
-      /* Reinitialize tld for new process */
-      fbt_reinit_new_process(tld);
-      /* We need to start an online patching thread in the forked process */
-      fbt_online_patching_start(tld);
-    }
-#endif /* ONLINE_PATCHING */
-
 
     return SYSCALL_AUTH_FAKE;
   }
