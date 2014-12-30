@@ -44,10 +44,6 @@
 #include "fbt_mem_mgmt.h"
 #include "fbt_x86_opcode.h"
 
-#if defined(SHADOWSTACK_DEBUG)
-#include "fbt_trampoline.h"
-#endif /* SHADOWSTACK_DEBUG */
-
 #if defined(ONLINE_PATCHING)
 #include "patching/fbt_patching.h"
 #endif /* ONLINE_PATCHING */
@@ -633,71 +629,6 @@ enum translation_state action_call(struct translate *ts) {
   }
 #endif
 
-#if defined(SHADOWSTACK)
-  /*		(pushl eip)				# see before #if
-   *        ...
-   * 		([jmp ...])				# see after #endif
-   */
-  BEGIN_ASM(transl_addr)
-    pushl %ebx
-    movl {&ts->tld->top_of_shadowstack}, %ebx
-  END_ASM
-
-  /* If the next instruction has already been translated, we use the address
-  of the translated code segment, otherwise we create a trampoline in BT space
-  and use its address */
-
-  void *transl_next = fbt_ccache_find(ts->tld, ts->next_instr);
-
-  /* We want to take advantage of MODRM, so we hardcode the offset */
-  assert(offsetof(struct shadowstack_entry, translated_return_address) == 0);
-
-  if (transl_next == NULL) {
-    /* next_instr + 2 as movl + modrm is 2 bytes long */
-    struct trampoline *trampo =
-      fbt_create_trampoline(ts->tld, (void*)(ts->next_instr),
-                            (void*)((ulong_t)(transl_addr)+2),
-                            ORIGIN_SHADOWSTACK);
-    BEGIN_ASM(transl_addr)
-        movl ${trampo->code}, (%ebx) // addr backpatched later on
-    END_ASM
-  } else {
-    BEGIN_ASM(transl_addr)
-        movl ${transl_next}, (%ebx) // addr backpatched later on
-    END_ASM
-  }
-
-  BEGIN_ASM(transl_addr)
-    //movl %ebp, SHADOWSTACK_ENTRY_OFFSETOF_BASE_POINTER(%ebx)
-    leal 8(%esp), %esp
-    movl %esp, SHADOWSTACK_ENTRY_OFFSETOF_STACK_POINTER(%ebx)
-    leal -8(%esp), %esp
-    movl ${ts->next_instr}, SHADOWSTACK_ENTRY_OFFSETOF_RETURN_ADDRESS(%ebx)
-    addl $ SHADOWSTACK_ENTRY_SIZE, {&ts->tld->top_of_shadowstack}
-    popl %ebx
-  END_ASM
-
-  #if defined(SHADOWSTACK_DEBUG)
-  BEGIN_ASM(transl_addr)
-    movl %esp, {ts->tld->stack-1}
-    movl ${ts->tld->stack-1}, %esp
-
-    pusha
-    pushl ${call_target}
-    pushl ${ts->cur_instr}
-    pushl ${ts->tld}
-
-    call_abs {fbt_shadowstack_debug_call}
-
-    leal 12(%esp), %esp
-    popa
-
-    popl %esp
-  END_ASM
-  #endif /* SHADOWSTACK_DEBUG */
-
-#endif /* SHADOWSTACK */
-
   /* check if target is already translated; if not, do so now */
   void *transl_target = fbt_ccache_find(ts->tld, (void*)call_target);
 
@@ -754,7 +685,7 @@ enum translation_state action_call_indirect(struct translate *ts) {
   unsigned char *original_addr = ts->original_addr;
   #endif  /* ONLINE_PATCHING */
 
-  #if defined(TRACK_CFTX) || defined(SHADOWSTACK_DEBUG) || defined(VERIFY_CFTX)
+  #if defined(TRACK_CFTX) || defined(VERIFY_CFTX)
   unsigned char *original_addr = addr;
   #endif  /* ONLINE_PATCHING */
 
@@ -784,46 +715,6 @@ enum translation_state action_call_indirect(struct translate *ts) {
   /* WARNING: this statement destroys the FLAGS */
   INCL_M64(ts->transl_addr, (int32_t)&fbt_nr_ind_calls);
 #endif
-
-#if defined(SHADOWSTACK)
-  BEGIN_ASM(transl_addr)
-    pushl %ebx
-    movl {&ts->tld->top_of_shadowstack}, %ebx
-  END_ASM
-
-  /* If the next instruction has already been translated, we use the address
-  of the translated code segment, otherwise we create a trampoline in BT space
-  and use its address */
-  void *transl_next = fbt_ccache_find(ts->tld, return_addr);
-
-  /* We want to take advantage of MODRM, so we hardcode the offset */
-  assert(offsetof(struct shadowstack_entry, translated_return_address) == 0);
-
-  if (transl_next == NULL) {
-    /* next_instr + 2 as movl + modrm is 2 bytes long */
-    struct trampoline *trampo =
-      fbt_create_trampoline(ts->tld, (void*)(return_addr),
-                            (void*)((ulong_t)(transl_addr)+2),
-                            ORIGIN_SHADOWSTACK);
-    BEGIN_ASM(transl_addr)
-        movl ${trampo->code}, (%ebx) // addr backpatched later on
-    END_ASM
-  } else {
-    BEGIN_ASM(transl_addr)
-        movl ${return_addr}, (%ebx) // addr backpatched later on
-    END_ASM
-  }
-
-  BEGIN_ASM(transl_addr)
-    //movl %ebp, SHADOWSTACK_ENTRY_OFFSETOF_BASE_POINTER(%ebx)
-    leal 4(%esp), %esp
-    movl %esp, SHADOWSTACK_ENTRY_OFFSETOF_STACK_POINTER(%ebx)
-    leal -4(%esp), %esp
-    movl ${return_addr}, SHADOWSTACK_ENTRY_OFFSETOF_RETURN_ADDRESS(%ebx)
-    addl $ SHADOWSTACK_ENTRY_SIZE, {&ts->tld->top_of_shadowstack}
-    popl %ebx
-  END_ASM
-#endif /* SHADOWSTACK */
 
   /* write: push original EIP */
   PUSHL_IMM32(transl_addr, (ulong_t)return_addr);
@@ -948,26 +839,6 @@ enum translation_state action_call_indirect(struct translate *ts) {
     popl %esp
   END_ASM
 #endif
-
-#if defined(SHADOWSTACK_DEBUG)
-  BEGIN_ASM(transl_addr)
-    movl %esp, {ts->tld->stack-2}
-    movl ${ts->tld->stack-2}, %esp
-
-    pusha
-
-    pushl 32(%esp)
-    pushl ${original_addr}
-    pushl ${ts->tld}
-
-    call_abs {fbt_shadowstack_debug_call}
-
-    leal 12(%esp), %esp
-    popa
-
-    popl %esp
-  END_ASM
-#endif /* SHADOWSTACK_DEBUG */
 
 #if !defined(ICF_PREDICT)
   /* write: jump instruction to trampoline */
@@ -1164,14 +1035,6 @@ enum translation_state action_ret(struct translate *ts) {
   if (*addr == 0xc3) {
     jmp_target = (int32_t)(ts->tld->opt_ret_trampoline);
   }
-
-#if defined(SHADOWSTACK) & defined(SHADOWSTACK_IGNORE_LOADER)
-  /* To give us more information when verifying return instructions,
-     we store the address we are returning from */
-  BEGIN_ASM(transl_addr)
-    movl ${ts->cur_instr}, {&ts->tld->shadowstack_return_origin}
-  END_ASM
-#endif /* SHADOWSTACK */
 
   /* write: jump instruction to trampoline */
   BEGIN_ASM(transl_addr)

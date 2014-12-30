@@ -90,9 +90,6 @@ struct icf_prediction;
 enum mem_type {
   MT_CODE_CACHE,  /**< code cache (RX[W]) */
   MT_MAPPING_TABLE,  /**< mapping table (R[W]) */
-#if defined(SHADOWSTACK)
-  MT_SHADOWSTACK, /**< shadow stack (R[W]) */
-#endif  /* SHADOWSTACK */
 #if defined(AUTHORIZE_SYSCALLS)
   MT_SYSCALL_TABLE, /**< syscall table (R[W]) */
 #endif  /* AUTHORIZE_SYSCALLS */

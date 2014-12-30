@@ -46,11 +46,6 @@ struct thread_local_data;
  */
 void fbt_initialize_trampolines(struct thread_local_data *tld);
 
-#if defined(SHADOWSTACK_DEBUG)
-void fbt_shadowstack_debug_call(struct thread_local_data *tld, void *from, void *to);
-void fbt_shadowstack_debug_ret(struct thread_local_data *tld, void *from, void *to);
-#endif
-
 #ifdef __cplusplus
 }
 #endif

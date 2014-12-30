@@ -209,32 +209,6 @@ struct thread_local_data {
       translation of new indirect control flow transfer locations. */
   struct icf_prediction *icf_predict;
 #endif
-#if defined(SHADOWSTACK)
-  /** top of the stack, highest addr of the stack, next addr is free */
-  struct shadowstack_entry *top_of_shadowstack;
-  /** pointer to the base of the shadow stack (grows to higher addrs) */
-  struct shadowstack_entry *shadowstack;
-  /** special value whose address denotes end of shadow stack */
-  ulong_t shadowstack_end;
-  /** address of return instruction that has last been executed */
-  ulong_t shadowstack_return_origin;
-  /** start address of loader DSO */
-  ulong_t shadowstack_loader_begin;
-  /** end address of loader DSO */
-  ulong_t shadowstack_loader_end;
-
-  // ==== vsyscall related ====
-
-  /** Counter to keep track of number of items seen in dl_iterate_phdr */
-  ulong_t dl_iterate_phdr_counter;
-
-  /** Start of the vsyscall page */
-  ulong_t vsyscall_page_begin;
-
-  /** End of vsyscall page */
-  ulong_t vsyscall_page_end;
-
-#endif
 #if defined(AUTHORIZE_SYSCALLS)
   /** the table with pointers to syscall authorization handlers */
   enum syscall_auth_response (**syscall_table)(struct thread_local_data*,
@@ -387,11 +361,6 @@ enum origin_type {
   ORIGIN_RELATIVE,
   /** use an absolute address */
   ORIGIN_ABSOLUTE,
-#if defined(SHADOWSTACK)
-  /** replace all entries in the shadow stack with the newly
-      translated version. do an OSR - on stack replacement. */
-  ORIGIN_SHADOWSTACK
-#endif
 };
 
 /**
@@ -448,32 +417,6 @@ struct icf_prediction {
   ulong_t nrmispredict;  /**< Number of mispredictions */
 };
 #endif  /* ICF_PREDICT */
-
-#if defined(SHADOWSTACK)
-/** Information needed for the shadowstack feature */
-struct shadowstack_entry {
-  /** Return address for this call in binary translator space */
-  ulong_t translated_return_address;
-
-  /** Return address for this call in user space */
-  ulong_t return_address;
-
-  /* %esp at the time of the call */
-  ulong_t stack_pointer;
-
-  /* original call target of this call */
-  ulong_t call_target;
-};
-
-/* Macros defining size of struct and offsets of members, so the DSL can use
-more optimized instructions (as opposed to when using {offsetof(...)}). */
-#define SHADOWSTACK_ENTRY_OFFSETOF_TRANSLATED_RETURN_ADDRESS 0
-#define SHADOWSTACK_ENTRY_OFFSETOF_RETURN_ADDRESS 4
-#define SHADOWSTACK_ENTRY_OFFSETOF_STACK_POINTER 8
-#define SHADOWSTACK_ENTRY_OFFSETOF_CALL_TARGET 12
-#define SHADOWSTACK_ENTRY_SIZE 16
-
-#endif
 
 #ifdef SHARED_DATA
 struct thread_entry;

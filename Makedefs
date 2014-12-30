@@ -140,36 +140,6 @@ CFLAGS += -DHANDLE_THREADS
 # Security related features                                                   #
 ###############################################################################
 
-# Shadow stack configuration
-# ==========================
-#
-# Implements a special shadow stack. Every call instruction is translated so
-# that it pushes the location to an additional (hidden) shadow stack. Every
-# return instruction checks this shadow stack and verifies that we are still on
-# the right path. A security exception is triggered if there is a mismatch.
-#
-# default: # CFLAGS += -DSHADOWSTACK
-# status: unimplemented for ARM
-#CFLAGS += -DSHADOWSTACK
-
-# Should calls into and out of the loader be ignored?
-# Depends on -DSHADOWSTACK
-#CFLAGS += -DSHADOWSTACK_IGNORE_LOADER
-
-# The name of the loader. This will be used to ignore calls
-# into and out of the loader in shadowstack verification.
-# Depends on -DSHADOWSTACK
-#CFLAGS += -DSHADOWSTACK_LOADER_NAME="\"/lib32/ld-linux.so.2\""
-
-# Specifies whether libdetox shold terminate when it detects a
-# shadowstack reauthentication failure
-# Depends on -DSHADOWSTACK
-# CFLAGS += -DSHADOWSTACK_TERMINATE_ON_FAILURE
-
-# Print debugging information for shadow stack
-# Depends on -DSHADOWSTACK
-#CFLAGS += -DSHADOWSTACK_DEBUG
-
 # Verification of control flow transfers
 # ======================================
 #

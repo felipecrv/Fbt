@@ -141,24 +141,6 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
   tld->icf_predict = NULL;
 #endif  /* ICF_PREDICT */
 
-#if defined(SHADOWSTACK)
-  /* allocate shadow stack */
-  /* enough for 1024 or 512 recursive stack frames - on 32/64 bit */
-  tld->top_of_shadowstack = fbt_lalloc(tld, 2, MT_SHADOWSTACK);
-  tld->shadowstack = tld->top_of_shadowstack;
-
-  /* We do not know the location of the loader yet */
-  tld->shadowstack_loader_begin = 0;
-  tld->shadowstack_loader_end = 0;
-
-  /* Create a dummy entry on the shadow stack */
-  fbt_memset(tld->top_of_shadowstack, 0, sizeof(struct shadowstack_entry));
-  /* If libdetox is secure, this value is not accessible to an attacker and therefore
-   * cannot be guessed to cause a segmentation fault */
-  tld->top_of_shadowstack->return_address = &tld->shadowstack_end;
-  tld->top_of_shadowstack += 1;
-#endif
-
 #if defined(VERIFY_CFTX)
   tld->dso_objects = NULL;
   tld->symb_cache = fbt_smalloc(tld, SYMBOL_CACHE_SIZE*sizeof(struct symbol_cache));
@@ -394,9 +376,6 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
 #if defined(ONLINE_PATCHING)
     case MT_ONLINE_PATCHING_STACK:
 #endif /* ONLINE_PATCHING */
-#if defined(SHADOWSTACK)
-    case MT_SHADOWSTACK:
-#endif  /* SHADOWSTACK */
 #if defined(AUTHORIZE_SYSCALLS)
     case MT_SYSCALL_TABLE:
 #endif  /* AUTHORIZE_SYSCALLS */
