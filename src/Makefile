@@ -19,7 +19,6 @@ FILES+=libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_actions.c
 	generic/fbt_llio.c generic/fbt_libc.c fbt_debug.c fbt_trampoline.c fbt_syscall.c \
 	fbt_mutex.c generic/fbt_algorithms.c fbt_mem_pool.c
 
-CFLAGS += -I./ -I./generic
 # we include some kernel stuff as we directly call system calls.
 CFLAGS += -I/lib/modules/$(shell uname -r)/build/arch/x86/include
 

@@ -32,7 +32,7 @@
 #include <assert.h>
 #include <asm-generic/mman.h>
 
-#include "fbt_asm_macros.h"
+#include "ia32/fbt_asm_macros.h"
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"

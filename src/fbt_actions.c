@@ -32,16 +32,16 @@
 #include <assert.h>
 #include <stddef.h> /* offsetof */
 
-#include "fbt_asm_macros.h"
+#include "ia32/fbt_asm_macros.h"
 #include "fbt_code_cache.h"
 #include "fbt_debug.h"
 #include "fbt_datatypes.h"
 #include "fbt_syscalls_impl.h"
 #include "fbt_translate.h"
 #include "fbt_mem_mgmt.h"
-#include "fbt_x86_opcode.h"
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
+#include "ia32/fbt_x86_opcode.h"
 
 enum translation_state action_none(struct translate *ts __attribute__((unused))) {
   PRINT_DEBUG_FUNCTION_START("action_none(*ts=%p)", ts);

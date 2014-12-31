@@ -32,7 +32,7 @@
 #include <stdlib.h> /* for NULL */
 
 /* include ugliness of system call definition */
-#include "fbt_syscalls_impl.h"
+#include "../fbt_syscalls_impl.h"
 
 #define MAP_FAILED      ((void *)-1)
 

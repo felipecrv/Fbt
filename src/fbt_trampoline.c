@@ -28,7 +28,7 @@
 #include <stddef.h> /* offsetof */
 
 #include "fbt_trampoline.h"
-#include "fbt_asm_macros.h"
+#include "ia32/fbt_asm_macros.h"
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"

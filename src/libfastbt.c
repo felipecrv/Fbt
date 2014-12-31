@@ -34,9 +34,9 @@
 #include "fbt_syscall.h"
 #include "fbt_translate.h"
 #include "fbt_trampoline.h"
-#include "fbt_x86_opcode.h"
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
+#include "ia32/fbt_x86_opcode.h"
 
 #if defined(FBT_STATISTIC)
 #include "fbt_statistic.h"

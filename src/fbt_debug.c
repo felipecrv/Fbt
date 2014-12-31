@@ -37,9 +37,9 @@
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_translate.h"
-#include "fbt_x86_opcode.h"
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
+#include "ia32/fbt_x86_opcode.h"
 
 /**
  * The file names for the output
