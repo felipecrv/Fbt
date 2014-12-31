@@ -39,11 +39,11 @@
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
-#include "fbt_libc.h"
-#include "fbt_llio.h"
 #include "fbt_mem_mgmt.h"
 #include "fbt_translate.h"
 #include "libfastbt.h"
+#include "generic/fbt_libc.h"
+#include "generic/fbt_llio.h"
 
 #if defined(AUTHORIZE_SYSCALLS)
 /*

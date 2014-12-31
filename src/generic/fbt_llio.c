@@ -32,8 +32,8 @@
 
 #include <stdarg.h>
 
-#include "fbt_llio.h"
 #include "fbt_libc.h"
+#include "fbt_llio.h"
 
 #if !defined(DEBUG)
 static int fllprintfva(int fd, const char* format, va_list ap);

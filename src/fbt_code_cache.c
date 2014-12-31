@@ -34,13 +34,13 @@
 #include "fbt_asm_macros.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
-#include "fbt_libc.h"
-#include "fbt_llio.h"
 #include "fbt_mem_mgmt.h"
 #include "fbt_mem_pool.h"
 #include "fbt_syscall.h"
 #include "libfastbt.h"
 #include "fbt_trampoline.h"
+#include "generic/fbt_libc.h"
+#include "generic/fbt_llio.h"
 
 struct ccache_entry {
   ulong_t *src;

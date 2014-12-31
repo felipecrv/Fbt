@@ -34,11 +34,11 @@
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
-#include "fbt_libc.h"
-#include "fbt_llio.h"
 #include "fbt_mem_mgmt.h"
 #include "fbt_x86_opcode.h"
 #include "fbt_opcode_tables.h"
+#include "generic/fbt_libc.h"
+#include "generic/fbt_llio.h"
 
 #if defined(FBT_STATISTIC)
 #include "fbt_statistic.h"

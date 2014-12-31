@@ -26,10 +26,10 @@
  * MA  02110-1301, USA.
  */
 
-#include "fbt_llio.h"
 #include "fbt_mem_mgmt.h"
 #include "fbt_mem_pool.h"
-#include "fbt_libc.h"
+#include "generic/fbt_libc.h"
+#include "generic/fbt_llio.h"
 
 #include <assert.h>
 #include <asm-generic/mman.h>
