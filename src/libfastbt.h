@@ -32,8 +32,8 @@
 extern "C" {
 #endif
 
-#define LIBNAME "./lib/libfastbt.so.0.3.1"
-#define LIBLEN 26 /* length of LIBLEN+1 */
+#define LIBNAME "./src/libfbt.so.0.3.1"
+#define LIBLEN 22 /* length of LIBNAME +1 */
 
 /**
  * Initialzes the binary translator.

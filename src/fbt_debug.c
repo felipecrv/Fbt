@@ -54,7 +54,6 @@
 /**
  * The global vars needed for debugging
  */
-#ifdef DEBUG
 static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_key_t thread_debug;
 int debugStream = 0;
@@ -62,7 +61,6 @@ int debugStream = 0;
 /** This variable keeps track of how many threads are still using the
 debugStream so it will not be closed before the last thread exits */
 static long stream_references = 0;
-#endif
 
 #ifdef DUMP_GENERATED_CODE
 static pthread_mutex_t dump_mutex  = PTHREAD_MUTEX_INITIALIZER;
@@ -85,8 +83,6 @@ static int printOperandString(int f, const unsigned int operandFlags,
 void print_disasm_inst(int f, struct translate* ts,
                               unsigned int instr_len);
 #endif
-
-#ifdef DEBUG
 
 void debug_start()
 {
@@ -241,8 +237,6 @@ char* debug_memdump(unsigned char *addr, unsigned int n)
   print_buf[2*i] = '\0';
   return print_buf;
 }
-
-#endif /* DEBUG */
 
 #ifdef DUMP_GENERATED_CODE
 void debug_dump_start()
