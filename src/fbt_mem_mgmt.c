@@ -40,9 +40,6 @@
 #include "fbt_llio.h"
 #include "fbt_mem_pool.h"
 #include "fbt_syscall.h"
-#if defined(TRACK_BASIC_BLOCKS)
-#include "fbt_mutex.h"
-#endif /* TRACK_BASIC_BLOCKS */
 
 #if defined(DEBUG)
 #include <sys/stat.h>
@@ -144,15 +141,6 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
     fbt_lalloc(tld, table_size, MT_SYSCALL_TABLE);
   assert(table_size == 1);
 #endif  /* AUTHORIZE_SYSCALLS */
-
-#if defined(TRACK_BASIC_BLOCKS)
-  tld->basic_blocks = NULL;
-#endif /* TRACK_BASIC_BLOCKS */
-
-#if defined(TRACK_INSTRUCTIONS)
-  tld->instructions = fbt_lalloc(tld, TRACK_INSTRUCTIONS_PAGES_PER_LEVEL, MT_INTERNAL);
-  fbt_memset(tld->instructions, 0, sizeof(ulong_t) * 256);
-#endif /* TRACK_INSTRUCTIONS */
 
   /* add code cache */
   fbt_allocate_new_code_cache(tld);

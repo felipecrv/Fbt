@@ -44,12 +44,6 @@ struct shared_data;
 #include "fbt_mutex.h"
 #endif
 
-#if defined(TRACK_BASIC_BLOCKS)
-struct basic_block_node;
-struct thread_local_data;
-typedef void stop_thread_callback_t(struct thread_local_data *tld, void *context);
-#endif
-
 #if defined(ICF_PREDICT)
 struct icf_prediction;
 #endif  /* ICF_PREDICT */
@@ -135,11 +129,6 @@ enum syscall_auth_response {
   SYSCALL_AUTH_DENIED
 } __attribute__((packed));
 #endif  /* AUTHORIZE_SYSCALLS */
-
-#if defined(TRACK_INSTRUCTIONS)
-#define TRACK_INSTRUCTIONS_PAGES_PER_LEVEL \
-  ((256 * sizeof(ulong_t) + PAGESIZE - 1) / PAGESIZE)
-#endif /* TRACK_INSTRUCTIONS */
 
 /**
  * This struct defines thread local data that is needed inside the BT.
@@ -228,23 +217,6 @@ struct thread_local_data {
   /** translation information for the current instruction that is currently being
       translated. */
   struct translate trans;
-
-#ifdef TRACK_BASIC_BLOCKS
-  /**
-   * A linked list containing all the basic blocks created by the current
-   * thread
-   */
-  struct basic_block_node *basic_blocks;
-#endif /* TRACK_BASIC_BLOCK */
-
-#if defined(TRACK_INSTRUCTIONS)
-  /** First page of a multilevel datastructure keeping track of all
-   * translated -> original instruction mappings. Each page maps
-   * 2 bytes of the input address (256 entries), the bottom page
-   * contains the actual original instruction addresses, or 0 where
-   * no mapping has been stored. Pages are created lazily. */
-  ulong_t *instructions;
-#endif /* TRACK_INSTRUCTIONS */
 
 #ifdef SHARED_DATA
   /** Data that is shared between all threads */
@@ -357,31 +329,5 @@ struct thread_entry {
   long user;
 };
 #endif /* SHARED_DATA */
-
-#ifdef TRACK_BASIC_BLOCKS
-/** Information about a basic block translated by libdetox */
-struct basic_block_node {
-  /** Start of translated block */
-  void *start;
-  /** Length of translated block in bytes */
-  long length;
-
-  /** Start of basic block in original user code */
-  void *original_start;
-  /** Length of basic block in original user code in bytes */
-  long original_length;
-
-  /** Next basic block or NULL if end of list */
-  struct basic_block_node *next;
-
-  #ifdef BASIC_BLOCK_TRAMPOLINE
-  void *stop_thread_trampoline;
-  #endif
-};
-
-struct stop_thread_context {
-  void *next_instruction;
-};
-#endif /* TRACK_BASIC_BLOCKS */
 
 #endif  /* FBT_DATATYPES_H */

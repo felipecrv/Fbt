@@ -176,9 +176,6 @@ enum translation_state action_jmp(struct translate *ts) {
     ts->next_instr = (unsigned char*)jump_target;
     /* put the target into the tcache so later jumps can use the translated
        code */
-    #ifndef TRACK_BASIC_BLOCKS
-    //fbt_ccache_add_entry(ts->tld, (void*)jump_target, ts->transl_instr);
-    #endif
 
     return OPEN;
   }
@@ -486,12 +483,6 @@ enum translation_state action_call(struct translate *ts) {
        This will put the body of the function right as the next instr in the
        translated code */
     ts->next_instr = (unsigned char*)call_target;
-
-    /* put the target into the tcache so later calls can use the translated
-       code */
-    #ifndef TRACK_BASIC_BLOCKS
-    //fbt_ccache_add_entry(ts->tld, (void*)call_target, ts->transl_instr);
-    #endif
 
     return OPEN;
   }

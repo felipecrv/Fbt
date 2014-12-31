@@ -42,10 +42,6 @@
 #define _GNU_SOURCE
 #include <link.h>
 
-#ifdef TRACK_BASIC_BLOCKS
-#include "fbt_mutex.h"
-#endif /* TRACK_BASIC_BLOCKS */
-
 /**
  * Initializes the trampoline that controls context transfers from unmanaged to
  * managed code, used in, e.g., fbt_start_transaction.

@@ -145,17 +145,6 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
   /* look up address in translation cache index */
   void *transl_address = ts->transl_instr;
 
-#ifdef TRACK_BASIC_BLOCKS
-  struct basic_block_node *basic_block = fbt_smalloc(
-    tld,
-    sizeof(struct basic_block_node)
-  );
-  basic_block->start = ts->transl_instr;
-  basic_block->original_start = orig_address;
-  basic_block->length = 0;
-  basic_block->original_length = 0;
-#endif
-
   /* we translate as long as we
      - stay in the limit (MAX_BLOCK_SIZE)
      - or if we have an open TU (could happen if we are translating a call or
@@ -220,14 +209,6 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
     }
 #endif
 
-#if defined(TRACK_BASIC_BLOCKS)
-    basic_block->original_length += (ts->next_instr - ts->cur_instr);
-#endif
-
-#if defined(TRACK_INSTRUCTIONS)
-    fbt_track_instruction(tld, ts->transl_instr, ts->cur_instr);
-#endif
-
     /* call the action specified for this instruction */
     tu_state = ts->cur_instr_info->opcode.handler(ts);
 
@@ -273,13 +254,6 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
   PRINT_DEBUG_FUNCTION_END("-> %p,   next_tu=%p (len: %d)", transl_address,
                            ts->next_instr, bytes_translated);
-
-  /* Store the basic block */
-#ifdef TRACK_BASIC_BLOCKS
-  basic_block->next = tld->basic_blocks;
-  basic_block->length = bytes_translated;
-  tld->basic_blocks = basic_block;
-#endif
 
   return transl_address;
 }

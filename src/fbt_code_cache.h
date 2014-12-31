@@ -108,35 +108,6 @@ struct trampoline *fbt_create_trampoline(struct thread_local_data *tld,
                                          void *call_target, void *origin,
                                          enum origin_type origin_type);
 
-
-#if defined(TRACK_INSTRUCTIONS)
-/**
- * Adds an entry to the mapping from translated instructions to
- * original instructions.
- *
- * Note that <code>translated</code> is the unique key in this mapping,
- * so calling <code>fbt_track_instruction</code> multiple times with the same
- * <code>translated</code> value will overwrite existing mappings.
- *
- * @param tld Thread local data
- * @param translated Address of the start of the translated instruction
- * @param original Address of the original instruction in the user address-space
- */
-void fbt_track_instruction(struct thread_local_data *tld,
-                          void *translated,
-                          void *original);
-
-/**
- * Finds the original instruction corresponding to a translated instruction, as
- * previously established using <code>fbt_track_instruction</code>.
- *
- * @param tld Thread local data
- * @param translated Address of translated instruction
- * @return Address of original instruction or NULL if no mapping exists.
- */
-void* fbt_map_instruction_reverse(struct thread_local_data *tld, void *translated);
-#endif /* TRACK_INSTRUCTIONS */
-
 #ifdef __cplusplus
 }
 #endif
