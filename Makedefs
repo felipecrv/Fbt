@@ -16,6 +16,13 @@
 PRODUCTION = 1
 #DEBUG = 1
 
+# IA32 or ARM?
+# ==========================
+#
+# options: ia32 or arm
+# default: TARGET_ARCH = ia32
+TARGET_ARCH ?= ia32
+
 # Dump all generated code (debugging option)
 # ==========================================
 #
@@ -152,7 +159,11 @@ LDFLAGS += -O1 -nodefaultlibs -lgcc -nostartfiles \
 endif
 
 # build i386 code
-I386 = -m32
+ifeq ($(TARGET_ARCH),ia32)
+	I386 = -m32
+else
+	I386 =
+endif
 CFLAGS += $(I386)
 
 # Path to the assembly generation DSL preprocessing step

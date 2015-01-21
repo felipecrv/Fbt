@@ -36,7 +36,7 @@
 #include "fbt_debug.h"
 #include "fbt_mem_mgmt.h"
 #include "ia32/fbt_x86_opcode.h"
-#include "fbt_opcode_tables.h"
+#include "ia32/fbt_opcode_tables.h"
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
 
