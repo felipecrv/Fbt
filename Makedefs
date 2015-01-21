@@ -145,7 +145,7 @@ LDFLAGS = -lpthread -nostartfiles -ldl
 endif
 
 ifdef PRODUCTION
-CFLAGS += -O3 -ggdb -Wall -Wextra -DNDEBUG
+CFLAGS += -O3 -Wall -Wextra -DNDEBUG
 LDFLAGS += -O1 -nodefaultlibs -lgcc -nostartfiles \
        -fvisibility-inlines-hidden -Wl,-x,-z,nodelete,-z,nodlopen,-z,nodump
 #       -Wl,-z,-noexecstack -nostartfiles
