@@ -7,3 +7,4 @@
 *.pyc
 src/generated
 src/fbt_opcode_tables.h
+ia32_table_generator/fbt_opcode_tables.h
