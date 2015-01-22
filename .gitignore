@@ -8,6 +8,7 @@
 src/generated
 src/ia32/fbt_opcode_tables.h
 src/arm/fbt_opcode_tables.h
-ia32_table_generator/fbt_opcode_tables.h
+arm_table_generator/default_table_gen
+arm_table_generator/fbt_opcode_tables.h
 ia32_table_generator/example
 ia32_table_generator/libstm_table_gen
