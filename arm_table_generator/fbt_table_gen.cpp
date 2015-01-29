@@ -137,6 +137,6 @@ void generate_tables(ofstream& out, string prefix) {
   }
   out << "};" << endl << endl;
 
-  /* close the ifdef from the begining */
+  /* close the ifdef from the beginning */
   out << "#endif  /* " << PREFIX << "_OPCODE_TABLES_H */" << endl << endl;
 }

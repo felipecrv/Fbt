@@ -3,97 +3,186 @@
 
 #include "arm_opcode.h"
 
-/* Basic Mnemonics
- *
- * AND = Logical And
- * MUL = Multiply registers
- * EOR = Logical Exclusive-or
- * MLA = Multiply and accumulate registers
- * SUB = Subtract from register
- * RSB = Subtract register from value
- * ADD = Add to register
- * ADC = Add to register with carry
- * SBC = Subtract from register with borrow
- * RSC = Subtract register from value with borrow
- * MRS = Move status word to register  (ARM6 and later)
- * SWP = Swap registers with memory word
- * TST = Test bits in register (Logical And)
- * MSR = Move value to status word  (ARM6 and later)
- * TEQ = Test equivalence of bits in register (Logical Exclusive-or)
- * CMP = Compare register to value (Subtract), setting flags
- * CMN = Compare register to negation of value (Add), setting flags
- * ORR = Logical Or
- * MOV = Move value to a register
- * BIC = Clear bits in register (NAND)
- * MVN = Move negation of value to a register
- * STR = Store word
- * LDR = Load word
- * STM = Store multiple words
- * LDM = Load multiple words
- * B = Branch
- * BL = Branch and link
- * SWI = Software interrupt
- *
- * Pseudo Instructions -- Shifts (MOV with shifted registers)
- *  ASR LSL LSR ROR RRX
- *
- *
- * Operand configurations
- *
- * lli = Logical shift-left by immediate
- * llr = Logical shift-left by register
- * lri = Logical shift-right by immediate
- * lrr = Logical shift-right by register
- * ari = Arithmetic shift-right by immediate
- * arr = Arithmetic shift-right by register
- * rri = Rotate right by immediate, or rotate right with extend (RRX)
- * rrr = Rotate right by register
- * lli = Logical shift-left by immediate
- * lri = Logical shift-right by immediate
- * ari = Arithmetic shift-right by immediate
- * rri = Rotate right by immediate, or rotate right with extend (RRX)
- * ptrm = Register offset, post-decrement
- * ptim = Immediate offset, post-decrement
- * ptrp = Register offset, post-increment
- * prrm = Register offset, pre-decrement
- * ofrm = Negative register offset
- * ofim = Negative immediate offset
- * prim = Immediate offset, pre-decrement
- * ofrp = Positive register offset
- * prrp = Register offset, pre-increment"
- * prip = Immediate offset, pre-increment
- * imm = Immediate value
- * ic = Immediate, CPSR
- * is = Immediate, SPSR
- * ptim = Immediate offset, post-decrement
- * ptip = Immediate offset, post-increment
- * ofip = Positive immediate offset
- * prrmll = Left-shifted register offset, pre-decrement
- * prrmlr = Right-shifted register offset, pre-decrement
- * prrmar = Arithmetic-right-shifted register offset, pre-decrement
- * prrmrr = Right-rotated register offset, pre-decrement
- * ofrmll = Negative left-shifted register offset
- * ofrmlr = Negative right-shifted register offset
- * ofrmar = Negative arithmetic-right-shifted register offset
- * ofrmrr = Negative right-rotated register offset
- * ofrpll = Positive left-shifted register offset
- * ofrplr = Positive right-shifted register offset
- * ofrpar = Positive arithmetic-right-shifted register offset
- * ofrprr = Positive right-rotated register offset
- * prrpll = Left-shifted register offset, pre-increment
- * prrplr = Right-shifted register offset, pre-increment
- * prrpar = Arithmetic-right-shifted register offset, pre-increment
- * prrprr = Right-rotated register offset, pre-increment
- * ofm = Negative offset
- * prm = Pre-decrement
- * ofp = Positive offset
- * prp = Pre-increment
- * unm = Unindexed, bits 7-0 available for copro use
- * ptm = Post-decrement
- * unp = Unindexed, bits 7-0 available for copro use
- * ptp = Post-increment
- * w = Write-Back
- * u = Use user-mode registers
+/*
+## Basic mnemonics
+
+AND = Logical And
+MUL = Multiply registers
+EOR = Logical Exclusive-or
+MLA = Multiply and accumulate registers
+SUB = Subtract from register
+RSB = Subtract register from value
+ADD = Add to register
+ADC = Add to register with carry
+SBC = Subtract from register with borrow
+RSC = Subtract register from value with borrow
+MRS = Move status word to register  (ARM6 and later)
+SWP = Swap registers with memory word
+TST = Test bits in register (Logical And)
+MSR = Move value to status word  (ARM6 and later)
+TEQ = Test equivalence of bits in register (Logical Exclusive-or)
+CMP = Compare register to value (Subtract), setting flags
+CMN = Compare register to negation of value (Add), setting flags
+ORR = Logical Or
+MOV = Move value to a register
+BIC = Clear bits in register (NAND)
+MVN = Move negation of value to a register
+STR = Store word
+LDR = Load word
+STM = Store multiple words
+LDM = Load multiple words
+B   = Branch
+BL  = Branch and link
+SWI = Software interrupt
+
+## Shift descriptions
+
+LSL = Logical Shift Left #n bits
+LSR = Logical Shift Right #n bits
+ASR = Arithmetic Shift Right #n bits
+ROR = Rotate Right #n bits
+RRX = Rotate Right 1 bit with Extend
+
+## Operand configurations, encoding, and syntax
+
+### Data processing
+
+lli = Logical shift-left by immediate
+lri = Logical shift-right by immediate
+ari = Arithmetic shift-right by immediate
+rri = Rotate right by immediate, or rotate right with extend (RRX)
++------------+-------------------------+-------------+-------------+---------------+-----+---+---------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8   7 | 6 5 | 4 | 3 2 1 0 |
++------------+-------------------------+-------------+-------------+---------------+-----+---+---------+
+|    cond    |  _  _  0  _  _  _  _  S |      Rn     |      Rd     |      imm5     |type | 0 |   Rm    |
++------------+-------------------------+-------------+-------------+---------------+-----+---+---------+
+<mnemonic>{S}{<c>} <Rd>, <Rm>, <Rn>{, shift}
+
+llr = Logical shift-left by register
+lrr = Logical shift-right by register
+arr = Arithmetic shift-right by register
+rrr = Rotate right by register
++------------+-------------------------+-------------+-------------+-----------+---+-----+---+---------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8 | 7 | 6 5 | 4 | 3 2 1 0 |
++------------+-------------------------+-------------+-------------+-----------+---+-----+---+---------+
+|    cond    |  _  _  0  _  _  _  _  S |     Rn      |      Rd     |     Rs    | 0 |type | 1 |   Rm    |
++------------+-------------------------+-------------+-------------+-----------+---+-----+---+---------+
+<mnemonic>{S}{<c>} <Rd>, <Rn>, <Rm>, <type> <Rs>
+
+imm = Immediate value
++------------+-------------------------+-------------+-------------+-----------------------------------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8   7   6 5   4   3 2 1 0 |
++------------+-------------------------+-------------+-------------+-----------------------------------+
+|    cond    |  _  _  1  _  _  _  _  S |     Rn      |      Rd     |              imm12                |
++------------+-------------------------+-------------+-------------+-----------------------------------+
+<mnemonic>{S}{<c>} <Rd>, <Rn>, #<cons>
+
+  Mnemonic   |        Bits 27:20       |      Remarks
+-------------+-------------------------+-------------------
+    AND{S}   |  0  0  I  0  0  0  0  S |
+    EOR{S}   |  0  0  I  0  0  0  1  S |
+    SUB{S}   |  0  0  I  0  0  1  0  S |
+    RSB{S}   |  0  0  I  0  0  1  1  S |
+    ADD{S}   |  0  0  I  0  1  0  0  S |
+    ADC{S}   |  0  0  I  0  1  0  1  S |
+    SBC{S}   |  0  0  I  0  1  1  0  S |
+    RSC{S}   |  0  0  I  0  1  1  1  S |
+    TSTS     |  0  0  I  1  0  0  0  1 | Rd = (0)(0)(0)(0)
+    TEQS     |  0  0  I  1  0  0  1  1 | Rd = (0)(0)(0)(0)
+    CMPS     |  0  0  I  1  0  1  0  1 | Rd = (0)(0)(0)(0)
+    CMNS     |  0  0  I  1  0  1  1  1 | Rd = (0)(0)(0)(0)
+    ORR{S}   |  0  0  I  1  1  0  0  S |
+    MOV{S}   |  0  0  I  1  1  0  1  S | Rn = (0)(0)(0)(0)
+    BIC{S}   |  0  0  I  1  1  1  0  S |
+    MVN{S}   |  0  0  I  1  1  1  1  S | Rn = (0)(0)(0)(0)
+
+### MUL and MLA
+
++------------+-------------------------+-------------+-------------+-----------+-------------+---------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8 | 7   6 5   4 | 3 2 1 0 |
++------------+-------------------------+-------------+-------------+-----------+-------------+---------+
+|    cond    |  0  0  0  0  0  0  0  S |     Rd      | (0)(0)(0)(0)|    Rm     | 1   0 0   1 |   Rn    | MUL
++------------+-------------------------+-------------+-------------+-----------+-------------+---------+
+|    cond    |  0  0  0  0  0  0  1  S |     Rd      |      Ra     |    Rm     | 1   0 0   1 |   Rn    | MLA
++------------+-------------------------+-------------+-------------+-----------+-------------+---------+
+MUL{S}{<c>} <Rd>, <Rn>, <Rm>
+MLA{S}{<c>} <Rd>, <Rn>, <Rm>, <Ra>
+
+TODO: encoding rules of other multiplication functions
+
+### Load/store
+
+ptrm = Register offset, post-decrement
+ptrp = Register offset, post-increment
+ofrm = Negative register offset
+prrm = Register offset, pre-decrement
+ofrp = Positive register offset
+prrp = Register offset, pre-increment"
++------------+-------------------------+-------------+-------------+------------+---------+---------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9  8 | 7 6 5 4 | 3 2 1 0 |
++------------+-------------------------+-------------+-------------+------------+---------+---------+
+|    cond    |  _  _  _  P  U  0  W  _ |    Rn       |      Rt     |(0)(0)(0)(0)| _ _ _ _ |    Rm   |
++------------+-------------------------+-------------+-------------+------------+---------+---------+
+
+ptim = Immediate offset, post-decrement
+ptip = Immediate offset, post-increment
+ofim = Negative immediate offset
+prim = Immediate offset, pre-decrement
+ofip = Positive immediate offset
+prip = Immediate offset, pre-increment
++------------+-------------------------+-------------+-------------+-----------+---------+---------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8 | 7 6 5 4 | 3 2 1 0 |
++------------+-------------------------+-------------+-------------+-----------+---------+---------+
+|    cond    |  _  _  _  P  U  1  W  _ |    Rn       |      Rt     |   imm4H   | _ _ _ _ |  imm4L  |
++------------+-------------------------+-------------+-------------+-----------+---------+---------+
+
+  Mnemonic   |        Bits 27:20       |    Bits 7:4
+-------------+-------------------------+--------------
+    STRH     |  0  0  0  P  U  I  W  0 |  1  0  1  1
+    LDRD     |  0  0  0  P  U  I  W  0 |  1  1  0  1
+    STRD     |  0  0  0  P  U  I  W  0 |  1  1  1  1
+    LDRH     |  0  0  0  P  U  I  W  1 |  1  0  1  1
+    LDRSB    |  0  0  0  P  U  I  W  1 |  1  1  0  1
+    LDRSH    |  0  0  0  P  U  I  W  1 |  1  1  1  1
+
+TODO: STR, LDR, STRT, LDRT, STRB, LDRB, STRBT, LDRBT
+
+rc =
+rs =
+TODO: MRS
+
+ic = Immediate, CPSR
+is = Immediate, SPSR
+TODO: MSR
+
+TODO: saturating addition/subtraction
+
+prrmll = Left-shifted register offset, pre-decrement
+prrmlr = Right-shifted register offset, pre-decrement
+prrmar = Arithmetic-right-shifted register offset, pre-decrement
+prrmrr = Right-rotated register offset, pre-decrement
+ofrmll = Negative left-shifted register offset
+ofrmlr = Negative right-shifted register offset
+ofrmar = Negative arithmetic-right-shifted register offset
+ofrmrr = Negative right-rotated register offset
+ofrpll = Positive left-shifted register offset
+ofrplr = Positive right-shifted register offset
+ofrpar = Positive arithmetic-right-shifted register offset
+ofrprr = Positive right-rotated register offset
+prrpll = Left-shifted register offset, pre-increment
+prrplr = Right-shifted register offset, pre-increment
+prrpar = Arithmetic-right-shifted register offset, pre-increment
+prrprr = Right-rotated register offset, pre-increment
+ofm = Negative offset
+prm = Pre-decrement
+ofp = Positive offset
+prp = Pre-increment
+unm = Unindexed, bits 7-0 available for copro use
+ptm = Post-decrement
+unp = Unindexed, bits 7-0 available for copro use
+ptp = Post-increment
+w = Write-Back
+u = Use user-mode registers
  */
 
 /* bits 7-4 */
@@ -1605,8 +1694,8 @@ instr_description table_opcode_onebyte[] = {
 /* 0xDE */ {0, "STC ptp", STC, "action_copy", "Store coprocessor data to memory"},
 /* 0xDF */ {0, "LDC ptp", LDC, "action_copy", "Load coprocessor data from memory"}
 
-/* 0xE0 - 0xEF: coprocessor data operations */
-/* 0xF0 - 0xFF: software interrupts */
+/* TODO: 0xE0 - 0xEF: coprocessor data operations */
+/* TODO: 0xF0 - 0xFF: software interrupts */
 };
 
 #endif  // ARM_OPCODE_MAP

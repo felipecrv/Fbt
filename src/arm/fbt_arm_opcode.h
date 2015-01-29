@@ -36,23 +36,24 @@
 #define MVN        DATA | 0x01
 #define MOVS       MOV | SET_APSR
 #define MVNS       MVN | SET_APSR
-#define CLZ        DATA | 0x02
+#define CLZ        DATA | 0x02 // FIX: doesn't belong to data?
 
 /* DATA_ARITH group */
-#define ADC        DATA_ARITH | 0x00
-#define ADD        DATA_ARITH | 0x01
-// ADR (not listed) is a pseudo instruction
-#define RSB        DATA_ARITH | 0x02
-#define RSC        DATA_ARITH | 0x03
+#define SUB        DATA_ARITH | 0x00
+#define RSB        DATA_ARITH | 0x01
+#define ADD        DATA_ARITH | 0x02
+#define ADC        DATA_ARITH | 0x03
 #define SBC        DATA_ARITH | 0x04
-#define SUB        DATA_ARITH | 0x05
-#define ADCS       ADC | SET_APSR
-#define ADDS       ADD | SET_APSR
-#define RSBS       RSB | SET_APSR
-#define RSCS       RSC | SET_APSR
-#define SBCS       SBC | SET_APSR
+#define RSC        DATA_ARITH | 0x05
+// ADR (not listed) is a pseudo instruction
 #define SUBS       SUB | SET_APSR
+#define RSBS       RSB | SET_APSR
+#define ADDS       ADD | SET_APSR
+#define ADCS       ADC | SET_APSR
+#define SBCS       SBC | SET_APSR
+#define RSCS       RSC | SET_APSR
 
+// FIX: doesn't belong to DATA?
 /* general multiply instructions */
 #define MLA        DATA_ARITH | 0x06
 #define MLS        DATA_ARITH | 0x07 // available in ARMv6T2, ARMv7
@@ -60,6 +61,7 @@
 #define MLAS       MLA | SET_APSR
 #define MULS       MUL | SET_APSR
 
+// FIX: doesn't belong to DATA?
 /* Signed Multiply (halfwords) */
 #define SMLABB     DATA_ARITH | 0x09
 #define SMLABT     DATA_ARITH | 0x0A
@@ -114,6 +116,7 @@
 #define UMULL      DATA_ARITH | 0x26
 #define UMULLS     UMULL | SET_APSR
 
+// FIX: doesn't belong to DATA?
 /* Saturating addition and subtraction instructions */
 #define QADD       DATA_ARITH | 0x27
 #define QSUB       DATA_ARITH | 0x28
@@ -122,23 +125,23 @@
 
 /* DATA_LOGIC group */
 #define AND        DATA_LOGIC | 0x00
-#define BIC        DATA_LOGIC | 0x01
-#define EOR        DATA_LOGIC | 0x02
-#define ORR        DATA_LOGIC | 0x03
+#define EOR        DATA_LOGIC | 0x01
+#define ORR        DATA_LOGIC | 0x02
+#define BIC        DATA_LOGIC | 0x03
 #define ANDS       AND | SET_APSR
-#define BICS       BIC | SET_APSR
 #define EORS       EOR | SET_APSR
 #define ORRS       ORR | SET_APSR
+#define BICS       BIC | SET_APSR
 
 /* DATA_COND group */
-#define CMN        DATA_COND | 0x00
-#define CMP        DATA_COND | 0x01
+#define TST        DATA_COND | 0x00
 #define TEQ        DATA_COND | 0x02
-#define TST        DATA_COND | 0x03
-#define CMNS       CMN | SET_APSR
-#define CMPS       CMP | SET_APSR
-#define TEQS       TEQ | SET_APSR
+#define CMP        DATA_COND | 0x03
+#define CMN        DATA_COND | 0x04
 #define TSTS       TST | SET_APSR
+#define TEQS       TEQ | SET_APSR
+#define CMPS       CMP | SET_APSR
+#define CMNS       CMN | SET_APSR
 
 /* BRANCH group */
 #define B          BRANCH | 0x00
@@ -179,8 +182,8 @@
 #define MSR        STATUS | 0x02
 
 /* COPROCESSOR group */
-#define LDC        0x01
-#define STC        0x01
+#define LDC        COPROCESSOR | 0x01
+#define STC        COPROCESSOR | 0x02
 
 /* MISC group */
 #define SWP        MISC | 0x00
