@@ -12,6 +12,9 @@ all: $(TABLE_GENERATOR)
 clean:
 	rm -f $(TABLE_GENERATOR) default_table_gen *.o fbt_opcode_tables.h
 
+%.o: %.cpp $(HEADERS)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 $(TABLE_GENERATOR): $(TABLE_GENERATOR).o fbt_table_gen.o $(HEADERS)
 	$(CXX) $(CXXFLAGS) -o $@ $(TABLE_GENERATOR).o fbt_table_gen.o
 
