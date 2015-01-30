@@ -87,14 +87,17 @@ imm = Immediate value
     ADC{S}   |  0  0  I  0  1  0  1  S |
     SBC{S}   |  0  0  I  0  1  1  0  S |
     RSC{S}   |  0  0  I  0  1  1  1  S |
-    TSTS     |  0  0  I  1  0  0  0  1 | Rd = (0)(0)(0)(0)
-    TEQS     |  0  0  I  1  0  0  1  1 | Rd = (0)(0)(0)(0)
-    CMPS     |  0  0  I  1  0  1  0  1 | Rd = (0)(0)(0)(0)
-    CMNS     |  0  0  I  1  0  1  1  1 | Rd = (0)(0)(0)(0)
+    TST*     |  0  0  I  1  0  0  0  1 | Rd = (0)(0)(0)(0)
+    TEQ*     |  0  0  I  1  0  0  1  1 | Rd = (0)(0)(0)(0)
+    CMP*     |  0  0  I  1  0  1  0  1 | Rd = (0)(0)(0)(0)
+    CMN*     |  0  0  I  1  0  1  1  1 | Rd = (0)(0)(0)(0)
     ORR{S}   |  0  0  I  1  1  0  0  S |
     MOV{S}   |  0  0  I  1  1  0  1  S | Rn = (0)(0)(0)(0)
     BIC{S}   |  0  0  I  1  1  1  0  S |
     MVN{S}   |  0  0  I  1  1  1  1  S | Rn = (0)(0)(0)(0)
+
+* The data comparison instructions always have the S bit (setting flags) on.
+  The S suffix in dropped in the assembly syntax as it would be redundant.
 
 ### MUL and MLA
 
@@ -527,21 +530,21 @@ instr_description table_opcode_10[] = {
 
 /* bits 7-4 */
 instr_description table_opcode_11[] = {
-/* 0x0 */ {0, "TSTS lli",   TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0x1 */ {0, "TSTS llr",   TSTS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0x2 */ {0, "TSTS lri",   TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0x3 */ {0, "TSTS lrr",   TSTS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0x4 */ {0, "TSTS ari",   TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0x5 */ {0, "TSTS arr",   TSTS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0x6 */ {0, "TSTS rri",   TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0x7 */ {0, "TSTS rrr",   TSTS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0x8 */ {0, "TSTS lli",   TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x0 */ {0, "TST lli",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x1 */ {0, "TST llr",    TSTS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x2 */ {0, "TST lri",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x3 */ {0, "TST lrr",    TSTS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x4 */ {0, "TST ari",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x5 */ {0, "TST arr",    TSTS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x6 */ {0, "TST rri",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x7 */ {0, "TST rrr",    TSTS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x8 */ {0, "TST lli",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "TSTS lri",   TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0xa */ {0, "TST lri",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
 /* 0xb */ {0, "LDRH ofrm",  LDRH,  NONE, "action_copy", "Load halfword"},
-/* 0xc */ {0, "TSTS ari",   TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0xc */ {0, "TST ari",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
 /* 0xd */ {0, "LDRSB ofrm", LDRSB, NONE, "action_copy", "Load signed byte"},
-/* 0xe */ {0, "TSTS rri",   TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0xe */ {0, "TST rri",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
 /* 0xf */ {0, "LDRSH ofrm", LDRSH, NONE, "action_copy", "Load signed halfword"}
 };
 
@@ -567,21 +570,21 @@ instr_description table_opcode_12[] = {
 
 /* bits 7-4 */
 instr_description table_opcode_13[] = {
-/* 0x0 */ {0, "TEQS lli",   TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0x1 */ {0, "TEQS llr",   TEQS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0x2 */ {0, "TEQS lri",   TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0x3 */ {0, "TEQS lrr",   TEQS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0x4 */ {0, "TEQS ari",   TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0x5 */ {0, "TEQS arr",   TEQS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0x6 */ {0, "TEQS rri",   TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0x7 */ {0, "TEQS rrr",   TEQS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0x8 */ {0, "TEQS lli",   TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x0 */ {0, "TEQ lli",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x1 */ {0, "TEQ llr",    TEQS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x2 */ {0, "TEQ lri",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x3 */ {0, "TEQ lrr",    TEQS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x4 */ {0, "TEQ ari",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x5 */ {0, "TEQ arr",    TEQS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x6 */ {0, "TEQ rri",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x7 */ {0, "TEQ rrr",    TEQS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x8 */ {0, "TEQ lli",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "TEQS lri",   TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0xa */ {0, "TEQ lri",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
 /* 0xb */ {0, "LDRH prrm",  LDRH,  NONE, "action_copy", "Load halfword"},
-/* 0xc */ {0, "TEQS ari",   TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0xc */ {0, "TEQ ari",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
 /* 0xd */ {0, "LDRSB prrm", LDRSB, NONE, "action_copy", "Load signed byte"},
-/* 0xe */ {0, "TEQS rri",   TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0xe */ {0, "TEQ rri",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
 /* 0xf */ {0, "LDRSH prrm", LDRSH, NONE, "action_copy", "Load signed halfword"}
 };
 
@@ -607,21 +610,21 @@ instr_description table_opcode_14[] = {
 
 /* bits 7-4 */
 instr_description table_opcode_15[] = {
-/* 0x0 */ {0, "CMPS lli",   CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0x1 */ {0, "CMPS llr",   CMPS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0x2 */ {0, "CMPS lri",   CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0x3 */ {0, "CMPS lrr",   CMPS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0x4 */ {0, "CMPS ari",   CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0x5 */ {0, "CMPS arr",   CMPS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0x6 */ {0, "CMPS rri",   CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0x7 */ {0, "CMPS rrr",   CMPS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0x8 */ {0, "CMPS lli",   CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x0 */ {0, "CMP lli",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x1 */ {0, "CMP llr",    CMPS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x2 */ {0, "CMP lri",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x3 */ {0, "CMP lrr",    CMPS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x4 */ {0, "CMP ari",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x5 */ {0, "CMP arr",    CMPS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x6 */ {0, "CMP rri",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x7 */ {0, "CMP rrr",    CMPS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x8 */ {0, "CMP lli",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "CMPS lri",   CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0xa */ {0, "CMP lri",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
 /* 0xb */ {0, "LDRH ofim",  LDRH,  NONE, "action_copy", "Load halfword"},
-/* 0xc */ {0, "CMPS ari",   CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0xc */ {0, "CMP ari",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
 /* 0xd */ {0, "LDRSB ofim", LDRSB, NONE, "action_copy", "Load signed byte"},
-/* 0xe */ {0, "CMPS rri",   CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0xe */ {0, "CMP rri",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
 /* 0xf */ {0, "LDRSH ofim", LDRSH, NONE, "action_copy", "Load signed halfword"}
 };
 
@@ -647,21 +650,21 @@ instr_description table_opcode_16[] = {
 
 /* bits 7-4 */
 instr_description table_opcode_17[] = {
-/* 0x0 */ {0, "CMNS lli",   CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0x1 */ {0, "CMNS llr",   CMNS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0x2 */ {0, "CMNS lri",   CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0x3 */ {0, "CMNS lrr",   CMNS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0x4 */ {0, "CMNS ari",   CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0x5 */ {0, "CMNS arr",   CMNS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0x6 */ {0, "CMNS rri",   CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0x7 */ {0, "CMNS rrr",   CMNS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0x8 */ {0, "CMNS lli",   CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x0 */ {0, "CMN lli",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x1 */ {0, "CMN llr",    CMNS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x2 */ {0, "CMN lri",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x3 */ {0, "CMN lrr",    CMNS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x4 */ {0, "CMN ari",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x5 */ {0, "CMN arr",    CMNS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x6 */ {0, "CMN rri",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x7 */ {0, "CMN rrr",    CMNS,  OPND_REG_SHIFT_BY_REG, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x8 */ {0, "CMN lli",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "CMNS lri",   CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0xa */ {0, "CMN lri",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
 /* 0xb */ {0, "LDRH prim",  LDRH,  NONE, "action_copy", "Load halfword"},
-/* 0xc */ {0, "CMNS ari",   CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0xc */ {0, "CMN ari",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
 /* 0xd */ {0, "LDRSB prim", LDRSB, NONE, "action_copy", "Load signed byte"},
-/* 0xe */ {0, "CMNS rri",   CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0xe */ {0, "CMN rri",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
 /* 0xf */ {0, "LDRSH prim", LDRSH, NONE, "action_copy", "Load signed halfword"}
 };
 
@@ -1518,13 +1521,13 @@ instr_description table_opcode_onebyte[] = {
 /* 0x2e */ {0, "RSC imm",    RSC,    OPND_IMM, "action_copy", "Subtract register from value with borrow"},
 /* 0x2f */ {0, "RSCS imm",   RSCS,   OPND_IMM, "action_copy", "Subtract register from value with borrow, setting flags"},
 /* 0x30 */ {0, "UNDEFINED",  NONE,   NONE, "", "NO_ACTION_CALLED"},
-/* 0x31 */ {0, "TSTS imm",   TSTS,   OPND_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
+/* 0x31 */ {0, "TST imm",    TSTS,   OPND_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
 /* 0x32 */ {0, "MSR ic",     MSR,    NONE, "action_copy", "Move value to status word"},
-/* 0x33 */ {0, "TEQS imm",   TEQS,   OPND_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
+/* 0x33 */ {0, "TEQ imm",    TEQS,   OPND_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
 /* 0x34 */ {0, "UNDEFINED",  NONE,   NONE, "", "NO_ACTION_CALLED"},
-/* 0x35 */ {0, "CMPS imm",   CMPS,   OPND_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
+/* 0x35 */ {0, "CMP imm",    CMPS,   OPND_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
 /* 0x36 */ {0, "MSR is",     MSR,    NONE, "action_copy", "Move value to status word"},
-/* 0x37 */ {0, "CMNS imm",   CMNS,   OPND_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
+/* 0x37 */ {0, "CMN imm",    CMNS,   OPND_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
 /* 0x38 */ {0, "ORR imm",    ORR,    OPND_IMM, "action_copy", "Logical Or"},
 /* 0x39 */ {0, "ORRS imm",   ORRS,   OPND_IMM, "action_copy", "Logical Or, setting flags"},
 /* 0x3a */ {0, "MOV imm",    MOV,    OPND_IMM, "action_copy", "Move value to a register"},
