@@ -24,11 +24,11 @@ CFLAGS += -I/lib/modules/$(shell uname -r)/build/arch/x86/include
 
 GEN_DIR=generated
 
-.PHONY: clean
+.PHONY: all clean
 
 all: $(LIBNAME).so $(LIBNAME).a
 
-$(LIBNAME).so: *.h generic/*.h $(FILES)
+$(LIBNAME).so: *.h ia32/*.h generic/*.h $(FILES)
 	mkdir -p $(GEN_DIR)
 	mkdir -p $(GEN_DIR)/generic
 	
@@ -50,8 +50,12 @@ $(LIBNAME).so: *.h generic/*.h $(FILES)
 $(LIBNAME).a:
 	ar cru $(LIBNAME).a libfastbt.o
 
+arm/fbt_opcode_tables.h:
+	make -C ../arm_table_generator fbt_opcode_tables.h
+	cp ../arm_table_generator/fbt_opcode_tables.h arm/
+
 clean:
 	rm -rf $(GEN_DIR)
-	rm -f *.o *.lo *.la *~ *.as *.out
+	rm -f *.o arm/*.o *.lo *.la *~ *.as *.out
 	rm -f $(LIBNAME).a
 	rm -f $(LIBNAME).so
