@@ -11,13 +11,6 @@
 
 using namespace std;
 
-typedef enum opcode_info {
-  OI_none,
-  OI_opcodeExtendsIntoFPU,
-  OI_opcodeExtendsIntoModRM,
-  OI_opcodeIsInModRM,
-} opcode_info_t;
-
 /*
  * The list of AnalysisFunction which will be called in sequence to define the
  * action to take for each instruction during translation.
@@ -43,14 +36,6 @@ static string lowercase(const string &str) {
 template<int w>
 static void print_hex(ostream& out, unsigned int x) {
   out << "0x" << hex << setw(w) << setfill('0') << x;
-}
-
-
-static instr_description *get_disasm_table_entry(const unsigned char* byte,
-                                                 const instr_description* table,
-                                                 unsigned int opcode_size,
-                                                 opcode_info_t &opcode_info) {
-  return NULL;
 }
 
 static string generate_table_name(const string& prefix, unsigned int opcode) {
