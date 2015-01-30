@@ -85,7 +85,7 @@ static
 #endif
 int fllprintfva(int fd, const char* format, va_list app)
 {
-  char buf[BUFSIZE_L+1];
+  char buf[BUFSIZE_L + 1];
 
   int bi = 0;     // index in the output string
   int fi = 0;     // index in the format string
@@ -97,23 +97,25 @@ int fllprintfva(int fd, const char* format, va_list app)
       fi++;
       unsigned char len = 0;
       /* limit len of output/datatype? */
-      if (format[fi]=='.') {
-        len=format[++fi]-0x30;
-        if (len>BUFSIZE_S) len=0;
+      if (format[fi] == '.') {
+        len = format[++fi] - 0x30;
+        if (len > BUFSIZE_S)
+          len = 0;
         fi++;
-        if (format[fi]-0x30>=0 && format[fi]-0x30<=9) {
+        if (format[fi] - 0x30 >= 0 && format[fi] - 0x30 <= 9) {
           /* two digit number */
-          len*=10;
-          len+=format[fi]-0x30;
+          len *= 10;
+          len += format[fi] - 0x30;
           fi++;
         }
       }
       char *pointer;
-      char revbuf[BUFSIZE_S+1];
+      char revbuf[BUFSIZE_S + 1];
       int i, val, length;
       unsigned int abs_d;
-      for (i=0; i<BUFSIZE_S+1; i++) revbuf[i]=0x0;
-      i=BUFSIZE_S; // initialize to back of buffer;
+      for (i = 0; i < BUFSIZE_S + 1; i++)
+        revbuf[i] = 0x0;
+      i = BUFSIZE_S; // initialize to back of buffer;
       switch (format[fi]) {
       case '%':
         buf[bi++] = '%';
@@ -126,35 +128,43 @@ int fllprintfva(int fd, const char* format, va_list app)
           revbuf[--i] = (char) (0x30 + abs_d % 10);
           abs_d /= 10;
         }
-        if (val == 0) revbuf[--i] = '0';
-        else if (val < 0) revbuf[--i] = '-';
+        if (val == 0) {
+          revbuf[--i] = '0';
+        } else {
+          if (val < 0)
+            revbuf[--i] = '-';
+        }
         // if enough space in large buffer copy all
         length = MIN(BUFSIZE_L - bi, BUFSIZE_S - i);
         fbt_strncpy(&buf[bi], &revbuf[i], length);
         bi += length;
         break;
       case 'p':
-        buf[bi++]='0';
-        buf[bi++]='x';
-        if (len<2) len=10;  /* ensure that len is large enough */
-        if (len!=0) len-=2;  /* make len smaller (preceding '0x') */
+        buf[bi++] = '0';
+        buf[bi++] = 'x';
+        if (len < 2) len = 10;  /* ensure that len is large enough */
+        if (len != 0) len -= 2;  /* make len smaller (preceding '0x') */
       case 'x':
         abs_d =  va_arg(app, unsigned int);
         while ((abs_d > 0) && (i > 0)) {
-          if ((abs_d&0xf) < 0xa) {
-            revbuf[--i] = 0x30 + (abs_d&0xf);
+          if ((abs_d & 0xf) < 0xa) {
+            revbuf[--i] = 0x30 + (abs_d & 0xf);
           } else {
-            revbuf[--i] = 0x57 + (abs_d&0xf);
+            revbuf[--i] = 0x57 + (abs_d & 0xf);
           }
           abs_d /= 16;
         }
-        if (abs_d == 0) revbuf[--i] = '0';
+        if (abs_d == 0)
+          revbuf[--i] = '0';
         /* fill leading 0s */
-        if (len!=0) while (len>(BUFSIZE_S-i)) revbuf[--i]='0';
+        if (len != 0) {
+          while (len>(BUFSIZE_S-i))
+            revbuf[--i]='0';
+        }
         length = MIN(BUFSIZE_L - bi, BUFSIZE_S - i);
-        if (length>len && len!=0) {
+        if (length > len && len != 0) {
           /* ensure that we stay in buffer */
-          i=BUFSIZE_S-len;
+          i = BUFSIZE_S - len;
           length = len;
         }
         fbt_strncpy(&buf[bi], &revbuf[i], length);
@@ -164,13 +174,14 @@ int fllprintfva(int fd, const char* format, va_list app)
         pointer = va_arg(app, char*);
         /* ensure that we stay in buffer */
         int slen = fbt_strnlen(pointer, BUFSIZE_L - bi);
-        if (slen>len && len!=0) slen=len;
+        if (slen > len && len != 0)
+          slen = len;
         fbt_strncpy(&buf[bi], pointer, slen);
         bi += slen;
         break;
       case '\0':
         /* end of format string, break out of while loop */
-        buf[bi]=format[fi];
+        buf[bi] = format[fi];
         end = 1;
         break;
       default:
@@ -193,6 +204,6 @@ int fllprintfva(int fd, const char* format, va_list app)
     }
     fi++;
   }
-  buf[BUFSIZE_L]=0x0;  /* guard */
+  buf[BUFSIZE_L] = 0x0;  /* guard */
   return fllwrite(fd, buf);
 }
