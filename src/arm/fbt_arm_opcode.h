@@ -214,9 +214,8 @@
 
 /* operand flags for DATA instructions (AND, EOR, ADD, MOV...) */
 #define   OPND_IMM              0x0001
-#define   OPND_REG              0x0002
 #define   OPND_REG_SHIFT_BY_IMM 0x0002
-#define   OPND_REG_SHIFT_BY_REG 0x0006
+#define   OPND_REG_SHIFT_BY_REG 0x0004
 
 #ifndef ARM_TABLE_GENERATOR
 

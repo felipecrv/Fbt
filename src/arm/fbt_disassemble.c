@@ -46,19 +46,35 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
     ARMOpcode *opcode = &opcode_table[opcode_table_key];
     uint32_t cond = (binary_instr >> 28) & 0xF;
 
-#define EMIT_TEXT_CODE(fmt, args...) fllprintf(out, fmt, ##args)
+#define EMIT_TEXT_CODE(fmt, args...) fllprintf(out, (fmt), ##args)
 
 #define EMIT_TEXT_INSTR(fmt, args...) \
-    fllprintf(out, "0x%x: %s%s\t", stream_addr, opcode->mnemonic, textual_conds[(cond)]); \
-    fllprintf(out, fmt, ##args)
+    EMIT_TEXT_CODE("0x%x: %.8x    %s%s\t", stream_addr, binary_instr, opcode->mnemonic, textual_conds[(cond)]); \
+    EMIT_TEXT_CODE((fmt), ##args)
+
+#define EMIT_TEXT_IMM12() \
+    do { \
+      if (rotation == 0) { \
+        EMIT_TEXT_CODE("#%d", base_value); \
+      } else { \
+        EMIT_TEXT_CODE("#%d, %d", base_value, rotation); \
+      } \
+      uint32_t rotated = rotate_right(base_value, rotation); \
+      if (rotated) { \
+        EMIT_TEXT_CODE("  ; 0x%x\n", rotated); \
+      } else { \
+        EMIT_TEXT_CODE("\n"); \
+      } \
+    } while(0)
 
     if ((opcode->opcode_flags & DATA) == DATA) {
-      int Rn = DECODE_REG(16, binary_instr);
-      int Rd = DECODE_REG(12, binary_instr);
+      uint8_t Rn = DECODE_REG(16, binary_instr);
+      uint8_t Rd = DECODE_REG(12, binary_instr);
 
       if ((opcode->operand_flags & OPND_REG_SHIFT_BY_IMM) == OPND_REG_SHIFT_BY_IMM) {
-        int imm5 = DECODE_IMM5(7, binary_instr);
-        int Rm = DECODE_REG(0, binary_instr);
+        uint8_t Rm = DECODE_REG(0, binary_instr);
+        uint8_t imm5 = DECODE_IMM5(7, binary_instr);
+        uint8_t shift_type = DECODE_SHIFT_TYPE(binary_instr);
 
         // <mnemonic>{S}{<c>}{<q>} {<Rd>,} <Rn>, <Rm>{, shift}
         switch (opcode->opcode_flags & 0x1FFF) {
@@ -83,7 +99,9 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
         }
         EMIT_TEXT_CODE("\n");
       } else if ((opcode->operand_flags & OPND_IMM) == OPND_IMM) {
-        int imm12 = binary_instr & 0xFFF;
+        uint32_t imm12 = DECODE_IMM12(binary_instr);
+        uint32_t rotation = (imm12 >> 7) & 0x1E;
+        uint32_t base_value = imm12 & 0xFF;
 
         // <mnemonic>{S}{<c>}{<q>} {<Rd>,} <Rn>, #<const>
         switch (opcode->opcode_flags & 0x1FFF) {
@@ -92,20 +110,23 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
           case CMP:
           case CMN:
             // Rd = (0)(0)(0)(0)
-            EMIT_TEXT_INSTR("%s, #%d\n", register_names[Rn], imm12);
+            EMIT_TEXT_INSTR("%s, ", register_names[Rn]);
+            EMIT_TEXT_IMM12();
             break;
           case MOV:
           case MVN:
             // Rn = (0)(0)(0)(0)
-            EMIT_TEXT_INSTR("%s, #%d\n", register_names[Rd], imm12);
+            EMIT_TEXT_INSTR("%s, ", register_names[Rd]);
+            EMIT_TEXT_IMM12();
             break;
           default:
-            EMIT_TEXT_INSTR("%s, %s, #%d\n", register_names[Rd], register_names[Rn], imm12);
+            EMIT_TEXT_INSTR("%s, %s, ", register_names[Rd], register_names[Rn]);
+            EMIT_TEXT_IMM12();
             break;
         }
       } else { // OPND_REG_SHIFT_BY_REG
-        int Rs = DECODE_REG(8, binary_instr);
-        int Rm = DECODE_REG(0, binary_instr);
+        uint8_t Rs = DECODE_REG(8, binary_instr);
+        uint8_t Rm = DECODE_REG(0, binary_instr);
 
         // <mnemonic>{S}{<c>}{<q>} {<Rd>,} <Rn>, <Rm>, <type> <Rs>
         EMIT_TEXT_INSTR(
