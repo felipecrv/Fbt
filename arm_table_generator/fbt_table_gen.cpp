@@ -72,7 +72,7 @@ static void generate_opcode_table(ofstream& out,
     if (mnemonic == "") {
       mnemonic = "UNDEFINED";
     }
-    string action = instr->defaultAction;
+    string action = instr->default_action;
     if (action == "") {
       action = "action_copy";
     }
@@ -81,6 +81,8 @@ static void generate_opcode_table(ofstream& out,
     print_hex<8>(out, opcode);
     out << " */ {";
     print_hex<8>(out, instr->opcode_flags);
+    out << ", ";
+    print_hex<8>(out, instr->operand_flags);
     out << ", {.handler = " << action << "}, ";
     out << "\"" << mnemonic << "\"" << "}";
     if (i < 15 || opcode_major_bits < 0xDF) {
@@ -111,8 +113,14 @@ void generate_tables(ofstream& out, string prefix) {
   out << "#ifndef " << PREFIX << "_OPCODE_TABLES_H" << endl;
   out << "#define " << PREFIX << "_OPCODE_TABLES_H" << endl;
   out << endl;
+  out << "#include \"../fbt_translate.h\"" << endl;
+  out << endl;
+  out << "enum translation_state action_copy(struct translate *ts) {" << endl;
+  out << "  // TODO: implement ARM actions" << endl;
+  out << "}" << endl;
+  out << endl;
 
-  out << "struct opcode opcode_table[] = {" << endl;
+  out << "ARMOpcode opcode_table[] = {" << endl;
   for (unsigned int i = 0; i <= 0xDF; i++) {
     stringstream temp;
     temp << hex << (i >> 4);

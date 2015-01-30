@@ -24,9 +24,11 @@ typedef struct instr_description_s {
    * LOAD_STORE | LDR...) */
   unsigned int opcode_flags;
 
+  /* flags for the operands */
+  unsigned int operand_flags;
 
   /* the following is specific to the table generator */
-  std::string defaultAction;
+  std::string default_action;
   std::string comment;
 } instr_description;
 
