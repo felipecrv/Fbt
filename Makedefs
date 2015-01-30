@@ -166,6 +166,8 @@ else
 endif
 CFLAGS += $(I386)
 
+CFLAGS += -std=c99
+
 # Path to the assembly generation DSL preprocessing step
 DSL_PATH=../DSL/src/parse.py
 
