@@ -41,7 +41,7 @@ LSL = Logical Shift Left #n bits
 LSR = Logical Shift Right #n bits
 ASR = Arithmetic Shift Right #n bits
 ROR = Rotate Right #n bits
-RRX = Rotate Right 1 bit with Extend
+RRX = Rotate Right 1 bit with Extend (not available in shift-by-register instructions)
 
 ## Operand configurations, encoding, and syntax
 
@@ -98,6 +98,30 @@ imm = Immediate value
 
 * The data comparison instructions always have the S bit (setting flags) on.
   The S suffix in dropped in the assembly syntax as it would be redundant.
+
+#### Shifts
+
+##### Shifts by immediate
+
+           |  type | by_reg |   imm5
+           | [6:5] |   4    |  [11:7]
+-----------+-------+--------+----------
+           |  0  0 |   0    |    0
+  LSL #<n> |  0  0 |   0    |   <n>
+  LSR #<n> |  0  1 |   0    | <n> % 32
+  ASR #<n> |  1  0 |   0    | <n> % 32
+  ROR #<n> |  1  1 |   0    |   <n>
+  RRX      |  1  1 |   0    |    0
+
+##### Shifts by register
+
+           |  type | by_reg
+           | [6:5] |   4
+-----------+-------+--------
+  LSL Rs   |  0  0 |   1
+  LSR Rs   |  0  1 |   1
+  ASR Rs   |  1  0 |   1
+  ROR Rs   |  1  1 |   1
 
 ### MUL and MLA
 
