@@ -51,14 +51,14 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
 #define EMIT_TEXT_CODE(fmt, args...) fllprintf(out, (fmt), ##args)
 
 #define EMIT_TEXT_INSTR(fmt, args...) \
-    EMIT_TEXT_CODE("0x%x: %.8x    %s%s\t", stream_addr, binary_instr, opcode->mnemonic, textual_conds[(cond)]); \
+    EMIT_TEXT_CODE("%x:  %.8x    %s%s\t", stream_addr, binary_instr, opcode->mnemonic, textual_conds[(cond)]); \
     EMIT_TEXT_CODE((fmt), ##args)
 
 #define EMIT_TEXT_PSEUDO_INSTR(mnemonic, fmt, args...) \
     if ((opcode->opcode_flags & SET_APSR) == SET_APSR) { \
-      EMIT_TEXT_CODE("0x%x: %.8x    %ss%s\t", stream_addr, binary_instr, (mnemonic), textual_conds[(cond)]); \
+      EMIT_TEXT_CODE("%x:  %.8x    %ss%s\t", stream_addr, binary_instr, (mnemonic), textual_conds[(cond)]); \
     } else { \
-      EMIT_TEXT_CODE("0x%x: %.8x    %s%s\t", stream_addr, binary_instr, (mnemonic), textual_conds[(cond)]); \
+      EMIT_TEXT_CODE("%x:  %.8x    %s%s\t", stream_addr, binary_instr, (mnemonic), textual_conds[(cond)]); \
     } \
     EMIT_TEXT_CODE((fmt), ##args)
 

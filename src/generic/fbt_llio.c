@@ -144,8 +144,9 @@ int fllprintfva(int fd, const char* format, va_list app)
         buf[bi++] = 'x';
         if (len < 2) len = 10;  /* ensure that len is large enough */
         if (len != 0) len -= 2;  /* make len smaller (preceding '0x') */
-      case 'x':
+      case 'x': {
         abs_d =  va_arg(app, unsigned int);
+        unsigned int initial_abs_d = abs_d;
         while ((abs_d > 0) && (i > 0)) {
           if ((abs_d & 0xf) < 0xa) {
             revbuf[--i] = 0x30 + (abs_d & 0xf);
@@ -154,7 +155,7 @@ int fllprintfva(int fd, const char* format, va_list app)
           }
           abs_d /= 16;
         }
-        if (abs_d == 0)
+        if (initial_abs_d == 0)
           revbuf[--i] = '0';
         /* fill leading 0s */
         if (len != 0) {
@@ -170,6 +171,7 @@ int fllprintfva(int fd, const char* format, va_list app)
         fbt_strncpy(&buf[bi], &revbuf[i], length);
         bi += length;
         break;
+      }
       case 's':
         pointer = va_arg(app, char*);
         /* ensure that we stay in buffer */
