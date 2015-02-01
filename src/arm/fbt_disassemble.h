@@ -6,10 +6,19 @@
 #include "../generic/fbt_llio.h"
 
 #define DECODE_REG(lowest_bit, x)    (((x) >> (lowest_bit)) & 0x0F)
-#define DECODE_IMM12(x)              ((x) & 0xFFF)
+
 #define DECODE_IMM5(lowest_bit, x)   (((x) >> (lowest_bit)) & 0x1F)
+#define DECODE_IMM12(x)              ((x) & 0xFFF)
+#define DECODE_IMM24(x)              ((x) & 0xFFFFFF)
+
 #define DECODE_SHIFT_TYPE(x)         (((x) >> 5) & 0x3)
 
+#define SIGN_EXTEND_32(x, len) \
+  do { \
+    if (x >> ((len) - 1)) { \
+      x |= (0xFFFFFFFF << (len)); \
+    } \
+  } while (0)
 
 static inline uint32_t rotate_right(uint32_t x, uint32_t shift) {
   return (x << (32 - shift)) | (x >> shift);

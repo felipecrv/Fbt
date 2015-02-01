@@ -10,10 +10,10 @@
  * An extension of the groups defined in
  * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204j/Cacbjbdg.html
  */
-#define DATA               0x00001000  // Data processing
-#define DATA_ARITH         0x00001100  // Data processing: arithmetic
-#define DATA_LOGIC         0x00001200  // Data processing: logical
-#define DATA_COND          0x00001300  // Data processing: conditional tests
+#define DATA_OTHER          0x00000000  // Data processing
+#define DATA_ARITH         0x00000100  // Data processing: arithmetic
+#define DATA_LOGIC         0x00000200  // Data processing: logical
+#define DATA_COND          0x00000300  // Data processing: conditional tests
 #define BRANCH             0x00000400  // Branch and control (EXEC on the ia32 version)
 #define LOAD_STORE         0x00000500  // Register load and store
 #define MULTI_LOAD_STORE   0x00000600  // Multiple register load and store
@@ -21,22 +21,23 @@
 #define COPROCESSOR        0x00000800  // Coprocessor instructions
 #define MISC               0x00000900
 
-#define SET_APSR           0x00002000
+#define SET_APSR           0x00001000
 
 /*
  * These constants are used as opcode_flags in the instruction structs.
  *
- *   ...  |      1 bit       | 5 bits |      8 bits
+ *   ...  |      1 bit       | 4 bits |      8 bits
  * -------+------------------+--------+-------------------
  * unused |   S (SET_APSR)   | group  | id within group
  */
+#define INSTR_GROUP_MASK   0xF00
 
-/* DATA group */
-#define MOV        DATA | 0x00
-#define MVN        DATA | 0x01
+/* DATA_OTHER group */
+#define MOV        DATA_OTHER | 0x00
+#define MVN        DATA_OTHER | 0x01
 #define MOVS       MOV | SET_APSR
 #define MVNS       MVN | SET_APSR
-#define CLZ        DATA | 0x02 // FIX: doesn't belong to data?
+#define CLZ        DATA_OTHER | 0x02 // FIX: doesn't belong to data?
 
 /* DATA_ARITH group */
 #define SUB        DATA_ARITH | 0x00
