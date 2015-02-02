@@ -10,27 +10,51 @@
  * An extension of the groups defined in
  * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204j/Cacbjbdg.html
  */
-#define DATA_OTHER          0x00000000  // Data processing
-#define DATA_ARITH         0x00000100  // Data processing: arithmetic
-#define DATA_LOGIC         0x00000200  // Data processing: logical
-#define DATA_COND          0x00000300  // Data processing: conditional tests
-#define BRANCH             0x00000400  // Branch and control (EXEC on the ia32 version)
-#define LOAD_STORE         0x00000500  // Register load and store
-#define MULTI_LOAD_STORE   0x00000600  // Multiple register load and store
-#define STATUS             0x00000700  // Status register access
-#define COPROCESSOR        0x00000800  // Coprocessor instructions
-#define MISC               0x00000900
+#define DATA_OTHER                0x00000000  // Data processing
+#define DATA_ARITH                0x00000100  // Data processing: arithmetic
+#define DATA_LOGIC                0x00000200  // Data processing: logical
+#define DATA_COND                 0x00000300  // Data processing: conditional tests
+#define BRANCH                    0x00000400  // Branch and control (EXEC on the ia32 version)
+#define LOAD_STORE                0x00000500  // Register load and store
+#define LOAD_STORE_EXT            0x00000600  // Register load and store (M-extension)
+#define MULTI_LOAD_STORE          0x00000700  // Multiple register load and store
+#define STATUS                    0x00000800  // Status register access
+#define COPROCESSOR               0x00000900  // Coprocessor instructions
+#define MISC                      0x00000A00
 
-#define SET_APSR           0x00001000
+#define SET_APSR                  0x00001000
+/* flags for load/store instructions */
+#define INSTR_LS_DATATYPE_MASK    0x0000e000
+// type/length of data being loaded/stored
+#define INSTR_WORD_LS             0x00000000
+#define INSTR_BYTE_LS             0x00002000
+#define INSTR_HALFWORD_LS         0x00004000
+#define INSTR_DUAL_LS             0x00006000
+#define INSTR_SIGNED_BYTE_LS      0x00008000
+#define INSTR_SIGNED_HALFWORD_LS  0x0000A000
+// whether the load/store instruction is a store
+#define INSTR_IS_STORE            0x00008000
 
 /*
  * These constants are used as opcode_flags in the instruction structs.
  *
- *   ...  |      1 bit       | 4 bits |      8 bits
- * -------+------------------+--------+-------------------
- * unused |   S (SET_APSR)   | group  | id within group
+ *   ...   |      1 bit      |   3 bits    |   1 bit       | 4 bits |      8 bits
+ * --------+-----------------+-------------+---------------+--------+-----------------
+ *         | INSTR_IS_STORE  | LS_DATATYPE |  S (SET_APSR) | group  | id within group
  */
 #define INSTR_GROUP_MASK   0xF00
+
+/* operand flags for DATA instructions (AND, EOR, ADD, MOV...) */
+#define OPND_IMM                          0x0001
+#define OPND_REG_SHIFT_BY_IMM             0x0002
+#define OPND_REG_SHIFT_BY_REG             0x0004
+/* operand flags for LOAD_STORE instructions (LDR, STR...) */
+#define OPND_IMM_OFFSET                   0x0001
+#define OPND_REG_OFFSET_SHIFT_BY_IMM      0x0002
+#define OPND_REG_OFFSET                   0x0004
+#define OPND_PRE_INDEX                    0x0008
+#define OPND_INCR_OFFSET                  0x0010
+#define OPND_WRITE_BACK                   0x0020
 
 /* DATA_OTHER group */
 #define MOV        DATA_OTHER | 0x00
@@ -151,32 +175,34 @@
 #define BLX        BRANCH | 0x03
 
 /* LOAD_STORE group */
-#define LDR        LOAD_STORE | 0x00
-#define STR        LOAD_STORE | 0x01
-#define LDRB       LOAD_STORE | 0x02
-#define STRB       LOAD_STORE | 0x03
-#define LDRBT      LOAD_STORE | 0x04
-#define STRBT      LOAD_STORE | 0x05
-#define LDRD       LOAD_STORE | 0x05
-#define STRD       LOAD_STORE | 0x07
-#define LDRH       LOAD_STORE | 0x08
-#define STRH       LOAD_STORE | 0x09
-#define LDRT       LOAD_STORE | 0x0A
-#define STRT       LOAD_STORE | 0x0B
-#define LDRSB      LOAD_STORE | 0x0C
-#define LDRSH      LOAD_STORE | 0x0D
+#define STR        LOAD_STORE | 0x00 | INSTR_WORD_LS | INSTR_IS_STORE
+#define LDR        LOAD_STORE | 0x01 | INSTR_WORD_LS
+#define STRB       LOAD_STORE | 0x02 | INSTR_BYTE_LS | INSTR_IS_STORE
+#define LDRB       LOAD_STORE | 0x03 | INSTR_BYTE_LS
+#define STRT       LOAD_STORE | 0x04 | INSTR_WORD_LS | INSTR_IS_STORE
+#define LDRT       LOAD_STORE | 0x05 | INSTR_WORD_LS
+#define STRBT      LOAD_STORE | 0x06 | INSTR_BYTE_LS | INSTR_IS_STORE
+#define LDRBT      LOAD_STORE | 0x07 | INSTR_BYTE_LS
+
+/* LOAD_STORE_EXT group */
+#define STRH       LOAD_STORE_EXT | 0x08 | INSTR_HALFWORD_LS        | INSTR_IS_STORE
+#define LDRH       LOAD_STORE_EXT | 0x09 | INSTR_HALFWORD_LS
+#define STRD       LOAD_STORE_EXT | 0x0A | INSTR_WORD_LS            | INSTR_IS_STORE
+#define LDRD       LOAD_STORE_EXT | 0x0B | INSTR_DUAL_LS
+#define LDRSB      LOAD_STORE_EXT | 0x0C | INSTR_SIGNED_BYTE_LS
+#define LDRSH      LOAD_STORE_EXT | 0x0D | INSTR_SIGNED_HALFWORD_LS
 
 /* MULTI_LOAD_STORE group */
-#define LDM        MULTI_LOAD_STORE | 0x00
-#define STM        MULTI_LOAD_STORE | 0x01
-#define LDMDA      MULTI_LOAD_STORE | 0x02
-#define STMDA      MULTI_LOAD_STORE | 0x03
-#define LDMDB      MULTI_LOAD_STORE | 0x04
-#define STMDB      MULTI_LOAD_STORE | 0x05
-#define LDMIA      MULTI_LOAD_STORE | 0x06
-#define STMIA      MULTI_LOAD_STORE | 0x07
-#define LDMIB      MULTI_LOAD_STORE | 0x08
-#define STMIB      MULTI_LOAD_STORE | 0x09
+#define STM        MULTI_LOAD_STORE | 0x00 | INSTR_IS_STORE
+#define LDM        MULTI_LOAD_STORE | 0x01
+#define STMDA      MULTI_LOAD_STORE | 0x02 | INSTR_IS_STORE
+#define LDMDA      MULTI_LOAD_STORE | 0x03
+#define STMDB      MULTI_LOAD_STORE | 0x04 | INSTR_IS_STORE
+#define LDMDB      MULTI_LOAD_STORE | 0x05
+#define STMIA      MULTI_LOAD_STORE | 0x06 | INSTR_IS_STORE
+#define LDMIA      MULTI_LOAD_STORE | 0x07
+#define STMIB      MULTI_LOAD_STORE | 0x08 | INSTR_IS_STORE
+#define LDMIB      MULTI_LOAD_STORE | 0x09
 
 /* STATUS group */
 #define MRS        STATUS | 0x01
@@ -212,11 +238,6 @@
 #define   SP       R13
 #define   LR       R14
 #define   PC       R15
-
-/* operand flags for DATA instructions (AND, EOR, ADD, MOV...) */
-#define   OPND_IMM              0x0001
-#define   OPND_REG_SHIFT_BY_IMM 0x0002
-#define   OPND_REG_SHIFT_BY_REG 0x0004
 
 #ifndef ARM_TABLE_GENERATOR
 

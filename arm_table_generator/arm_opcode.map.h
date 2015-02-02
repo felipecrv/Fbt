@@ -160,6 +160,72 @@ TODO: encoding rules of other multiplication functions
 
 ### Load/store
 
+#### 0  1  _
+
+Shifts are applied to the register offset -- Rm.
+
+ptrm<shift> = Register offset, post-decrement
+ptrp<shift> = Register offset, post-increment
+ofrm<shift> = Negative register offset
+prrm<shift> = Register offset, pre-decrement
+ofrp<shift> = Positive register offset
+prrp<shift> = Register offset, pre-increment"
++------------+-------------------------+-------------+-------------+---------------+-----+---+---------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8   7 | 6 5 | 4 | 3 2 1 0 |
++------------+-------------------------+-------------+-------------+---------------+-----+---+---------+
+|    cond    |  0  1  1  P  U  B  W  L |      Rn     |      Rt     |      imm5     |type | 0 |   Rm    |
++------------+-------------------------+-------------+-------------+---------------+-----+---+---------+
+STR{<c>} <Rt>, [<Rn>,  +/-<Rm>{, <shift>}]!  Offset
+STR{<c>} <Rt>, [<Rn>,  +/-<Rm>{, <shift>}]   Pre-dec/increment
+STR{<c>} <Rt>, [<Rn>], +/-<Rm>{, <shift>}    Post-dec/increment
+Same for: STRB, LDR, LDRB
+
+LDRT{<c>} <Rt>, [<Rn>], +/-<Rm> {, shift}  Post-dec/increment
+Same for: LDRBT, STRT, STRBT
+
+ptim = Immediate offset, post-decrement
+ptip = Immediate offset, post-increment
+ofim = Negative immediate offset
+prim = Immediate offset, pre-decrement
+ofip = Positive immediate offset
+prip = Immediate offset, pre-increment
++------------+-------------------------+-------------+-------------+-----------------------------------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8   7   6 5   4   3 2 1 0 |
++------------+-------------------------+-------------+-------------+-----------------------------------+
+|    cond    |  0  1  0  P  U  B  W  L |     Rn      |      Rt     |              imm12                |
++------------+-------------------------+-------------+-------------+-----------------------------------+
+STR{<c>} <Rt>, [<Rn> {, #+/-<imm}]    Offset:             index=True,  wback=False | mem[Rn +/- imm] := Rt        |
+STR{<c>} <Rt>, [<Rn>,   #+/-<imm>]!   Pre-dec/increment:  index=True,  wback=True  | mem[Rn += +/-imm] := Rt      | imm==1: mem[++Rn] := Rt
+STR{<c>} <Rt>, [<Rn>],  #+/-<imm>     Post-dec/increment: index=False, wback=True  | mem[Rn] :=  Rt, Rn += +/-imm | imm==1: mem[Rn++] := Rt
+Same for: STRB
+
+LDR{<c>} <Rt>, [<Rn> {, #+/-<imm}]    Offset:             index=True,  wback=False | Rt := mem[Rn +/- imm]       |
+LDR{<c>} <Rt>, [<Rn>,   #+/-<imm>]!   Pre-dec/increment:  index=True,  wback=True  | Rt := mem[Rn += +/-imm]     | imm==1: Rt := mem[++Rn]
+LDR{<c>} <Rt>, [<Rn>],  #+/-<imm>     Post-dec/increment: index=False, wback=True  | Rt := mem[Rn], Rn += +/-imm | imm==1: Rt := mem[Rn++]
+Same for: LDRB
+
+LDRT{<c>} <Rt>, [<Rn>] {, #+/-<imm>}  Post-dec/increment
+Same for: LDRBT, STRT, STRBT
+
+  Mnemonic   |        Bits 27:20
+-------------+-------------------------
+    STR      |  0  1  R  P  U  0  W  0
+    LDR      |  0  1  R  P  U  0  W  1
+    STRB     |  0  1  R  P  U  1  W  0
+    LDRB     |  0  1  R  P  U  1  W  1
+    STRT     |  0  1  R  0  U  0  1  0
+    LDRT     |  0  1  R  0  U  0  1  1
+    STRBT    |  0  1  R  0  U  1  1  0
+    LDRBT    |  0  1  R  0  U  1  1  1
+
+R = set if the instructiont takes a Register offset
+P = set for Pre-dec|increment - clear for post-dec|increment
+U = Up/down bit - set for increment - clear for decrement
+B = Byte/word transfer - set for Byte transfer
+W = set for Write back into base register
+
+#### 0  0  0 (M-extension)
+
 ptrm = Register offset, post-decrement
 ptrp = Register offset, post-increment
 ofrm = Negative register offset
@@ -169,7 +235,9 @@ prrp = Register offset, pre-increment"
 +------------+-------------------------+-------------+-------------+------------+---------+---------+
 |31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9  8 | 7 6 5 4 | 3 2 1 0 |
 +------------+-------------------------+-------------+-------------+------------+---------+---------+
-|    cond    |  _  _  _  P  U  0  W  _ |    Rn       |      Rt     |(0)(0)(0)(0)| _ _ _ _ |    Rm   |
+|    cond    |  0  0  0  P  U  0  W  _ |    Rn       |      Rt     |(0)(0)(0)(0)| _ _ _ _ |    Rm   |
++------------+-------------------------+-------------+-------------+------------+---------+---------+
+|    cond    |  0  0  0  P  U  0  W  _ |    Rn       |      Rt     |     Rt2    | _ _ _ _ |    Rm   | Dual
 +------------+-------------------------+-------------+-------------+------------+---------+---------+
 
 ptim = Immediate offset, post-decrement
@@ -181,19 +249,25 @@ prip = Immediate offset, pre-increment
 +------------+-------------------------+-------------+-------------+-----------+---------+---------+
 |31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8 | 7 6 5 4 | 3 2 1 0 |
 +------------+-------------------------+-------------+-------------+-----------+---------+---------+
-|    cond    |  _  _  _  P  U  1  W  _ |    Rn       |      Rt     |   imm4H   | _ _ _ _ |  imm4L  |
+|    cond    |  0  0  0  P  U  1  W  _ |    Rn       |      Rt     |   imm4H   | _ _ _ _ |  imm4L  |
 +------------+-------------------------+-------------+-------------+-----------+---------+---------+
 
   Mnemonic   |        Bits 27:20       |    Bits 7:4
 -------------+-------------------------+--------------
     STRH     |  0  0  0  P  U  I  W  0 |  1  0  1  1
-    LDRD     |  0  0  0  P  U  I  W  0 |  1  1  0  1
-    STRD     |  0  0  0  P  U  I  W  0 |  1  1  1  1
     LDRH     |  0  0  0  P  U  I  W  1 |  1  0  1  1
+    STRD     |  0  0  0  P  U  I  W  0 |  1  1  1  1
+    LDRD     |  0  0  0  P  U  I  W  0 |  1  1  0  1  The bit 20 is 0 and it's a load!
     LDRSB    |  0  0  0  P  U  I  W  1 |  1  1  0  1
     LDRSH    |  0  0  0  P  U  I  W  1 |  1  1  1  1
 
-TODO: STR, LDR, STRT, LDRT, STRB, LDRB, STRBT, LDRBT
+
+P = set for Pre-dec|increment - clear for post-dec|increment
+U = Up/down bit - set for increment - clear for decrement
+I = set if the instruction takes an Immediate offset
+W = set for Write back into base register
+
+###
 
 rc =
 rs =
@@ -246,11 +320,11 @@ instr_description table_opcode_00[] = {
 /* 0x8 */ {0, "AND lli",   AND,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical And"},
 /* 0x9 */ {0, "MUL",       MUL,  NONE, "action_copy", "Multiply registers"},
 /* 0xa */ {0, "AND lri",   AND,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical And"},
-/* 0xb */ {0, "STRH ptrm", STRH, NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ptrm", STRH, OPND_REG_OFFSET, "action_copy", "Store halfword"},
 /* 0xc */ {0, "AND ari",   AND,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical And"},
-/* 0xd */ {0, "LDRD ptrm", LDRD, NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ptrm", LDRD, OPND_REG_OFFSET, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "AND rri",   AND,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical And"},
-/* 0xf */ {0, "STRD ptrm", STRD, NONE, "action_copy", "Store doubleword"},
+/* 0xf */ {0, "STRD ptrm", STRD, OPND_REG_OFFSET, "action_copy", "Store doubleword"},
 };
 
 /* bits 7-4 */
@@ -266,11 +340,11 @@ instr_description table_opcode_01[] = {
 /* 0x8 */ {0, "ANDS lli",   ANDS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical And, setting flags"},
 /* 0x9 */ {0, "MULS",       MULS,  NONE, "action_copy", "Multiply registers, setting flag"},
 /* 0xa */ {0, "ANDS lri",   ANDS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical And, setting flags"},
-/* 0xb */ {0, "LDRH ptrm",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ptrm",  LDRH,  OPND_REG_OFFSET, "action_copy", "Load halfword"},
 /* 0xc */ {0, "ANDS ari",   ANDS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical And, setting flags"},
-/* 0xd */ {0, "LDRSB ptrm", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ptrm", LDRSB, OPND_REG_OFFSET, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "ANDS rri",   ANDS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical And, setting flags"},
-/* 0xf */ {0, "LDRSH ptrm", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ptrm", LDRSH, OPND_REG_OFFSET, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -286,11 +360,11 @@ instr_description table_opcode_02[] = {
 /* 0x8 */ {0, "EOR lli",   EOR,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Exclusive-or"},
 /* 0x9 */ {0, "MLA aa",    MLA,  NONE, "action_copy", "Multiply and accumulate registers"},
 /* 0xa */ {0, "EOR lri",   EOR,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Exclusive-or"},
-/* 0xb */ {0, "STRH ptrm", STRH, NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ptrm", STRH, OPND_REG_OFFSET | OPND_WRITE_BACK, "action_copy", "Store halfword"},
 /* 0xc */ {0, "EOR ari",   EOR,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Exclusive-or"},
-/* 0xd */ {0, "LDRD ptrm", LDRD, NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ptrm", LDRD, OPND_REG_OFFSET | OPND_WRITE_BACK, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "EOR rri",   EOR,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Exclusive-or"},
-/* 0xf */ {0, "STRD ptrm", STRD, NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ptrm", STRD, OPND_REG_OFFSET | OPND_WRITE_BACK, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -306,11 +380,11 @@ instr_description table_opcode_03[] = {
 /* 0x8 */ {0, "EORS lli",   EORS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Exclusive-or, setting flags"},
 /* 0x9 */ {0, "MLAS",       MLAS,  NONE, "action_copy", "Multiply and accumulate registers, setting flags"},
 /* 0xa */ {0, "EORS lri",   EORS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Exclusive-or, setting flags"},
-/* 0xb */ {0, "LDRH ptrm",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ptrm",  LDRH,  OPND_REG_OFFSET | OPND_WRITE_BACK, "action_copy", "Load halfword"},
 /* 0xc */ {0, "EORS ari",   EORS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Exclusive-or, setting flags"},
-/* 0xd */ {0, "LDRSB ptrm", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ptrm", LDRSB, OPND_REG_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "EORS rri",   EORS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Exclusive-or, setting flags"},
-/* 0xf */ {0, "LDRSH ptrm", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ptrm", LDRSH, OPND_REG_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -326,11 +400,11 @@ instr_description table_opcode_04[] = {
 /* 0x8 */ {0, "SUB lli",   SUB,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register"},
 /* 0x9 */ {0, "",          NONE, NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "SUB lri",   SUB,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register"},
-/* 0xb */ {0, "STRH ptim", STRH, NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ptim", STRH, OPND_IMM_OFFSET, "action_copy", "Store halfword"},
 /* 0xc */ {0, "SUB ari",   SUB,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register"},
-/* 0xd */ {0, "LDRD ptim", LDRD, NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ptim", LDRD, OPND_IMM_OFFSET, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "SUB rri",   SUB,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register"},
-/* 0xf */ {0, "STRD ptim", STRD, NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ptim", STRD, OPND_IMM_OFFSET, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -346,11 +420,11 @@ instr_description table_opcode_05[] = {
 /* 0x8 */ {0, "SUBS lli",   SUBS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract, setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "SUBS lri",   SUBS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract, setting flags"},
-/* 0xb */ {0, "LDRH ptim",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ptim",  LDRH,  OPND_IMM_OFFSET, "action_copy", "Load halfword"},
 /* 0xc */ {0, "SUBS ari",   SUBS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract, setting flags"},
-/* 0xd */ {0, "LDRSB ptim", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ptim", LDRSB, OPND_IMM_OFFSET, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "SUBS rri",   SUBS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract, setting flags"},
-/* 0xf */ {0, "LDRSH ptim", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ptim", LDRSH, OPND_IMM_OFFSET, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -366,11 +440,11 @@ instr_description table_opcode_06[] = {
 /* 0x8 */ {0, "RSB lli",   RSB,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value"},
 /* 0x9 */ {0, "",          NONE, NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "RSB lri",   RSB,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value"},
-/* 0xb */ {0, "STRH ptim", STRH, NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ptim", STRH, OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Store halfword"},
 /* 0xc */ {0, "RSB ari",   RSB,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value"},
-/* 0xd */ {0, "LDRD ptim", LDRD, NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ptim", LDRD, OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "RSB rri",   RSB,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value"},
-/* 0xf */ {0, "STRD ptim", STRD, NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ptim", STRD, OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -386,11 +460,11 @@ instr_description table_opcode_07[] = {
 /* 0x8 */ {0, "RSBS lli",   RSBS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Reverse Subtract, setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "RSBS lri",   RSBS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Reverse Subtract, setting flags"},
-/* 0xb */ {0, "LDRH ptim",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ptim",  LDRH,  OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Load halfword"},
 /* 0xc */ {0, "RSBS ari",   RSBS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Reverse Subtract, setting flags"},
-/* 0xd */ {0, "LDRSB ptim", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ptim", LDRSB, OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "RSBS rri",   RSBS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Reverse Subtract, setting flags"},
-/* 0xf */ {0, "LDRSH ptim", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ptim", LDRSH, OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -406,11 +480,11 @@ instr_description table_opcode_08[] = {
 /* 0x8 */ {0, "ADD lli",   ADD,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register"},
 /* 0x9 */ {0, "UMULL",     UMULL, NONE, "action_copy", "Unsigned long multiply (32x32 to 64)"},
 /* 0xa */ {0, "ADD lri",   ADD,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register"},
-/* 0xb */ {0, "STRH ptrp", STRH,  NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ptrp", STRH,  OPND_REG_OFFSET | OPND_INCR_OFFSET, "action_copy", "Store halfword"},
 /* 0xc */ {0, "ADD ari",   ADD,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register"},
-/* 0xd */ {0, "LDRD ptrp", LDRD,  NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ptrp", LDRD,  OPND_REG_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "ADD rri",   ADD,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register"},
-/* 0xf */ {0, "STRD ptrp", STRD,  NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ptrp", STRD,  OPND_REG_OFFSET | OPND_INCR_OFFSET, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -426,11 +500,11 @@ instr_description table_opcode_09[] = {
 /* 0x8 */ {0, "ADDS lli",   ADDS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register, setting flags"},
 /* 0x9 */ {0, "UMULLS",     UMULLS, NONE, "action_copy", "Unsigned long multiply, setting flags"},
 /* 0xa */ {0, "ADDS lri",   ADDS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register, setting flags"},
-/* 0xb */ {0, "LDRH ptrp",  LDRH,   NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ptrp",  LDRH,   OPND_REG_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load halfword"},
 /* 0xc */ {0, "ADDS ari",   ADDS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register, setting flags"},
-/* 0xd */ {0, "LDRSB ptrp", LDRSB,  NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ptrp", LDRSB,  OPND_REG_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "ADDS rri",   ADDS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register, setting flags"},
-/* 0xf */ {0, "LDRSH ptrp", LDRSH,  NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ptrp", LDRSH,  OPND_REG_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -446,11 +520,11 @@ instr_description table_opcode_0a[] = {
 /* 0x8 */ {0, "ADC lli",   ADC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register with carry"},
 /* 0x9 */ {0, "UMLAL",     UMLAL, NONE, "action_copy", "Unsigned long multiply and accumulate"},
 /* 0xa */ {0, "ADC lri",   ADC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register with carry"},
-/* 0xb */ {0, "STRH ptrp", STRH,  NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ptrp", STRH,  OPND_REG_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store halfword"},
 /* 0xc */ {0, "ADC ari",   ADC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register with carry"},
-/* 0xd */ {0, "LDRD ptrp", LDRD,  NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ptrp", LDRD,  OPND_REG_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "ADC rri",   ADC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register with carry"},
-/* 0xf */ {0, "STRD ptrp", STRD,  NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ptrp", STRD,  OPND_REG_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -466,11 +540,11 @@ instr_description table_opcode_0b[] = {
 /* 0x8 */ {0, "ADCS lli",   ADCS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register with carry, setting flags"},
 /* 0x9 */ {0, "UMLALS",     UMLALS, NONE, "action_copy", "Unsigned long multiply and accumulate, setting flags"},
 /* 0xa */ {0, "ADCS lri",   ADCS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register with carry, setting flags"},
-/* 0xb */ {0, "LDRH ptrp",  LDRH,   NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ptrp",  LDRH,   OPND_REG_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load halfword"},
 /* 0xc */ {0, "ADCS ari",   ADCS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register with carry, setting flags"},
-/* 0xd */ {0, "LDRSB ptrp", LDRSB,  NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ptrp", LDRSB,  OPND_REG_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "ADCS rri",   ADCS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Add to register with carry, setting flags"},
-/* 0xf */ {0, "LDRSH ptrp", LDRSH,  NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ptrp", LDRSH,  OPND_REG_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -486,11 +560,11 @@ instr_description table_opcode_0c[] = {
 /* 0x8 */ {0, "SBC lli",   SBC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register with borrow"},
 /* 0x9 */ {0, "SMULL",     SMULL, NONE, "action_copy", "Signed long multiply (32x32 to 64)"},
 /* 0xa */ {0, "SBC lri",   SBC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register with borrow"},
-/* 0xb */ {0, "STRH ptip", STRH,  NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ptip", STRH,  OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Store halfword"},
 /* 0xc */ {0, "SBC ari",   SBC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register with borrow"},
-/* 0xd */ {0, "LDRD ptip", LDRD,  NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ptip", LDRD,  OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "SBC rri",   SBC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register with borrow"},
-/* 0xf */ {0, "STRD ptip", STRD,  NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ptip", STRD,  OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -506,11 +580,11 @@ instr_description table_opcode_0d[] = {
 /* 0x8 */ {0, "SBCS lli",   SBCS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register with borrow, setting flags"},
 /* 0x9 */ {0, "SMULLS",     SMULLS, NONE, "action_copy", "Signed long multiply, setting flags"},
 /* 0xa */ {0, "SBCS lri",   SBCS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register with borrow, setting flags"},
-/* 0xb */ {0, "LDRH ptip",  LDRH,   NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ptip",  LDRH,   OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load halfword"},
 /* 0xc */ {0, "SBCS ari",   SBCS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register with borrow, setting flags"},
-/* 0xd */ {0, "LDRSB ptip", LDRSB,  NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ptip", LDRSB,  OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "SBCS rri",   SBCS,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract from register with borrow, setting flags"},
-/* 0xf */ {0, "LDRSH ptip", LDRSH,  NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ptip", LDRSH,  OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -526,11 +600,11 @@ instr_description table_opcode_0e[] = {
 /* 0x8 */ {0, "RSC lli",   RSC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value with borrow"},
 /* 0x9 */ {0, "SMLAL",     SMLAL, NONE, "action_copy", "Signed long multiply and accumulate"},
 /* 0xa */ {0, "RSC lri",   RSC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value with borrow"},
-/* 0xb */ {0, "STRH ptip", STRH,  NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ptip", STRH,  OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store halfword"},
 /* 0xc */ {0, "RSC ari",   RSC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value with borrow"},
-/* 0xd */ {0, "LDRD ptip", LDRD,  NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ptip", LDRD,  OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "RSC rri",   RSC,   OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value with borrow"},
-/* 0xf */ {0, "STRD ptip", STRD,  NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ptip", STRD,  OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -546,11 +620,11 @@ instr_description table_opcode_0f[] = {
 /* 0x8 */ {0, "RSCS lli",   RSCS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value with borrow, setting flags"},
 /* 0x9 */ {0, "SMLALS",     NONE,  NONE, "action_copy", "Signed long multiply and ultiply , setting flags"},
 /* 0xa */ {0, "RSCS lri",   RSCS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value with borrow, setting flags"},
-/* 0xb */ {0, "LDRH ptip",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ptip",  LDRH,  OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load halfword"},
 /* 0xc */ {0, "RSCS ari",   RSCS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value with borrow, setting flags"},
-/* 0xd */ {0, "LDRSB ptip", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ptip", LDRSB, OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "RSCS rri",   RSCS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Subtract register from value with borrow, setting flags"},
-/* 0xf */ {0, "LDRSH ptip", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ptip", LDRSH, OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -566,11 +640,11 @@ instr_description table_opcode_10[] = {
 /* 0x8 */ {0, "SMLABB",    SMLABB, NONE, "action_copy", "Signed multiply bottom-half of first operand with bottom-half of second, and accumulate"},
 /* 0x9 */ {0, "SWP",       SWP,    NONE, "action_copy", "Swap registers with memory word"},
 /* 0xa */ {0, "SMLATB",    SMLATB, NONE, "action_copy", "Signed multiply top-half of first operand with bottom-half of second, and accumulate"},
-/* 0xb */ {0, "STRH ofrm", STRH,   NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ofrm", STRH,   OPND_PRE_INDEX, "action_copy", "Store halfword"},
 /* 0xc */ {0, "SMLABT",    SMLABT, NONE, "action_copy", "Signed multiply bottom-half of first operand with top-half of second, and accumulate"},
-/* 0xd */ {0, "LDRD ofrm", LDRD,   NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ofrm", LDRD,   OPND_PRE_INDEX, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "SMLATT",    SMLATT, NONE, "action_copy", "Signed multiply top-half of first operand with top-half of second, and accumulate"},
-/* 0xf */ {0, "STRD ofrm", STRD,   NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ofrm", STRD,   OPND_PRE_INDEX, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -586,11 +660,11 @@ instr_description table_opcode_11[] = {
 /* 0x8 */ {0, "TST lli",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "TST lri",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0xb */ {0, "LDRH ofrm",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ofrm",  LDRH,  OPND_PRE_INDEX, "action_copy", "Load halfword"},
 /* 0xc */ {0, "TST ari",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0xd */ {0, "LDRSB ofrm", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ofrm", LDRSB, OPND_PRE_INDEX, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "TST rri",    TSTS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test bits in register (Logical And), setting flags"},
-/* 0xf */ {0, "LDRSH ofrm", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ofrm", LDRSH, OPND_PRE_INDEX, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -606,11 +680,11 @@ instr_description table_opcode_12[] = {
 /* 0x8 */ {0, "SMLAWB",    SMLAWB, NONE, "action_copy", "Signed multiply first operand with bottom-half of second operand, keeping top 32 bits, and accumulate"},
 /* 0x9 */ {0, "",          NONE,   NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "SMULWB",    SMULWB, NONE, "action_copy", "Signed multiply first operand with bottom-half of second operand, keeping top 32 bits"},
-/* 0xb */ {0, "STRH prrm", STRH,   NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH prrm", STRH,   OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store halfword"},
 /* 0xc */ {0, "SMLAWT",    SMLAWT, NONE, "action_copy", "Signed multiply first operand with top-half of second operand, keeping top 32 bits, and accumulate"},
-/* 0xd */ {0, "LDRD prrm", LDRD,   NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD prrm", LDRD,   OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "SMULWT",    SMULWT, NONE, "action_copy", "Signed multiply first operand with top-half of second operand, keeping top 32 bits"},
-/* 0xf */ {0, "STRD prrm", STRD,   NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD prrm", STRD,   OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -626,11 +700,11 @@ instr_description table_opcode_13[] = {
 /* 0x8 */ {0, "TEQ lli",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "TEQ lri",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0xb */ {0, "LDRH prrm",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH prrm",  LDRH,  OPND_PRE_INDEX  | OPND_WRITE_BACK, "action_copy", "Load halfword"},
 /* 0xc */ {0, "TEQ ari",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0xd */ {0, "LDRSB prrm", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB prrm", LDRSB, OPND_PRE_INDEX  | OPND_WRITE_BACK, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "TEQ rri",    TEQS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Test equivalence of bits in register (Logical Exclusive-or), setting flags"},
-/* 0xf */ {0, "LDRSH prrm", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH prrm", LDRSH, OPND_PRE_INDEX  | OPND_WRITE_BACK, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -646,11 +720,11 @@ instr_description table_opcode_14[] = {
 /* 0x8 */ {0, "SMLALBB",   SMLALBB, NONE, "action_copy", "Signed multiply bottom-half of first operand with bottom-half of second, and 64-bit accumulate"},
 /* 0x9 */ {0, "SWPB",      SWPB,    NONE, "action_copy", "Swap registers with memory byte"},
 /* 0xa */ {0, "SMLALTB",   SMLALTB, NONE, "action_copy", "Signed multiply top-half of first operand with bottom-half of second, and 64-bit accumulate"},
-/* 0xb */ {0, "STRH ofim", STRH,    NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ofim", STRH,    OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Store halfword"},
 /* 0xc */ {0, "SMLALBT",   SMLALBT, NONE, "action_copy", "Signed multiply bottom-half of first operand with top-half of second, and 64-bit accumulate"},
-/* 0xd */ {0, "LDRD ofim", LDRD,    NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ofim", LDRD,    OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "SMLALTT",   SMLALTT, NONE, "action_copy", "Signed multiply top-half of first operand with top-half of second, and 64-bit accumulate"},
-/* 0xf */ {0, "STRD ofim", STRD,    NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ofim", STRD,    OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -666,11 +740,11 @@ instr_description table_opcode_15[] = {
 /* 0x8 */ {0, "CMP lli",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "CMP lri",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0xb */ {0, "LDRH ofim",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ofim",  LDRH,  OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Load halfword"},
 /* 0xc */ {0, "CMP ari",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0xd */ {0, "LDRSB ofim", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ofim", LDRSB, OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "CMP rri",    CMPS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to value (Subtract), setting flags"},
-/* 0xf */ {0, "LDRSH ofim", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ofim", LDRSH, OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -686,11 +760,11 @@ instr_description table_opcode_16[] = {
 /* 0x8 */ {0, "SMULBB",    SMULBB, NONE, "action_copy", "Signed multiply bottom-half of first operand with bottom-half of second"},
 /* 0x9 */ {0, "",          NONE,   NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "SMULTB",    SMULTB, NONE, "action_copy", "Signed multiply top-half of first operand with bottom-half of second"},
-/* 0xb */ {0, "STRH prim", STRH,   NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH prim", STRH,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store halfword"},
 /* 0xc */ {0, "SMULBT",    SMULBT, NONE, "action_copy", "Signed multiply bottom-half of first operand with top-half of second"},
-/* 0xd */ {0, "LDRD prim", LDRD,   NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD prim", LDRD,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "SMULTT",    SMULTT, NONE, "action_copy", "Signed multiply top-half of first operand with top-half of second"},
-/* 0xf */ {0, "STRD prim", STRD,   NONE, "action_copy", "Store doubleword"},
+/* 0xf */ {0, "STRD prim", STRD,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store doubleword"},
 };
 
 /* bits 7-4 */
@@ -706,11 +780,11 @@ instr_description table_opcode_17[] = {
 /* 0x8 */ {0, "CMN lli",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "CMN lri",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0xb */ {0, "LDRH prim",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH prim",  LDRH,  OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load halfword"},
 /* 0xc */ {0, "CMN ari",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0xd */ {0, "LDRSB prim", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB prim", LDRSB, OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "CMN rri",    CMNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Compare register to negation of value (Add), setting flags"},
-/* 0xf */ {0, "LDRSH prim", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH prim", LDRSH, OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -726,11 +800,11 @@ instr_description table_opcode_18[] = {
 /* 0x8 */ {0, "ORR lli",   ORR,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Or"},
 /* 0x9 */ {0, "",          NONE, NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "ORR lri",   ORR,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Or"},
-/* 0xb */ {0, "STRH ofrp", STRH, NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ofrp", STRH, OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store halfword"},
 /* 0xc */ {0, "ORR ari",   ORR,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Or"},
-/* 0xd */ {0, "LDRD ofrp", LDRD, NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ofrp", LDRD, OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "ORR rri",   ORR,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Or"},
-/* 0xf */ {0, "STRD ofrp", STRD, NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ofrp", STRD, OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -746,11 +820,11 @@ instr_description table_opcode_19[] = {
 /* 0x8 */ {0, "ORRS lli",   ORRS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Or, setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "ORRS lri",   ORRS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Or, setting flags"},
-/* 0xb */ {0, "LDRH ofrp",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ofrp",  LDRH,  OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load halfword"},
 /* 0xc */ {0, "ORRS ari",   ORRS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Or, setting flags"},
-/* 0xd */ {0, "LDRSB ofrp", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ofrp", LDRSB, OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "ORRS rri",   ORRS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Logical Or, setting flags"},
-/* 0xf */ {0, "LDRSH ofrp", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ofrp", LDRSH, OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -766,11 +840,11 @@ instr_description table_opcode_1a[] = {
 /* 0x8 */ {0, "MOV lli",   MOV,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move value to a register"},
 /* 0x9 */ {0, "",          NONE, NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "MOV lri",   MOV,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move value to a register"},
-/* 0xb */ {0, "STRH prrp", STRH, NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH prrp", STRH, OPND_PRE_INDEX  | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store halfword"},
 /* 0xc */ {0, "MOV ari",   MOV,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move value to a register"},
-/* 0xd */ {0, "LDRD prrp", LDRD, NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD prrp", LDRD, OPND_PRE_INDEX  | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "MOV rri",   MOV,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move value to a register"},
-/* 0xf */ {0, "STRD prrp", STRD, NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD prrp", STRD, OPND_PRE_INDEX  | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -786,11 +860,11 @@ instr_description table_opcode_1b[] = {
 /* 0x8 */ {0, "MOVS lli",   MOVS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move value to a register, setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "MOVS lri",   MOVS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move value to a register, setting flags"},
-/* 0xb */ {0, "LDRH prrp",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH prrp",  LDRH,  OPND_PRE_INDEX  | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load halfword"},
 /* 0xc */ {0, "MOVS ari",   MOVS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move value to a register, setting flags"},
-/* 0xd */ {0, "LDRSB prrp", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB prrp", LDRSB, OPND_PRE_INDEX  | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "MOVS rri",   MOVS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move value to a register, setting flags"},
-/* 0xf */ {0, "LDRSH prrp", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH prrp", LDRSH, OPND_PRE_INDEX  | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -806,11 +880,11 @@ instr_description table_opcode_1c[] = {
 /* 0x8 */ {0, "BIC lli",   BIC,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Clear bits in register (NAND)"},
 /* 0x9 */ {0, "",          NONE, NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "BIC lri",   BIC,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Clear bits in register (NAND)"},
-/* 0xb */ {0, "STRH ofip", STRH, NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH ofip", STRH, OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_PRE_INDEX, "action_copy", "Store halfword"},
 /* 0xc */ {0, "BIC ari",   BIC,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Clear bits in register (NAND)"},
-/* 0xd */ {0, "LDRD ofip", LDRD, NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD ofip", LDRD, OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_PRE_INDEX, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "BIC rri",   BIC,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Clear bits in register (NAND)"},
-/* 0xf */ {0, "STRD ofip", STRD, NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD ofip", STRD, OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_PRE_INDEX, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -826,11 +900,11 @@ instr_description table_opcode_1d[] = {
 /* 0x8 */ {0, "BICS lli",   BICS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Clear bits in register (NAND), setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "BICS lri",   BICS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Clear bits in register (NAND), setting flags"},
-/* 0xb */ {0, "LDRH ofip",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH ofip",  LDRH,  OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_PRE_INDEX, "action_copy", "Load halfword"},
 /* 0xc */ {0, "BICS ari",   BICS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Clear bits in register (NAND), setting flags"},
-/* 0xd */ {0, "LDRSB ofip", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB ofip", LDRSB, OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_PRE_INDEX, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "BICS rri",   BICS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Clear bits in register (NAND), setting flags"},
-/* 0xf */ {0, "LDRSH ofip", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH ofip", LDRSH, OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_PRE_INDEX, "action_copy", "Load signed halfword"}
 };
 
 /* bits 7-4 */
@@ -846,11 +920,11 @@ instr_description table_opcode_1e[] = {
 /* 0x8 */ {0, "MVN lli",   MVN,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move negation of value to a register"},
 /* 0x9 */ {0, "",          NONE, NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "MVN lri",   MVN,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move negation of value to a register"},
-/* 0xb */ {0, "STRH prip", STRH, NONE, "action_copy", "Store halfword"},
+/* 0xb */ {0, "STRH prip", STRH, OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store halfword"},
 /* 0xc */ {0, "MVN ari",   MVN,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move negation of value to a register"},
-/* 0xd */ {0, "LDRD prip", LDRD, NONE, "action_copy", "Load doubleword"},
+/* 0xd */ {0, "LDRD prip", LDRD, OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load doubleword"},
 /* 0xe */ {0, "MVN rri",   MVN,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move negation of value to a register"},
-/* 0xf */ {0, "STRD prip", STRD, NONE, "action_copy", "Store doubleword"}
+/* 0xf */ {0, "STRD prip", STRD, OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store doubleword"}
 };
 
 /* bits 7-4 */
@@ -866,652 +940,652 @@ instr_description table_opcode_1f[] = {
 /* 0x8 */ {0, "MVNS lli",   MVNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move negation of value to a register, setting flags"},
 /* 0x9 */ {0, "",           NONE,  NONE, "", "UNDEFINED"},
 /* 0xa */ {0, "MVNS lri",   MVNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move negation of value to a register, setting flags"},
-/* 0xb */ {0, "LDRH prip",  LDRH,  NONE, "action_copy", "Load halfword"},
+/* 0xb */ {0, "LDRH prip",  LDRH,  OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load halfword"},
 /* 0xc */ {0, "MVNS ari",   MVNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move negation of value to a register, setting flags"},
-/* 0xd */ {0, "LDRSB prip", LDRSB, NONE, "action_copy", "Load signed byte"},
+/* 0xd */ {0, "LDRSB prip", LDRSB, OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed byte"},
 /* 0xe */ {0, "MVNS rri",   MVNS,  OPND_REG_SHIFT_BY_IMM, "action_copy", "Move negation of value to a register, setting flags"},
-/* 0xf */ {0, "LDRSH prip", LDRSH, NONE, "action_copy", "Load signed halfword"}
+/* 0xf */ {0, "LDRSH prip", LDRSH, OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load signed halfword"}
 };
 
 /* gap */
 
 /* bits 7-4 */
 instr_description table_opcode_60[] = {
-/* 0x0 */ {0, "STR ptrmll", STR,  NONE, "action_copy", "Store word"},
+/* 0x0 */ {0, "STR ptrmll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STR ptrmlr", STR,  NONE, "action_copy", "Store word"},
+/* 0x2 */ {0, "STR ptrmlr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STR ptrmar", STR,  NONE, "action_copy", "Store word"},
+/* 0x4 */ {0, "STR ptrmar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STR ptrmrr", STR,  NONE, "action_copy", "Store word"},
+/* 0x6 */ {0, "STR ptrmrr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STR ptrmll", STR,  NONE, "action_copy", "Store word"},
+/* 0x8 */ {0, "STR ptrmll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STR ptrmlr", STR,  NONE, "action_copy", "Store word"},
+/* 0xa */ {0, "STR ptrmlr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STR ptrmar", STR,  NONE, "action_copy", "Store word"},
+/* 0xc */ {0, "STR ptrmar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STR ptrmrr", STR,  NONE, "action_copy", "Store word"},
+/* 0xe */ {0, "STR ptrmrr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_61[] = {
-/* 0x0 */ {0, "LDR ptrmll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x0 */ {0, "LDR ptrmll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDR ptrmlr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x2 */ {0, "LDR ptrmlr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDR ptrmar", LDR,  NONE, "action_copy", "Load word"},
+/* 0x4 */ {0, "LDR ptrmar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDR ptrmrr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x6 */ {0, "LDR ptrmrr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDR ptrmll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x8 */ {0, "LDR ptrmll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDR ptrmlr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xa */ {0, "LDR ptrmlr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDR ptrmar", LDR,  NONE, "action_copy", "Load word"},
+/* 0xc */ {0, "LDR ptrmar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDR ptrmrr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xe */ {0, "LDR ptrmrr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_62[] = {
-/* 0x0 */ {0, "STRT ptrmll", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x0 */ {0, "STRT ptrmll", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRT ptrmlr", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x2 */ {0, "STRT ptrmlr", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRT ptrmar", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x4 */ {0, "STRT ptrmar", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRT ptrmrr", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x6 */ {0, "STRT ptrmrr", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRT ptrmll", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x8 */ {0, "STRT ptrmll", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRT ptrmlr", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0xa */ {0, "STRT ptrmlr", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRT ptrmar", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0xc */ {0, "STRT ptrmar", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRT ptrmrr", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0xe */ {0, "STRT ptrmrr", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_63[] = {
-/* 0x0 */ {0, "LDRT ptrmll", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x0 */ {0, "LDRT ptrmll", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRT ptrmlr", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x2 */ {0, "LDRT ptrmlr", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRT ptrmar", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x4 */ {0, "LDRT ptrmar", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRT ptrmrr", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x6 */ {0, "LDRT ptrmrr", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRT ptrmll", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x8 */ {0, "LDRT ptrmll", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRT ptrmlr", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0xa */ {0, "LDRT ptrmlr", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRT ptrmar", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0xc */ {0, "LDRT ptrmar", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRT ptrmrr", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0xe */ {0, "LDRT ptrmrr", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_64[] = {
-/* 0x0 */ {0, "STRB ptrmll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x0 */ {0, "STRB ptrmll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRB ptrmlr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x2 */ {0, "STRB ptrmlr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRB ptrmar", STRB, NONE, "action_copy", "Store byte"},
+/* 0x4 */ {0, "STRB ptrmar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRB ptrmrr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x6 */ {0, "STRB ptrmrr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRB ptrmll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x8 */ {0, "STRB ptrmll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRB ptrmlr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xa */ {0, "STRB ptrmlr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRB ptrmar", STRB, NONE, "action_copy", "Store byte"},
+/* 0xc */ {0, "STRB ptrmar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRB ptrmrr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xe */ {0, "STRB ptrmrr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Store byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_65[] = {
-/* 0x0 */ {0, "LDRB ptrmll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x0 */ {0, "LDRB ptrmll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRB ptrmlr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x2 */ {0, "LDRB ptrmlr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRB ptrmar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x4 */ {0, "LDRB ptrmar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRB ptrmrr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x6 */ {0, "LDRB ptrmrr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRB ptrmll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x8 */ {0, "LDRB ptrmll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRB ptrmlr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xa */ {0, "LDRB ptrmlr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRB ptrmar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xc */ {0, "LDRB ptrmar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRB ptrmrr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xe */ {0, "LDRB ptrmrr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM, "action_copy", "Load byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_66[] = {
-/* 0x0 */ {0, "STRBT ptrmll", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x0 */ {0, "STRBT ptrmll", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x1 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRBT ptrmlr", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x2 */ {0, "STRBT ptrmlr", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x3 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRBT ptrmar", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x4 */ {0, "STRBT ptrmar", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x5 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRBT ptrmrr", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x6 */ {0, "STRBT ptrmrr", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x7 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRBT ptrmll", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x8 */ {0, "STRBT ptrmll", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x9 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRBT ptrmlr", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0xa */ {0, "STRBT ptrmlr", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0xb */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRBT ptrmar", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0xc */ {0, "STRBT ptrmar", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0xd */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRBT ptrmrr", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0xe */ {0, "STRBT ptrmrr", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0xf */ {0, "",             NONE,  NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_67[] = {
-/* 0x0 */ {0, "LDRBT ptrmll", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x0 */ {0, "LDRBT ptrmll", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x1 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRBT ptrmlr", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x2 */ {0, "LDRBT ptrmlr", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x3 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRBT ptrmar", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x4 */ {0, "LDRBT ptrmar", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x5 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRBT ptrmrr", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x6 */ {0, "LDRBT ptrmrr", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x7 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRBT ptrmll", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x8 */ {0, "LDRBT ptrmll", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x9 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRBT ptrmlr", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0xa */ {0, "LDRBT ptrmlr", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0xb */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRBT ptrmar", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0xc */ {0, "LDRBT ptrmar", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0xd */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRBT ptrmrr", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0xe */ {0, "LDRBT ptrmrr", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0xf */ {0, "",             NONE,  NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_68[] = {
-/* 0x0 */ {0, "STR ptrpll", STR,  NONE, "action_copy", "Store word"},
+/* 0x0 */ {0, "STR ptrpll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STR ptrplr", STR,  NONE, "action_copy", "Store word"},
+/* 0x2 */ {0, "STR ptrplr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STR ptrpar", STR,  NONE, "action_copy", "Store word"},
+/* 0x4 */ {0, "STR ptrpar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STR ptrprr", STR,  NONE, "action_copy", "Store word"},
+/* 0x6 */ {0, "STR ptrprr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STR ptrpll", STR,  NONE, "action_copy", "Store word"},
+/* 0x8 */ {0, "STR ptrpll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STR ptrplr", STR,  NONE, "action_copy", "Store word"},
+/* 0xa */ {0, "STR ptrplr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STR ptrpar", STR,  NONE, "action_copy", "Store word"},
+/* 0xc */ {0, "STR ptrpar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STR ptrprr", STR,  NONE, "action_copy", "Store word"},
+/* 0xe */ {0, "STR ptrprr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_69[] = {
-/* 0x0 */ {0, "LDR ptrpll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x0 */ {0, "LDR ptrpll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDR ptrplr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x2 */ {0, "LDR ptrplr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDR ptrpar", LDR,  NONE, "action_copy", "Load word"},
+/* 0x4 */ {0, "LDR ptrpar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDR ptrprr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x6 */ {0, "LDR ptrprr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDR ptrpll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x8 */ {0, "LDR ptrpll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDR ptrplr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xa */ {0, "LDR ptrplr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDR ptrpar", LDR,  NONE, "action_copy", "Load word"},
+/* 0xc */ {0, "LDR ptrpar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDR ptrprr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xe */ {0, "LDR ptrprr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_6a[] = {
-/* 0x0 */ {0, "STRT ptrpll", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x0 */ {0, "STRT ptrpll", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRT ptrplr", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x2 */ {0, "STRT ptrplr", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRT ptrpar", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x4 */ {0, "STRT ptrpar", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRT ptrprr", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x6 */ {0, "STRT ptrprr", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRT ptrpll", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0x8 */ {0, "STRT ptrpll", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRT ptrplr", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0xa */ {0, "STRT ptrplr", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRT ptrpar", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0xc */ {0, "STRT ptrpar", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRT ptrprr", STRT, NONE, "action_copy", "Store word from user-mode register"},
+/* 0xe */ {0, "STRT ptrprr", STRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_6b[] = {
-/* 0x0 */ {0, "LDRT ptrpll", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x0 */ {0, "LDRT ptrpll", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRT ptrplr", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x2 */ {0, "LDRT ptrplr", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRT ptrpar", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x4 */ {0, "LDRT ptrpar", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRT ptrprr", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x6 */ {0, "LDRT ptrprr", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRT ptrpll", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0x8 */ {0, "LDRT ptrpll", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRT ptrplr", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0xa */ {0, "LDRT ptrplr", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRT ptrpar", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0xc */ {0, "LDRT ptrpar", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRT ptrprr", LDRT, NONE, "action_copy", "Load word into user-mode register"},
+/* 0xe */ {0, "LDRT ptrprr", LDRT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_6c[] = {
-/* 0x0 */ {0, "STRB ptrpll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x0 */ {0, "STRB ptrpll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRB ptrplr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x2 */ {0, "STRB ptrplr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRB ptrpar", STRB, NONE, "action_copy", "Store byte"},
+/* 0x4 */ {0, "STRB ptrpar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRB ptrprr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x6 */ {0, "STRB ptrprr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRB ptrpll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x8 */ {0, "STRB ptrpll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRB ptrplr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xa */ {0, "STRB ptrplr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRB ptrpar", STRB, NONE, "action_copy", "Store byte"},
+/* 0xc */ {0, "STRB ptrpar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRB ptrprr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xe */ {0, "STRB ptrprr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_6d[] = {
-/* 0x0 */ {0, "LDRB ptrpll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x0 */ {0, "LDRB ptrpll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRB ptrplr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x2 */ {0, "LDRB ptrplr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRB ptrpar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x4 */ {0, "LDRB ptrpar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRB ptrprr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x6 */ {0, "LDRB ptrprr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRB ptrpll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x8 */ {0, "LDRB ptrpll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRB ptrplr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xa */ {0, "LDRB ptrplr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRB ptrpar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xc */ {0, "LDRB ptrpar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRB ptrprr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xe */ {0, "LDRB ptrprr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_6e[] = {
-/* 0x0 */ {0, "STRBT ptrpll", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x0 */ {0, "STRBT ptrpll", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x1 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRBT ptrplr", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x2 */ {0, "STRBT ptrplr", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x3 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRBT ptrpar", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x4 */ {0, "STRBT ptrpar", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x5 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRBT ptrprr", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x6 */ {0, "STRBT ptrprr", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x7 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRBT ptrpll", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0x8 */ {0, "STRBT ptrpll", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0x9 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRBT ptrplr", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0xa */ {0, "STRBT ptrplr", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0xb */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRBT ptrpar", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0xc */ {0, "STRBT ptrpar", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0xd */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRBT ptrprr", STRBT, NONE, "action_copy", "Store byte from user-mode register"},
+/* 0xe */ {0, "STRBT ptrprr", STRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
 /* 0xf */ {0, "",             NONE,  NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_6f[] = {
-/* 0x0 */ {0, "LDRBT ptrpll", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x0 */ {0, "LDRBT ptrpll", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x1 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRBT ptrplr", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x2 */ {0, "LDRBT ptrplr", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x3 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRBT ptrpar", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x4 */ {0, "LDRBT ptrpar", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x5 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRBT ptrprr", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x6 */ {0, "LDRBT ptrprr", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x7 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRBT ptrpll", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0x8 */ {0, "LDRBT ptrpll", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0x9 */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRBT ptrplr", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0xa */ {0, "LDRBT ptrplr", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0xb */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRBT ptrpar", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0xc */ {0, "LDRBT ptrpar", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0xd */ {0, "",             NONE,  NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRBT ptrprr", LDRBT, NONE, "action_copy", "Load byte into user-mode register"},
+/* 0xe */ {0, "LDRBT ptrprr", LDRBT, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
 /* 0xf */ {0, "",             NONE,  NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_70[] = {
-/* 0x0 */ {0, "STR ofrmll", STR,  NONE, "action_copy", "Store word"},
+/* 0x0 */ {0, "STR ofrmll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Store word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STR ofrmlr", STR,  NONE, "action_copy", "Store word"},
+/* 0x2 */ {0, "STR ofrmlr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Store word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STR ofrmar", STR,  NONE, "action_copy", "Store word"},
+/* 0x4 */ {0, "STR ofrmar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Store word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STR ofrmrr", STR,  NONE, "action_copy", "Store word"},
+/* 0x6 */ {0, "STR ofrmrr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Store word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STR ofrmll", STR,  NONE, "action_copy", "Store word"},
+/* 0x8 */ {0, "STR ofrmll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Store word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STR ofrmlr", STR,  NONE, "action_copy", "Store word"},
+/* 0xa */ {0, "STR ofrmlr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Store word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STR ofrmar", STR,  NONE, "action_copy", "Store word"},
+/* 0xc */ {0, "STR ofrmar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Store word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STR ofrmrr", STR,  NONE, "action_copy", "Store word"},
+/* 0xe */ {0, "STR ofrmrr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Store word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_71[] = {
-/* 0x0 */ {0, "LDR ofrmll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x0 */ {0, "LDR ofrmll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDR ofrmlr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x2 */ {0, "LDR ofrmlr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDR ofrmar", LDR,  NONE, "action_copy", "Load word"},
+/* 0x4 */ {0, "LDR ofrmar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDR ofrmrr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x6 */ {0, "LDR ofrmrr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDR ofrmll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x8 */ {0, "LDR ofrmll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDR ofrmlr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xa */ {0, "LDR ofrmlr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDR ofrmar", LDR,  NONE, "action_copy", "Load word"},
+/* 0xc */ {0, "LDR ofrmar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDR ofrmrr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xe */ {0, "LDR ofrmrr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_72[] = {
-/* 0x0 */ {0, "STR prrmll", STR,  NONE, "action_copy", "Store word"},
+/* 0x0 */ {0, "STR prrmll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STR prrmlr", STR,  NONE, "action_copy", "Store word"},
+/* 0x2 */ {0, "STR prrmlr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STR prrmar", STR,  NONE, "action_copy", "Store word"},
+/* 0x4 */ {0, "STR prrmar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STR prrmrr", STR,  NONE, "action_copy", "Store word"},
+/* 0x6 */ {0, "STR prrmrr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STR prrmll", STR,  NONE, "action_copy", "Store word"},
+/* 0x8 */ {0, "STR prrmll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STR prrmlr", STR,  NONE, "action_copy", "Store word"},
+/* 0xa */ {0, "STR prrmlr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STR prrmar", STR,  NONE, "action_copy", "Store word"},
+/* 0xc */ {0, "STR prrmar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STR prrmrr", STR,  NONE, "action_copy", "Store word"},
+/* 0xe */ {0, "STR prrmrr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_73[] = {
-/* 0x0 */ {0, "LDR prrmll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x0 */ {0, "LDR prrmll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDR prrmlr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x2 */ {0, "LDR prrmlr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDR prrmar", LDR,  NONE, "action_copy", "Load word"},
+/* 0x4 */ {0, "LDR prrmar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDR prrmrr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x6 */ {0, "LDR prrmrr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDR prrmll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x8 */ {0, "LDR prrmll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDR prrmlr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xa */ {0, "LDR prrmlr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDR prrmar", LDR,  NONE, "action_copy", "Load word"},
+/* 0xc */ {0, "LDR prrmar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDR prrmrr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xe */ {0, "LDR prrmrr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_74[] = {
-/* 0x0 */ {0, "STRB ofrmll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x0 */ {0, "STRB ofrmll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRB ofrmlr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x2 */ {0, "STRB ofrmlr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRB ofrmar", STRB, NONE, "action_copy", "Store byte"},
+/* 0x4 */ {0, "STRB ofrmar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRB ofrmrr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x6 */ {0, "STRB ofrmrr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRB ofrmll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x8 */ {0, "STRB ofrmll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRB ofrmlr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xa */ {0, "STRB ofrmlr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRB ofrmar", STRB, NONE, "action_copy", "Store byte"},
+/* 0xc */ {0, "STRB ofrmar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRB ofrmrr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xe */ {0, "STRB ofrmrr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_75[] = {
-/* 0x0 */ {0, "LDRB ofrmll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x0 */ {0, "LDRB ofrmll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRB ofrmlr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x2 */ {0, "LDRB ofrmlr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRB ofrmar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x4 */ {0, "LDRB ofrmar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRB ofrmrr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x6 */ {0, "LDRB ofrmrr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRB ofrmll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x8 */ {0, "LDRB ofrmll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRB ofrmlr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xa */ {0, "LDRB ofrmlr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRB ofrmar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xc */ {0, "LDRB ofrmar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRB ofrmrr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xe */ {0, "LDRB ofrmrr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX, "action_copy", "Load byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_76[] = {
-/* 0x0 */ {0, "STRB prrmll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x0 */ {0, "STRB prrmll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRB prrmlr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x2 */ {0, "STRB prrmlr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRB prrmar", STRB, NONE, "action_copy", "Store byte"},
+/* 0x4 */ {0, "STRB prrmar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRB prrmrr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x6 */ {0, "STRB prrmrr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRB prrmll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x8 */ {0, "STRB prrmll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRB prrmlr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xa */ {0, "STRB prrmlr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRB prrmar", STRB, NONE, "action_copy", "Store byte"},
+/* 0xc */ {0, "STRB prrmar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRB prrmrr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xe */ {0, "STRB prrmrr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_77[] = {
-/* 0x0 */ {0, "LDRB prrmll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x0 */ {0, "LDRB prrmll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRB prrmlr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x2 */ {0, "LDRB prrmlr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRB prrmar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x4 */ {0, "LDRB prrmar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRB prrmrr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x6 */ {0, "LDRB prrmrr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRB prrmll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x8 */ {0, "LDRB prrmll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRB prrmlr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xa */ {0, "LDRB prrmlr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRB prrmar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xc */ {0, "LDRB prrmar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRB prrmrr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xe */ {0, "LDRB prrmrr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_78[] = {
-/* 0x0 */ {0, "STR ofrpll", STR,  NONE, "action_copy", "Store word"},
+/* 0x0 */ {0, "STR ofrpll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STR ofrplr", STR,  NONE, "action_copy", "Store word"},
+/* 0x2 */ {0, "STR ofrplr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STR ofrpar", STR,  NONE, "action_copy", "Store word"},
+/* 0x4 */ {0, "STR ofrpar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STR ofrprr", STR,  NONE, "action_copy", "Store word"},
+/* 0x6 */ {0, "STR ofrprr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STR ofrpll", STR,  NONE, "action_copy", "Store word"},
+/* 0x8 */ {0, "STR ofrpll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STR ofrplr", STR,  NONE, "action_copy", "Store word"},
+/* 0xa */ {0, "STR ofrplr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STR ofrpar", STR,  NONE, "action_copy", "Store word"},
+/* 0xc */ {0, "STR ofrpar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STR ofrprr", STR,  NONE, "action_copy", "Store word"},
+/* 0xe */ {0, "STR ofrprr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_79[] = {
-/* 0x0 */ {0, "LDR ofrpll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x0 */ {0, "LDR ofrpll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDR ofrplr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x2 */ {0, "LDR ofrplr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDR ofrpar", LDR,  NONE, "action_copy", "Load word"},
+/* 0x4 */ {0, "LDR ofrpar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDR ofrprr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x6 */ {0, "LDR ofrprr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDR ofrpll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x8 */ {0, "LDR ofrpll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDR ofrplr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xa */ {0, "LDR ofrplr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDR ofrpar", LDR,  NONE, "action_copy", "Load word"},
+/* 0xc */ {0, "LDR ofrpar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDR ofrprr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xe */ {0, "LDR ofrprr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_7a[] = {
-/* 0x0 */ {0, "STR prrpll", STR,  NONE, "action_copy", "Store word"},
+/* 0x0 */ {0, "STR prrpll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STR prrplr", STR,  NONE, "action_copy", "Store word"},
+/* 0x2 */ {0, "STR prrplr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STR prrpar", STR,  NONE, "action_copy", "Store word"},
+/* 0x4 */ {0, "STR prrpar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STR prrprr", STR,  NONE, "action_copy", "Store word"},
+/* 0x6 */ {0, "STR prrprr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STR prrpll", STR,  NONE, "action_copy", "Store word"},
+/* 0x8 */ {0, "STR prrpll", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STR prrplr", STR,  NONE, "action_copy", "Store word"},
+/* 0xa */ {0, "STR prrplr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STR prrpar", STR,  NONE, "action_copy", "Store word"},
+/* 0xc */ {0, "STR prrpar", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STR prrprr", STR,  NONE, "action_copy", "Store word"},
+/* 0xe */ {0, "STR prrprr", STR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_7b[] = {
-/* 0x0 */ {0, "LDR prrpll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x0 */ {0, "LDR prrpll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x1 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDR prrplr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x2 */ {0, "LDR prrplr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x3 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDR prrpar", LDR,  NONE, "action_copy", "Load word"},
+/* 0x4 */ {0, "LDR prrpar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x5 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDR prrprr", LDR,  NONE, "action_copy", "Load word"},
+/* 0x6 */ {0, "LDR prrprr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x7 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDR prrpll", LDR,  NONE, "action_copy", "Load word"},
+/* 0x8 */ {0, "LDR prrpll", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0x9 */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDR prrplr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xa */ {0, "LDR prrplr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0xb */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDR prrpar", LDR,  NONE, "action_copy", "Load word"},
+/* 0xc */ {0, "LDR prrpar", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0xd */ {0, "",           NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDR prrprr", LDR,  NONE, "action_copy", "Load word"},
+/* 0xe */ {0, "LDR prrprr", LDR,  OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
 /* 0xf */ {0, "",           NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_7c[] = {
-/* 0x0 */ {0, "STRB ofrpll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x0 */ {0, "STRB ofrpll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRB ofrplr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x2 */ {0, "STRB ofrplr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRB ofrpar", STRB, NONE, "action_copy", "Store byte"},
+/* 0x4 */ {0, "STRB ofrpar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRB ofrprr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x6 */ {0, "STRB ofrprr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRB ofrpll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x8 */ {0, "STRB ofrpll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRB ofrplr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xa */ {0, "STRB ofrplr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRB ofrpar", STRB, NONE, "action_copy", "Store byte"},
+/* 0xc */ {0, "STRB ofrpar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRB ofrprr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xe */ {0, "STRB ofrprr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_7d[] = {
-/* 0x0 */ {0, "LDRB ofrpll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x0 */ {0, "LDRB ofrpll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRB ofrplr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x2 */ {0, "LDRB ofrplr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRB ofrpar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x4 */ {0, "LDRB ofrpar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRB ofrprr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x6 */ {0, "LDRB ofrprr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRB ofrpll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x8 */ {0, "LDRB ofrpll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRB ofrplr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xa */ {0, "LDRB ofrplr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRB ofrpar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xc */ {0, "LDRB ofrpar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRB ofrprr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xe */ {0, "LDRB ofrprr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_7e[] = {
-/* 0x0 */ {0, "STRB prrpll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x0 */ {0, "STRB prrpll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "STRB prrplr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x2 */ {0, "STRB prrplr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "STRB prrpar", STRB, NONE, "action_copy", "Store byte"},
+/* 0x4 */ {0, "STRB prrpar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "STRB prrprr", STRB, NONE, "action_copy", "Store byte"},
+/* 0x6 */ {0, "STRB prrprr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "STRB prrpll", STRB, NONE, "action_copy", "Store byte"},
+/* 0x8 */ {0, "STRB prrpll", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "STRB prrplr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xa */ {0, "STRB prrplr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "STRB prrpar", STRB, NONE, "action_copy", "Store byte"},
+/* 0xc */ {0, "STRB prrpar", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "STRB prrprr", STRB, NONE, "action_copy", "Store byte"},
+/* 0xe */ {0, "STRB prrprr", STRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
 /* bits 7-4 */
 instr_description table_opcode_7f[] = {
-/* 0x0 */ {0, "LDRB prrpll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x0 */ {0, "LDRB prrpll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x1 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x2 */ {0, "LDRB prrplr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x2 */ {0, "LDRB prrplr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x3 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x4 */ {0, "LDRB prrpar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x4 */ {0, "LDRB prrpar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x5 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x6 */ {0, "LDRB prrprr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x6 */ {0, "LDRB prrprr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x7 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0x8 */ {0, "LDRB prrpll", LDRB, NONE, "action_copy", "Load byte"},
+/* 0x8 */ {0, "LDRB prrpll", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x9 */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xa */ {0, "LDRB prrplr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xa */ {0, "LDRB prrplr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0xb */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xc */ {0, "LDRB prrpar", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xc */ {0, "LDRB prrpar", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0xd */ {0, "",            NONE, NONE, "", "UNDEFINED"},
-/* 0xe */ {0, "LDRB prrprr", LDRB, NONE, "action_copy", "Load byte"},
+/* 0xe */ {0, "LDRB prrprr", LDRB, OPND_REG_OFFSET_SHIFT_BY_IMM | OPND_INCR_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0xf */ {0, "",            NONE, NONE, "", "UNDEFINED"}
 };
 
@@ -1581,38 +1655,38 @@ instr_description table_opcode_onebyte[] = {
 /* 0x3d */ {0, "BICS imm",   BICS,   OPND_IMM, "action_copy", "Clear bits in register (NAND), setting flags"},
 /* 0x3e */ {0, "MVN imm",    MVN,    OPND_IMM, "action_copy", "Move negation of value to a register"},
 /* 0x3f */ {0, "MVNS imm",   MVNS,   OPND_IMM, "action_copy", "Move negation of value to a register, setting flags"},
-/* 0x40 */ {0, "STR ptim",   STR,    NONE, "action_copy", "Store word"},
-/* 0x41 */ {0, "LDR ptim",   LDR,    NONE, "action_copy", "Load word"},
-/* 0x42 */ {0, "STRT ptim",  STRT,   NONE, "action_copy", "Store word from user-mode register"},
-/* 0x43 */ {0, "LDRT ptim",  LDRT,   NONE, "action_copy", "Load word into user-mode register"},
-/* 0x44 */ {0, "STRB ptim",  STRB,   NONE, "action_copy", "Store byte"},
-/* 0x45 */ {0, "LDRB ptim",  LDRB,   NONE, "action_copy", "Load byte"},
-/* 0x46 */ {0, "STRBT ptim", STRBT , NONE, "action_copy", "Store byte from user-mode register"},
-/* 0x47 */ {0, "LDRBT ptim", LDRBT,  NONE, "action_copy", "Load byte into user-mode register"},
-/* 0x48 */ {0, "STR ptip",   STR,    NONE, "action_copy", "Store word"},
-/* 0x49 */ {0, "LDR ptip",   LDR,    NONE, "action_copy", "Load word"},
-/* 0x4a */ {0, "STRT ptip",  STRT,   NONE, "action_copy", "Store word from user-mode register"},
-/* 0x4b */ {0, "LDRT ptip",  LDRT,   NONE, "action_copy", "Load word into user-mode register"},
-/* 0x4c */ {0, "STRB ptip",  STRB,   NONE, "action_copy", "Store byte"},
-/* 0x4d */ {0, "LDRB ptip",  LDRB,   NONE, "action_copy", "Load byte"},
-/* 0x4e */ {0, "STRBT ptip", STRBT,  NONE, "action_copy", "Store byte from user-mode register"},
-/* 0x4f */ {0, "LDRBT ptip", LDRBT,  NONE, "action_copy", "Load byte into user-mode register"},
-/* 0x50 */ {0, "STR ofim",   STR,    NONE, "action_copy", "Store word"},
-/* 0x51 */ {0, "LDR ofim",   LDR,    NONE, "action_copy", "Load word"},
-/* 0x52 */ {0, "STR prim",   STR,    NONE, "action_copy", "Store word"},
-/* 0x53 */ {0, "LDR prim",   LDR,    NONE, "action_copy", "Load word"},
-/* 0x54 */ {0, "STRB ofim",  STRB,   NONE, "action_copy", "Store byte"},
-/* 0x55 */ {0, "LDRB ofim",  LDRB,   NONE, "action_copy", "Load byte"},
-/* 0x56 */ {0, "STRB prim",  STRB,   NONE, "action_copy", "Store byte"},
-/* 0x57 */ {0, "LDRB prim",  LDRB,   NONE, "action_copy", "Load byte"},
-/* 0x58 */ {0, "STR ofip",   STR,    NONE, "action_copy", "Store word"},
-/* 0x59 */ {0, "LDR ofip",   LDR,    NONE, "action_copy", "Load word"},
-/* 0x5a */ {0, "STR prip",   STR,    NONE, "action_copy", "Store word"},
-/* 0x5b */ {0, "LDR prip",   LDR,    NONE, "action_copy", "Load word"},
-/* 0x5c */ {0, "STRB ofip",  STRB,   NONE, "action_copy", "Store byte"},
-/* 0x5d */ {0, "LDRB ofip",  LDRB,   NONE, "action_copy", "Load byte"},
-/* 0x5e */ {0, "STRB prip",  STRB,   NONE, "action_copy", "Store byte"},
-/* 0x5f */ {0, "LDRB prip",  LDRB,   NONE, "action_copy", "Load byte"},
+/* 0x40 */ {0, "STR ptim",   STR,    OPND_IMM_OFFSET, "action_copy", "Store word"},
+/* 0x41 */ {0, "LDR ptim",   LDR,    OPND_IMM_OFFSET, "action_copy", "Load word"},
+/* 0x42 */ {0, "STRT ptim",  STRT,   OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
+/* 0x43 */ {0, "LDRT ptim",  LDRT,   OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
+/* 0x44 */ {0, "STRB ptim",  STRB,   OPND_IMM_OFFSET, "action_copy", "Store byte"},
+/* 0x45 */ {0, "LDRB ptim",  LDRB,   OPND_IMM_OFFSET, "action_copy", "Load byte"},
+/* 0x46 */ {0, "STRBT ptim", STRBT,  OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
+/* 0x47 */ {0, "LDRBT ptim", LDRBT,  OPND_IMM_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
+/* 0x48 */ {0, "STR ptip",   STR,    OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Store word"},
+/* 0x49 */ {0, "LDR ptip",   LDR,    OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load word"},
+/* 0x4a */ {0, "STRT ptip",  STRT,   OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word from user-mode register"},
+/* 0x4b */ {0, "LDRT ptip",  LDRT,   OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word into user-mode register"},
+/* 0x4c */ {0, "STRB ptip",  STRB,   OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Store byte"},
+/* 0x4d */ {0, "LDRB ptip",  LDRB,   OPND_IMM_OFFSET | OPND_INCR_OFFSET, "action_copy", "Load byte"},
+/* 0x4e */ {0, "STRBT ptip", STRBT,  OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte from user-mode register"},
+/* 0x4f */ {0, "LDRBT ptip", LDRBT,  OPND_IMM_OFFSET | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte into user-mode register"},
+/* 0x50 */ {0, "STR ofim",   STR,    OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Store word"},
+/* 0x51 */ {0, "LDR ofim",   LDR,    OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Load word"},
+/* 0x52 */ {0, "STR prim",   STR,    OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store word"},
+/* 0x53 */ {0, "LDR prim",   LDR,    OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load word"},
+/* 0x54 */ {0, "STRB ofim",  STRB,   OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Store byte"},
+/* 0x55 */ {0, "LDRB ofim",  LDRB,   OPND_IMM_OFFSET | OPND_PRE_INDEX, "action_copy", "Load byte"},
+/* 0x56 */ {0, "STRB prim",  STRB,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Store byte"},
+/* 0x57 */ {0, "LDRB prim",  LDRB,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_WRITE_BACK, "action_copy", "Load byte"},
+/* 0x58 */ {0, "STR ofip",   STR,    OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store word"},
+/* 0x59 */ {0, "LDR ofip",   LDR,    OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load word"},
+/* 0x5a */ {0, "STR prip",   STR,    OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store word"},
+/* 0x5b */ {0, "LDR prip",   LDR,    OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load word"},
+/* 0x5c */ {0, "STRB ofip",  STRB,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Store byte"},
+/* 0x5d */ {0, "LDRB ofip",  LDRB,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET, "action_copy", "Load byte"},
+/* 0x5e */ {0, "STRB prip",  STRB,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Store byte"},
+/* 0x5f */ {0, "LDRB prip",  LDRB,   OPND_IMM_OFFSET | OPND_PRE_INDEX | OPND_INCR_OFFSET | OPND_WRITE_BACK, "action_copy", "Load byte"},
 /* 0x60 */ {table_opcode_60, "", NONE, NONE, "", "NO_ACTION_CALLED"},
 /* 0x61 */ {table_opcode_61, "", NONE, NONE, "", "NO_ACTION_CALLED"},
 /* 0x62 */ {table_opcode_62, "", NONE, NONE, "", "NO_ACTION_CALLED"},

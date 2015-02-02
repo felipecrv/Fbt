@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "../generic/fbt_llio.h"
 #include "../fbt_translate.h"
@@ -62,42 +63,42 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
     } \
     EMIT_TEXT_CODE((fmt), ##args)
 
-#define EMIT_TEXT_IMM12() \
+#define EMIT_TEXT_IMM12_WITH_ROTATION() \
     do { \
       if (rotation == 0) { \
         EMIT_TEXT_CODE("#%d", base_value); \
       } else { \
         EMIT_TEXT_CODE("#%d, %d", base_value, rotation); \
       } \
-      uint32_t rotated = rotate_right(base_value, rotation); \
-      if (rotated) { \
-        EMIT_TEXT_CODE("  ; 0x%x\n", rotated); \
+      uint32_t imm32 = rotate_right(base_value, rotation); \
+      if (imm32) { \
+        EMIT_TEXT_CODE("  ; 0x%x\n", imm32); \
       } else { \
         EMIT_TEXT_CODE("\n"); \
       } \
     } while(0)
 
-#define EMIT_TEXT_SHIFT_BY_IMM() \
+#define EMIT_TEXT_SHIFT_BY_IMM(suffix) \
     do { \
       switch (shift_type) { \
         case 0x0: \
           if (imm5 != 0) { \
-            EMIT_TEXT_CODE(", lsl #%d\n", imm5); \
+            EMIT_TEXT_CODE(", lsl #%d%s", imm5, (suffix)); \
           } else { \
-            EMIT_TEXT_CODE("\n"); \
+            EMIT_TEXT_CODE((suffix)); \
           } \
           break; \
         case 0x1: \
-          EMIT_TEXT_CODE(", lsr #%d\n", (imm5 == 0) ? 32 : imm5); \
+          EMIT_TEXT_CODE(", lsr #%d%s", (imm5 == 0) ? 32 : imm5, (suffix)); \
           break; \
         case 0x2: \
-          EMIT_TEXT_CODE(", asr #%d\n", (imm5 == 0) ? 32 : imm5); \
+          EMIT_TEXT_CODE(", asr #%d%s", (imm5 == 0) ? 32 : imm5, (suffix)); \
           break; \
         case 0x3: \
           if (imm5 == 0) { \
-            EMIT_TEXT_CODE(", rrx\n"); \
+            EMIT_TEXT_CODE(", rrx%s", (suffix)); \
           } else { \
-            EMIT_TEXT_CODE(", ror #%d\n", imm5); \
+            EMIT_TEXT_CODE(", ror #%d%s", imm5, (suffix)); \
           } \
           break; \
       } \
@@ -124,7 +125,7 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             case CMN:
               // Rd = (0)(0)(0)(0)
               EMIT_TEXT_INSTR("%s, %s", register_names[Rn], register_names[Rm]);
-              EMIT_TEXT_SHIFT_BY_IMM();
+              EMIT_TEXT_SHIFT_BY_IMM("\n");
               break;
             case MOV:
               // Rn = (0)(0)(0)(0)
@@ -162,11 +163,11 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             case MVN:
               // Rn = (0)(0)(0)(0)
               EMIT_TEXT_INSTR("%s, %s", register_names[Rd], register_names[Rm]);
-              EMIT_TEXT_SHIFT_BY_IMM();
+              EMIT_TEXT_SHIFT_BY_IMM("\n");
               break;
             default:
               EMIT_TEXT_INSTR("%s, %s, %s", register_names[Rd], register_names[Rn], register_names[Rm]);
-              EMIT_TEXT_SHIFT_BY_IMM();
+              EMIT_TEXT_SHIFT_BY_IMM("\n");
               break;
           }
         } else if ((opcode->operand_flags & OPND_IMM) == OPND_IMM) {
@@ -182,17 +183,17 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             case CMN:
               // Rd = (0)(0)(0)(0)
               EMIT_TEXT_INSTR("%s, ", register_names[Rn]);
-              EMIT_TEXT_IMM12();
+              EMIT_TEXT_IMM12_WITH_ROTATION();
               break;
             case MOV:
             case MVN:
               // Rn = (0)(0)(0)(0)
               EMIT_TEXT_INSTR("%s, ", register_names[Rd]);
-              EMIT_TEXT_IMM12();
+              EMIT_TEXT_IMM12_WITH_ROTATION();
               break;
             default:
               EMIT_TEXT_INSTR("%s, %s, ", register_names[Rd], register_names[Rn]);
-              EMIT_TEXT_IMM12();
+              EMIT_TEXT_IMM12_WITH_ROTATION();
               break;
           }
         } else { // OPND_REG_SHIFT_BY_REG
@@ -262,7 +263,65 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
         }
         break;
       }
-      case LOAD_STORE:
+      case LOAD_STORE: {
+        uint8_t Rn = DECODE_REG(16, binary_instr);
+        uint8_t Rt = DECODE_REG(12, binary_instr);
+
+        bool increment = opcode->operand_flags & OPND_INCR_OFFSET;
+
+        if ((opcode->operand_flags & OPND_REG_OFFSET_SHIFT_BY_IMM) == OPND_REG_OFFSET_SHIFT_BY_IMM) {
+          uint8_t Rm = DECODE_REG(0, binary_instr);
+          uint8_t imm5 = DECODE_IMM5(7, binary_instr);
+          uint8_t shift_type = DECODE_SHIFT_TYPE(binary_instr);
+
+          if (opcode->operand_flags & OPND_PRE_INDEX) {
+            bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
+
+            if (increment) {
+              EMIT_TEXT_INSTR("%s, [%s, %s", register_names[Rt], register_names[Rn], register_names[Rm]);
+            } else {
+              EMIT_TEXT_INSTR("%s, [%s, -%s", register_names[Rt], register_names[Rn], register_names[Rm]);
+            }
+            static char with_write_back[] = "]!\n";
+            static char no_write_back[] = "]\n";
+            const char *suffix = write_back ? with_write_back : no_write_back;
+            EMIT_TEXT_SHIFT_BY_IMM(suffix);
+          } else {
+            if (increment) {
+              EMIT_TEXT_INSTR("%s, [%s], %s", register_names[Rt], register_names[Rn], register_names[Rm]);
+            } else {
+              EMIT_TEXT_INSTR("%s, [%s], -%s", register_names[Rt], register_names[Rn], register_names[Rm]);
+            }
+            EMIT_TEXT_SHIFT_BY_IMM("\n");
+          }
+        } else if ((opcode->operand_flags & OPND_IMM_OFFSET) == OPND_IMM_OFFSET) {
+          int32_t imm12 = DECODE_IMM12(binary_instr);
+          if (!increment) {
+            imm12 = -imm12;
+          }
+
+          if (opcode->operand_flags & OPND_PRE_INDEX) {
+            bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
+
+            if (write_back) {
+              EMIT_TEXT_INSTR("%s, [%s, #%d]!\n", register_names[Rt], register_names[Rn], imm12);
+            } else {
+              if (imm12 == 0) {
+                EMIT_TEXT_INSTR("%s, [%s]\n", register_names[Rt], register_names[Rn]);
+              } else {
+                EMIT_TEXT_INSTR("%s, [%s, #%d]\n", register_names[Rt], register_names[Rn], imm12);
+              }
+            }
+          } else {
+            EMIT_TEXT_INSTR("%s, [%s], #%d\n", register_names[Rt], register_names[Rn], imm12);
+          }
+        } else {
+          // If this block is reached, there's a bug
+          EMIT_TEXT_INSTR("<???>");
+        }
+        break;
+      }
+      case LOAD_STORE_EXT:
         EMIT_TEXT_INSTR(" ...\n");
         break;
       case MULTI_LOAD_STORE:
