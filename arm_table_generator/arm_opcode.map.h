@@ -175,8 +175,8 @@ prrp<shift> = Register offset, pre-increment"
 +------------+-------------------------+-------------+-------------+---------------+-----+---+---------+
 |    cond    |  0  1  1  P  U  B  W  L |      Rn     |      Rt     |      imm5     |type | 0 |   Rm    |
 +------------+-------------------------+-------------+-------------+---------------+-----+---+---------+
-STR{<c>} <Rt>, [<Rn>,  +/-<Rm>{, <shift>}]!  Offset
-STR{<c>} <Rt>, [<Rn>,  +/-<Rm>{, <shift>}]   Pre-dec/increment
+STR{<c>} <Rt>, [<Rn>,  +/-<Rm>{, <shift>}]   Offset
+STR{<c>} <Rt>, [<Rn>,  +/-<Rm>{, <shift>}]!  Pre-dec/increment
 STR{<c>} <Rt>, [<Rn>], +/-<Rm>{, <shift>}    Post-dec/increment
 Same for: STRB, LDR, LDRB
 
@@ -239,6 +239,10 @@ prrp = Register offset, pre-increment"
 +------------+-------------------------+-------------+-------------+------------+---------+---------+
 |    cond    |  0  0  0  P  U  0  W  _ |    Rn       |      Rt     |     Rt2    | _ _ _ _ |    Rm   | Dual
 +------------+-------------------------+-------------+-------------+------------+---------+---------+
+<mnemonic>{<c>} <Rt>, {<Rt2>,} [<Rn>,  +/-<Rm>]   Offset
+<mnemonic>{<c>} <Rt>, {<Rt2>,} [<Rn>,  +/-<Rm>]!  Pre-dec/increment
+<mnemonic>{<c>} <Rt>, {<Rt2>,} [<Rn>], +/-<Rm>    Post-dec/increment
+
 
 ptim = Immediate offset, post-decrement
 ptip = Immediate offset, post-increment
@@ -251,6 +255,9 @@ prip = Immediate offset, pre-increment
 +------------+-------------------------+-------------+-------------+-----------+---------+---------+
 |    cond    |  0  0  0  P  U  1  W  _ |    Rn       |      Rt     |   imm4H   | _ _ _ _ |  imm4L  |
 +------------+-------------------------+-------------+-------------+-----------+---------+---------+
+<mnemonic>{<c>} <Rt>, {<Rt2>,} [<Rn> {, #+/-<imm}]    Offset
+<mnemonic>{<c>} <Rt>, {<Rt2>,} [<Rn>,   #+/-<imm>]!   Pre-dec/increment
+<mnemonic>{<c>} <Rt>, {<Rt2>,} [<Rn>],  #+/-<imm>     Post-dec/increment
 
   Mnemonic   |        Bits 27:20       |    Bits 7:4
 -------------+-------------------------+--------------

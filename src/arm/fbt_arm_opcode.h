@@ -33,7 +33,7 @@
 #define INSTR_SIGNED_BYTE_LS      0x00008000
 #define INSTR_SIGNED_HALFWORD_LS  0x0000A000
 // whether the load/store instruction is a store
-#define INSTR_IS_STORE            0x00008000
+#define INSTR_IS_STORE            0x00010000
 
 /*
  * These constants are used as opcode_flags in the instruction structs.
