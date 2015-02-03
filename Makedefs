@@ -2,6 +2,13 @@
 # Basic compilation settings                                                  #
 ###############################################################################
 
+# C compiler
+# ==========================
+#
+# options: gcc, arm-***-gcc
+# default: gcc
+CC ?= gcc
+
 # Debug or production build?
 # ==========================
 #
@@ -166,13 +173,23 @@ else
 endif
 CFLAGS += $(I386)
 
-CFLAGS += -std=c99
+# the new ARM code tries to be C99 compatible (experimental)
+ifeq ($(TARGET_ARCH),arm)
+	CFLAGS += -std=c99
+endif
+EXTRA_ARM_DISASSEMBLER_CFLAGS += -std=c99
 
 # Path to the assembly generation DSL preprocessing step
 DSL_PATH=../DSL/src/parse.py
 
 # name of the library
-LIBNAME=libfbt
+IA32_LIBNAME = libia32fbt
+ARM_LIBNAME = libarmfbt
+ifeq ($(TARGET_ARCH),ia32)
+	LIBNAME = $(IA32_LIBNAME)
+else
+	LIBNAME = $(ARM_LIBNAME)
+endif
 # major version
 LIBVERS=0
 # minor version

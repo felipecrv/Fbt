@@ -32,8 +32,12 @@
 extern "C" {
 #endif
 
-#define LIBNAME "./src/libfbt.so.0.3.1"
-#define LIBLEN 22 /* length of LIBNAME +1 */
+#ifdef __i386__
+# define LIBNAME "./src/libia32fbt.so.0.3.1"
+#else
+# define LIBNAME "./src/libarmfbt.so.0.3.1"
+#endif
+#define LIBLEN sizeof(LIBNAME) /* length of LIBNAME +1 */
 
 /**
  * Initialzes the binary translator.
