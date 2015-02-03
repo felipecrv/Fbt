@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "../generic/fbt_llio.h"
 #include "../fbt_translate.h"
@@ -317,13 +318,74 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
           }
         } else {
           // If this block is reached, there's a bug
-          EMIT_TEXT_INSTR("<???>");
+          EMIT_TEXT_INSTR("_____");
         }
         break;
       }
-      case LOAD_STORE_EXT:
-        EMIT_TEXT_INSTR(" ...\n");
+      case LOAD_STORE_EXT: {
+        uint8_t Rn = DECODE_REG(16, binary_instr);
+        uint8_t Rt = DECODE_REG(12, binary_instr);
+        bool increment = opcode->operand_flags & OPND_INCR_OFFSET;
+
+        switch (opcode->opcode_flags & INSTR_LS_DATATYPE_MASK) {
+          case INSTR_WORD_LS:
+          case INSTR_BYTE_LS:
+          case INSTR_HALFWORD_LS:
+          case INSTR_SIGNED_BYTE_LS:
+          case INSTR_SIGNED_HALFWORD_LS:
+            EMIT_TEXT_INSTR("%s, [%s", register_names[Rt], register_names[Rn]);
+            break;
+          case INSTR_DUAL_LS: {
+            uint8_t Rt2 = DECODE_REG(8, binary_instr);
+            EMIT_TEXT_INSTR("%s, %s, [%s", register_names[Rt], register_names[Rt2], register_names[Rn]);
+            break;
+          }
+          default:
+            // If this block is reached, there's a bug
+            EMIT_TEXT_INSTR("_____");
+            break;
+        }
+
+        if (opcode->operand_flags & OPND_REG_OFFSET) {
+          uint8_t Rm = DECODE_REG(0, binary_instr);
+
+          if (opcode->operand_flags & OPND_PRE_INDEX) {
+            bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
+            if (increment) {
+              EMIT_TEXT_CODE(", %s]%s", register_names[Rm], write_back ? "!\n" : "\n");
+            } else {
+              EMIT_TEXT_CODE(", -%s]%s", register_names[Rm], write_back ? "!\n" : "\n");
+            }
+          } else {
+            if (increment) {
+              EMIT_TEXT_CODE("], %s\n", register_names[Rm]);
+            } else {
+              EMIT_TEXT_CODE("], -%s\n", register_names[Rm]);
+            }
+          }
+        } else {
+          assert(opcode->operand_flags & OPND_IMM_OFFSET);
+          int32_t imm = ((binary_instr >> 4) & 0xF0) | (binary_instr & 0xF);
+          if (!increment) {
+            imm = -imm;
+          }
+
+          if (opcode->operand_flags & OPND_PRE_INDEX) {
+            if (opcode->operand_flags & OPND_WRITE_BACK) {
+              EMIT_TEXT_CODE(", %d]!\n", imm);
+            } else {
+              if (imm == 0) {
+                EMIT_TEXT_CODE("]\n");
+              } else {
+                EMIT_TEXT_CODE(", %d]\n", imm);
+              }
+            }
+          } else {
+            EMIT_TEXT_CODE("], %d\n", imm);
+          }
+        }
         break;
+      }
       case MULTI_LOAD_STORE:
         EMIT_TEXT_INSTR(" ...\n");
         break;
