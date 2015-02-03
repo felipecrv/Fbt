@@ -21,7 +21,7 @@ FILES+=libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_actions.c
 
 # object files for the ARM disassembler
 ARM_DISASSEMBLER_FILES=generic/fbt_llio.c generic/fbt_libc.c \
-											 arm/fbt_disassemble.c arm/disassembler.c
+											 arm/fbt_disassemble.c arm/arm_disassembler.c
 
 # we include some kernel stuff as we directly call system calls.
 CFLAGS += -I/lib/modules/$(shell uname -r)/build/arch/x86/include
@@ -58,7 +58,7 @@ arm/fbt_opcode_tables.h: arm/fbt_arm_opcode.h
 	make -C ../arm_table_generator fbt_opcode_tables.h
 	cp ../arm_table_generator/fbt_opcode_tables.h arm/
 
-arm/disassembler: $(ARM_DISASSEMBLER_FILES) *.h arm/*.h generic/*.h arm/fbt_opcode_tables.h
+arm_disassembler: $(ARM_DISASSEMBLER_FILES) *.h arm/*.h generic/*.h arm/fbt_opcode_tables.h
 	$(CC) $(CFLAGS) -c $(ARM_DISASSEMBLER_FILES)
 	$(CC) $(CFLAGS) *.o -o $@
 
