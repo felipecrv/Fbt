@@ -386,9 +386,45 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
         }
         break;
       }
-      case MULTI_LOAD_STORE:
-        EMIT_TEXT_INSTR(" ...\n");
+      case MULTI_LOAD_STORE: {
+        uint8_t Rn = DECODE_REG(16, binary_instr);
+        uint32_t register_list = binary_instr & 0xFFFF;
+
+        bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
+
+        if (Rn == SP && !write_back) {
+          switch (opcode->opcode_flags) {
+          case LDMIA:
+            EMIT_TEXT_PSEUDO_INSTR("pop", "");
+            break;
+          case STMDB:
+            EMIT_TEXT_PSEUDO_INSTR("push", "");
+            break;
+          default:
+            EMIT_TEXT_INSTR("%s, ", register_names[Rn]);
+            break;
+          }
+        } else {
+          EMIT_TEXT_INSTR("%s%s, ", register_names[Rn], write_back ? "!" : "");
+        }
+
+        // Register list
+        uint8_t reg_i = 0;
+        while ((register_list & 0x1) == 0) {
+          register_list = register_list >> 1;
+          reg_i++;
+        }
+        EMIT_TEXT_CODE("{%s", register_names[reg_i]);
+        do {
+          register_list = register_list >> 1;
+          reg_i++;
+          if (register_list & 0x1) {
+            EMIT_TEXT_CODE(", %s", register_names[reg_i]);
+          }
+        } while (register_list);
+        EMIT_TEXT_CODE("}\n");
         break;
+      }
       case STATUS:
         EMIT_TEXT_INSTR(" ...\n");
         break;

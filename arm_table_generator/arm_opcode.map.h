@@ -274,7 +274,31 @@ U = Up/down bit - set for increment - clear for decrement
 I = set if the instruction takes an Immediate offset
 W = set for Write back into base register
 
-###
+### Multi Load/Store
+
+w = Write-Back
+u = Use user-mode registers
++------------+-------------------------+-------------+-------------+-----------+---------+---------+
+|31 30 29 28 | 27 26 25 24 23 22 21 20 | 19 18 17 16 | 15 14 13 12 | 11 10 9 8 | 7 6 5 4 | 3 2 1 0 |
++------------+-------------------------+-------------+-------------+-----------+---------+---------+
+|    cond    |  1  0  0  P  U  0  W  L |    Rn       |               register_list                 |
++------------+-------------------------+-------------+-------------+-----------+---------+---------+
+<mnemonic>{<c>} <Rn>{!}, <registers>
+
+P = set for Pre-dec|increment - clear for post-dec|increment
+U = Up/down bit - set for increment - clear for decrement
+W = set for Write back into base register
+
+       Mnemonic         |        Bits 27:20
+------------------------+-------------------------
+    STM/STMIA/STMEA     |  1  0  0  0  1  0  W  0
+    LDM/LDMIA/LDMFD     |  1  0  0  0  1  0  W  1
+    STMDA/STMED         |  1  0  0  0  0  0  W  0
+    LDMDA/LDMFA         |  1  0  0  0  0  0  W  1
+    STMDB/STMFD         |  1  0  0  1  0  0  W  0
+    LDMDB/LDMEA         |  1  0  0  1  0  0  W  1
+    STMIB/STMFA         |  1  0  0  1  1  0  W  0
+    LDMIB/LDMED         |  1  0  0  1  1  0  W  1
 
 rc =
 rs =
@@ -286,22 +310,6 @@ TODO: MSR
 
 TODO: saturating addition/subtraction
 
-prrmll = Left-shifted register offset, pre-decrement
-prrmlr = Right-shifted register offset, pre-decrement
-prrmar = Arithmetic-right-shifted register offset, pre-decrement
-prrmrr = Right-rotated register offset, pre-decrement
-ofrmll = Negative left-shifted register offset
-ofrmlr = Negative right-shifted register offset
-ofrmar = Negative arithmetic-right-shifted register offset
-ofrmrr = Negative right-rotated register offset
-ofrpll = Positive left-shifted register offset
-ofrplr = Positive right-shifted register offset
-ofrpar = Positive arithmetic-right-shifted register offset
-ofrprr = Positive right-rotated register offset
-prrpll = Left-shifted register offset, pre-increment
-prrplr = Right-shifted register offset, pre-increment
-prrpar = Arithmetic-right-shifted register offset, pre-increment
-prrprr = Right-rotated register offset, pre-increment
 ofm = Negative offset
 prm = Pre-decrement
 ofp = Positive offset
@@ -310,8 +318,6 @@ unm = Unindexed, bits 7-0 available for copro use
 ptm = Post-decrement
 unp = Unindexed, bits 7-0 available for copro use
 ptp = Post-increment
-w = Write-Back
-u = Use user-mode registers
  */
 
 /* bits 7-4 */
