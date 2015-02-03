@@ -42,6 +42,9 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
                              uint32_t size,
                              uint32_t start_addr,
                              int out) {
+#define EMIT_TEXT_CODE(code) fllwrite(out, (code))
+#define EMIT_TEXT_CODEF(fmt, args...) fllprintf(out, (fmt), ##args)
+
   uint32_t stream_addr = start_addr;
 
   for (uint32_t instr_idx = 0; instr_idx < size; instr_idx++) {
@@ -50,30 +53,26 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
     ARMOpcode *opcode = &opcode_table[opcode_table_key];
     uint32_t cond = (binary_instr >> 28) & 0xF;
 
-#define EMIT_TEXT_CODE(fmt, args...) fllprintf(out, (fmt), ##args)
+#define EMIT_TEXT_INSTRF(fmt, args...) \
+    EMIT_TEXT_CODEF("%x:  %.8x    %s%s\t" fmt, \
+        stream_addr, binary_instr, opcode->mnemonic, textual_conds[(cond)], ##args); \
 
-#define EMIT_TEXT_INSTR(fmt, args...) \
-    EMIT_TEXT_CODE("%x:  %.8x    %s%s\t", stream_addr, binary_instr, opcode->mnemonic, textual_conds[(cond)]); \
-    EMIT_TEXT_CODE((fmt), ##args)
-
-#define EMIT_TEXT_PSEUDO_INSTR(mnemonic, fmt, args...) \
-    if ((opcode->opcode_flags & SET_APSR) == SET_APSR) { \
-      EMIT_TEXT_CODE("%x:  %.8x    %ss%s\t", stream_addr, binary_instr, (mnemonic), textual_conds[(cond)]); \
-    } else { \
-      EMIT_TEXT_CODE("%x:  %.8x    %s%s\t", stream_addr, binary_instr, (mnemonic), textual_conds[(cond)]); \
-    } \
-    EMIT_TEXT_CODE((fmt), ##args)
+#define EMIT_TEXT_PSEUDO_INSTRF(mnemonic, fmt, args...) \
+    EMIT_TEXT_CODEF("%x:  %.8x    %s%s%s\t" fmt, \
+        stream_addr, binary_instr, (mnemonic), \
+        (opcode->opcode_flags & SET_APSR) == SET_APSR ? "s" : "", textual_conds[(cond)], \
+        ##args)
 
 #define EMIT_TEXT_IMM12_WITH_ROTATION() \
     do { \
       if (rotation == 0) { \
-        EMIT_TEXT_CODE("#%d", base_value); \
+        EMIT_TEXT_CODEF("#%d", base_value); \
       } else { \
-        EMIT_TEXT_CODE("#%d, %d", base_value, rotation); \
+        EMIT_TEXT_CODEF("#%d, %d", base_value, rotation); \
       } \
       uint32_t imm32 = rotate_right(base_value, rotation); \
       if (imm32) { \
-        EMIT_TEXT_CODE("  ; 0x%x\n", imm32); \
+        EMIT_TEXT_CODEF("  ; 0x%x\n", imm32); \
       } else { \
         EMIT_TEXT_CODE("\n"); \
       } \
@@ -84,22 +83,22 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
       switch (shift_type) { \
         case 0x0: \
           if (imm5 != 0) { \
-            EMIT_TEXT_CODE(", lsl #%d%s", imm5, (suffix)); \
+            EMIT_TEXT_CODEF(", lsl #%d%s", imm5, (suffix)); \
           } else { \
             EMIT_TEXT_CODE((suffix)); \
           } \
           break; \
         case 0x1: \
-          EMIT_TEXT_CODE(", lsr #%d%s", (imm5 == 0) ? 32 : imm5, (suffix)); \
+          EMIT_TEXT_CODEF(", lsr #%d%s", (imm5 == 0) ? 32 : imm5, (suffix)); \
           break; \
         case 0x2: \
-          EMIT_TEXT_CODE(", asr #%d%s", (imm5 == 0) ? 32 : imm5, (suffix)); \
+          EMIT_TEXT_CODEF(", asr #%d%s", (imm5 == 0) ? 32 : imm5, (suffix)); \
           break; \
         case 0x3: \
           if (imm5 == 0) { \
-            EMIT_TEXT_CODE(", rrx%s", (suffix)); \
+            EMIT_TEXT_CODEF(", rrx%s", (suffix)); \
           } else { \
-            EMIT_TEXT_CODE(", ror #%d%s", imm5, (suffix)); \
+            EMIT_TEXT_CODEF(", ror #%d%s", imm5, (suffix)); \
           } \
           break; \
       } \
@@ -125,35 +124,35 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             case CMP:
             case CMN:
               // Rd = (0)(0)(0)(0)
-              EMIT_TEXT_INSTR("%s, %s", register_names[Rn], register_names[Rm]);
+              EMIT_TEXT_INSTRF("%s, %s", register_names[Rn], register_names[Rm]);
               EMIT_TEXT_SHIFT_BY_IMM("\n");
               break;
             case MOV:
               // Rn = (0)(0)(0)(0)
               if (((uint8_t) ((binary_instr >> 5) & 0x7F)) == 0) { // imm5 . type == 0
-                EMIT_TEXT_INSTR("%s, %s\n", register_names[Rd], register_names[Rm]);
+                EMIT_TEXT_INSTRF("%s, %s\n", register_names[Rd], register_names[Rm]);
               } else {
                 switch (shift_type) {
                   case 0x0:
-                    EMIT_TEXT_PSEUDO_INSTR(
+                    EMIT_TEXT_PSEUDO_INSTRF(
                         "lsl", "%s, %s, #%d\n",
                         register_names[Rd], register_names[Rm], imm5);
                     break;
                   case 0x1:
-                    EMIT_TEXT_PSEUDO_INSTR(
+                    EMIT_TEXT_PSEUDO_INSTRF(
                         "lsr", "%s, %s, #%d\n",
                         register_names[Rd], register_names[Rm], (imm5 == 0) ? 32 : imm5);
                     break;
                   case 0x2:
-                    EMIT_TEXT_PSEUDO_INSTR(
+                    EMIT_TEXT_PSEUDO_INSTRF(
                         "asr", "%s, %s, #%d\n",
                         register_names[Rd], register_names[Rm], (imm5 == 0) ? 32 : imm5);
                     break;
                   case 0x3:
                     if (imm5 == 0) {
-                      EMIT_TEXT_PSEUDO_INSTR("rrx", "%s, %s\n", register_names[Rd], register_names[Rm]);
+                      EMIT_TEXT_PSEUDO_INSTRF("rrx", "%s, %s\n", register_names[Rd], register_names[Rm]);
                     } else {
-                      EMIT_TEXT_PSEUDO_INSTR(
+                      EMIT_TEXT_PSEUDO_INSTRF(
                           "ror", "%s, %s, #%d\n",
                           register_names[Rd], register_names[Rm], imm5);
                     }
@@ -163,11 +162,11 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
               break;
             case MVN:
               // Rn = (0)(0)(0)(0)
-              EMIT_TEXT_INSTR("%s, %s", register_names[Rd], register_names[Rm]);
+              EMIT_TEXT_INSTRF("%s, %s", register_names[Rd], register_names[Rm]);
               EMIT_TEXT_SHIFT_BY_IMM("\n");
               break;
             default:
-              EMIT_TEXT_INSTR("%s, %s, %s", register_names[Rd], register_names[Rn], register_names[Rm]);
+              EMIT_TEXT_INSTRF("%s, %s, %s", register_names[Rd], register_names[Rn], register_names[Rm]);
               EMIT_TEXT_SHIFT_BY_IMM("\n");
               break;
           }
@@ -183,17 +182,17 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             case CMP:
             case CMN:
               // Rd = (0)(0)(0)(0)
-              EMIT_TEXT_INSTR("%s, ", register_names[Rn]);
+              EMIT_TEXT_INSTRF("%s, ", register_names[Rn]);
               EMIT_TEXT_IMM12_WITH_ROTATION();
               break;
             case MOV:
             case MVN:
               // Rn = (0)(0)(0)(0)
-              EMIT_TEXT_INSTR("%s, ", register_names[Rd]);
+              EMIT_TEXT_INSTRF("%s, ", register_names[Rd]);
               EMIT_TEXT_IMM12_WITH_ROTATION();
               break;
             default:
-              EMIT_TEXT_INSTR("%s, %s, ", register_names[Rd], register_names[Rn]);
+              EMIT_TEXT_INSTRF("%s, %s, ", register_names[Rd], register_names[Rn]);
               EMIT_TEXT_IMM12_WITH_ROTATION();
               break;
           }
@@ -209,24 +208,24 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             case CMP:
             case CMN:
               // Rd = (0)(0)(0)(0)
-              EMIT_TEXT_INSTR(
+              EMIT_TEXT_INSTRF(
                   "%s, %s, %s %s\n",
                   register_names[Rn], register_names[Rm], shift_types[shift_type], register_names[Rs]);
               break;
             case MOV:
               // Rn = (0)(0)(0)(0)
-              EMIT_TEXT_PSEUDO_INSTR(
+              EMIT_TEXT_PSEUDO_INSTRF(
                   shift_types[shift_type], "%s, %s, %s\n",
                   register_names[Rd], register_names[Rm], register_names[Rs]);
               break;
             case MVN:
               // Rn = (0)(0)(0)(0)
-              EMIT_TEXT_INSTR(
+              EMIT_TEXT_INSTRF(
                   "%s, %s, %s %s\n",
                   register_names[Rd], register_names[Rm], shift_types[shift_type], register_names[Rs]);
               break;
             default:
-              EMIT_TEXT_INSTR(
+              EMIT_TEXT_INSTRF(
                   "%s, %s, %s, %s %s\n",
                   register_names[Rd], register_names[Rn], register_names[Rm], shift_types[shift_type], register_names[Rs]);
               break;
@@ -245,20 +244,20 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
               uint32_t imm32 = (imm24 << 2) | H0;
               SIGN_EXTEND_32(imm32, 26);
               uint32_t branch_address = stream_addr + (int32_t)imm32 + 8;
-              EMIT_TEXT_PSEUDO_INSTR("blx", "%x\n", branch_address);
+              EMIT_TEXT_PSEUDO_INSTRF("blx", "%x\n", branch_address);
             } else {
               // imm32 = SignExtend(imm24:’00’, 32);
               uint32_t imm32 = imm24 << 2;
               SIGN_EXTEND_32(imm32, 26);
               uint32_t branch_address = stream_addr + (int32_t)imm32 + 8;
-              EMIT_TEXT_INSTR("%x\n", branch_address);
+              EMIT_TEXT_INSTRF("%x\n", branch_address);
             }
             break;
           }
           case BX:
           case BLX: {
             uint8_t Rm = DECODE_REG(0, binary_instr);
-            EMIT_TEXT_INSTR("%s\n", register_names[Rm]);
+            EMIT_TEXT_INSTRF("%s\n", register_names[Rm]);
             break;
           }
         }
@@ -279,9 +278,9 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
 
             if (increment) {
-              EMIT_TEXT_INSTR("%s, [%s, %s", register_names[Rt], register_names[Rn], register_names[Rm]);
+              EMIT_TEXT_INSTRF("%s, [%s, %s", register_names[Rt], register_names[Rn], register_names[Rm]);
             } else {
-              EMIT_TEXT_INSTR("%s, [%s, -%s", register_names[Rt], register_names[Rn], register_names[Rm]);
+              EMIT_TEXT_INSTRF("%s, [%s, -%s", register_names[Rt], register_names[Rn], register_names[Rm]);
             }
             static char with_write_back[] = "]!\n";
             static char no_write_back[] = "]\n";
@@ -289,9 +288,9 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             EMIT_TEXT_SHIFT_BY_IMM(suffix);
           } else {
             if (increment) {
-              EMIT_TEXT_INSTR("%s, [%s], %s", register_names[Rt], register_names[Rn], register_names[Rm]);
+              EMIT_TEXT_INSTRF("%s, [%s], %s", register_names[Rt], register_names[Rn], register_names[Rm]);
             } else {
-              EMIT_TEXT_INSTR("%s, [%s], -%s", register_names[Rt], register_names[Rn], register_names[Rm]);
+              EMIT_TEXT_INSTRF("%s, [%s], -%s", register_names[Rt], register_names[Rn], register_names[Rm]);
             }
             EMIT_TEXT_SHIFT_BY_IMM("\n");
           }
@@ -305,20 +304,20 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
 
             if (write_back) {
-              EMIT_TEXT_INSTR("%s, [%s, #%d]!\n", register_names[Rt], register_names[Rn], imm12);
+              EMIT_TEXT_INSTRF("%s, [%s, #%d]!\n", register_names[Rt], register_names[Rn], imm12);
             } else {
               if (imm12 == 0) {
-                EMIT_TEXT_INSTR("%s, [%s]\n", register_names[Rt], register_names[Rn]);
+                EMIT_TEXT_INSTRF("%s, [%s]\n", register_names[Rt], register_names[Rn]);
               } else {
-                EMIT_TEXT_INSTR("%s, [%s, #%d]\n", register_names[Rt], register_names[Rn], imm12);
+                EMIT_TEXT_INSTRF("%s, [%s, #%d]\n", register_names[Rt], register_names[Rn], imm12);
               }
             }
           } else {
-            EMIT_TEXT_INSTR("%s, [%s], #%d\n", register_names[Rt], register_names[Rn], imm12);
+            EMIT_TEXT_INSTRF("%s, [%s], #%d\n", register_names[Rt], register_names[Rn], imm12);
           }
         } else {
           // If this block is reached, there's a bug
-          EMIT_TEXT_INSTR("_____");
+          EMIT_TEXT_INSTRF("_____");
         }
         break;
       }
@@ -333,16 +332,16 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
           case INSTR_HALFWORD_LS:
           case INSTR_SIGNED_BYTE_LS:
           case INSTR_SIGNED_HALFWORD_LS:
-            EMIT_TEXT_INSTR("%s, [%s", register_names[Rt], register_names[Rn]);
+            EMIT_TEXT_INSTRF("%s, [%s", register_names[Rt], register_names[Rn]);
             break;
           case INSTR_DUAL_LS: {
             uint8_t Rt2 = DECODE_REG(8, binary_instr);
-            EMIT_TEXT_INSTR("%s, %s, [%s", register_names[Rt], register_names[Rt2], register_names[Rn]);
+            EMIT_TEXT_INSTRF("%s, %s, [%s", register_names[Rt], register_names[Rt2], register_names[Rn]);
             break;
           }
           default:
             // If this block is reached, there's a bug
-            EMIT_TEXT_INSTR("_____");
+            EMIT_TEXT_INSTRF("_____");
             break;
         }
 
@@ -352,15 +351,15 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
           if (opcode->operand_flags & OPND_PRE_INDEX) {
             bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
             if (increment) {
-              EMIT_TEXT_CODE(", %s]%s", register_names[Rm], write_back ? "!\n" : "\n");
+              EMIT_TEXT_CODEF(", %s]%s", register_names[Rm], write_back ? "!\n" : "\n");
             } else {
-              EMIT_TEXT_CODE(", -%s]%s", register_names[Rm], write_back ? "!\n" : "\n");
+              EMIT_TEXT_CODEF(", -%s]%s", register_names[Rm], write_back ? "!\n" : "\n");
             }
           } else {
             if (increment) {
-              EMIT_TEXT_CODE("], %s\n", register_names[Rm]);
+              EMIT_TEXT_CODEF("], %s\n", register_names[Rm]);
             } else {
-              EMIT_TEXT_CODE("], -%s\n", register_names[Rm]);
+              EMIT_TEXT_CODEF("], -%s\n", register_names[Rm]);
             }
           }
         } else {
@@ -372,16 +371,16 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
 
           if (opcode->operand_flags & OPND_PRE_INDEX) {
             if (opcode->operand_flags & OPND_WRITE_BACK) {
-              EMIT_TEXT_CODE(", %d]!\n", imm);
+              EMIT_TEXT_CODEF(", %d]!\n", imm);
             } else {
               if (imm == 0) {
-                EMIT_TEXT_CODE("]\n");
+                EMIT_TEXT_CODEF("]\n");
               } else {
-                EMIT_TEXT_CODE(", %d]\n", imm);
+                EMIT_TEXT_CODEF(", %d]\n", imm);
               }
             }
           } else {
-            EMIT_TEXT_CODE("], %d\n", imm);
+            EMIT_TEXT_CODEF("], %d\n", imm);
           }
         }
         break;
@@ -395,17 +394,17 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
         if (Rn == SP && !write_back) {
           switch (opcode->opcode_flags) {
           case LDMIA:
-            EMIT_TEXT_PSEUDO_INSTR("pop", "");
+            EMIT_TEXT_PSEUDO_INSTRF("pop", "");
             break;
           case STMDB:
-            EMIT_TEXT_PSEUDO_INSTR("push", "");
+            EMIT_TEXT_PSEUDO_INSTRF("push", "");
             break;
           default:
-            EMIT_TEXT_INSTR("%s, ", register_names[Rn]);
+            EMIT_TEXT_INSTRF("%s, ", register_names[Rn]);
             break;
           }
         } else {
-          EMIT_TEXT_INSTR("%s%s, ", register_names[Rn], write_back ? "!" : "");
+          EMIT_TEXT_INSTRF("%s%s, ", register_names[Rn], write_back ? "!" : "");
         }
 
         // Register list
@@ -414,25 +413,25 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
           register_list = register_list >> 1;
           reg_i++;
         }
-        EMIT_TEXT_CODE("{%s", register_names[reg_i]);
+        EMIT_TEXT_CODEF("{%s", register_names[reg_i]);
         do {
           register_list = register_list >> 1;
           reg_i++;
           if (register_list & 0x1) {
-            EMIT_TEXT_CODE(", %s", register_names[reg_i]);
+            EMIT_TEXT_CODEF(", %s", register_names[reg_i]);
           }
         } while (register_list);
         EMIT_TEXT_CODE("}\n");
         break;
       }
       case STATUS:
-        EMIT_TEXT_INSTR(" ...\n");
+        EMIT_TEXT_INSTRF(" ...\n");
         break;
       case COPROCESSOR:
-        EMIT_TEXT_INSTR(" ...\n");
+        EMIT_TEXT_INSTRF(" ...\n");
         break;
       case MISC:
-        EMIT_TEXT_INSTR(" ...\n");
+        EMIT_TEXT_INSTRF(" ...\n");
         break;
       default:
         fllprintf(out, "0x%x: <UNRECOGNIZED>\n", stream_addr);
