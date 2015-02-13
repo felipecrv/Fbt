@@ -65,7 +65,8 @@ int fllwrite(int fd, const char* str)
   int length = fbt_strnlen(str, 0);
   while (written < length) {
     int retval;
-    fbt_writeK(fd, (str + written), (length - written), retval, 255);
+    fbt_write(fd, (str + written), (length - written), retval);
+    SYSCALL_SUCCESS_OR_SUICIDE(retval, 255);
     written += retval;
   }
   return written;

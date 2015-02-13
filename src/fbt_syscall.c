@@ -221,7 +221,7 @@ void sighandler(int signal __attribute__((unused)),
 static void init_signal_handlers(struct thread_local_data *tld) {
   long i, retval;
   for (i = 0; i < MAX_NR_SIGNALS; ++i) {
-    fbt_sigactionE(i, 0x0, &(tld->signals[i]), retval);
+    fbt_sigaction(i, 0x0, &(tld->signals[i]), retval);
   }
 
 #if defined(SLEEP_ON_FAIL)
@@ -266,9 +266,9 @@ static enum syscall_auth_response auth_signal(struct thread_local_data *tld,
     tld->signals[arg1].restorer = 0x0;
     tld->signals[arg1].sigaction = (void*)arg2;
     if ((void*)arg2 == SIG_IGN || (void*)arg2 == SIG_DFL) {
-      fbt_signalE(arg1, arg2, retval);
+      fbt_signal(arg1, arg2, retval);
     } else {
-      fbt_signalE(arg1, &sighandler, retval);
+      fbt_signal(arg1, &sighandler, retval);
     }
     /* if we got an error in the signal syscall then we return that error.
        otherwise we return the old value of the signal handler */
@@ -300,9 +300,9 @@ static enum syscall_auth_response auth_signal(struct thread_local_data *tld,
       tld->signals[arg1].sigaction = sigaction->sigaction;
 
       if (syscall_nr == SYS_sigaction) {
-        fbt_sigactionE(arg1, &(tld->signals[arg1]), 0x0, retval);
+        fbt_sigaction(arg1, &(tld->signals[arg1]), 0x0, retval);
       } else {
-        fbt_rt_sigactionE(arg1, &(tld->signals[arg1]), 0x0, retval);
+        fbt_rt_sigaction(arg1, &(tld->signals[arg1]), 0x0, retval);
       }
     }
     return SYSCALL_AUTH_FAKE;

@@ -236,120 +236,37 @@
 #define fbt_suicide(exitnr) __asm__ volatile("hlt")
 #endif  /* NOT DEBUG */
 
-/* Possible endings for syscalls:
-   K: program will be killed with (int)err
-   E: syscall executes, errors are ignored
-   nothing: program is killed with given error string
- */
-
-#define fbt_clone2(flags, stack, res) \
-  _syscall2(clone, flags, stack, res)
-#define fbt_read(fd, buf, count, res) \
-  _syscall3(read, fd, buf, count, res)
-#define fbt_write(fd, buf, count, res, errstr) \
-  do { \
-    _syscall3(write, fd, buf, count, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_writeK(fd, buf, count, res, err) \
-  do { \
-    _syscall3(write, fd, buf, count, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE(res, err); \
-  } while (0)
-#define fbt_open(pathname, flags, mode, res, errstr) \
-  do { \
-    _syscall3(open, pathname, flags, mode, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_openE(pathname, flags, mode, res) \
+#define fbt_clone2(flags, stack, res) _syscall2(clone, flags, stack, res)
+#define fbt_read(fd, buf, count, res) _syscall3(read, fd, buf, count, res)
+#define fbt_write(fd, buf, count, res) _syscall3(write, fd, buf, count, res)
+#define fbt_open(pathname, flags, mode, res) \
   _syscall3(open, pathname, flags, mode, res)
-#define fbt_openat(fd, pathname, flags, mode, res, errstr) \
-  do { \
-    _syscall4(openat, fd, pathname, flags,  mode, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_openatE(fd, pathname, flags, mode, res) \
+#define fbt_openat(fd, pathname, flags, mode, res) \
   _syscall4(openat, fd, pathname, flags,  mode, res)
-#define fbt_faccessatE(fd, file, flags, mode, res) \
+#define fbt_faccessat(fd, file, flags, mode, res) \
   _syscall4(faccessat, fd, file, flags, mode, res)
-#define fbt_accessE(path, mode, res) \
-  _syscall2(access, path, mode, res)
-#define fbt_close(fd, res, errstr) \
-  do { \
-    _syscall1(close, fd, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_closeE(fd, res) \
-  _syscall1(close, fd, res)
-#define fbt_lseek(fd, offset, whence, res, errstr) \
-  do { \
-    _syscall3(lseek, fd, offset, whence, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_getpid(res, errstr) \
-  do { \
-    _syscall(getpid, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_gettid(res) \
-  _syscall(gettid, res)
-#define fbt_fstat64(fd, stat, res, errstr) \
-  do { \
-    _syscall2(fstat64, fd, stat, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_fstat64E(fd, stat, res) \
-  _syscall2(fstat64, fd, stat, res)
-#define fbt_stat64(path, stat, res, errstr) \
-  do { \
-    _syscall2(stat64, path, stat, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_stat64E(path, stat, res) \
-  do { \
-    _syscall2(stat64, path, stat, res); \
-  } while(0)
-#define fbt_fstat(fd, stat, res, errstr) \
-  do { \
-    _syscall2(fstat, fd, stat, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_mmap(addr, length, prot, flags, fd, offset, res, errstr) \
-  do { \
-    _syscall6(mmap, addr, length, prot, flags, fd, offset, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_munmap(addr, length, res, errstr) \
-  do { \
-    _syscall2(munmap, addr, length, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_mprotect(addr, len, prot, res, errstr) \
-  do { \
-    _syscall3(mprotect, addr, len, prot, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_signalE(sig, handler, res) \
-  _syscall2(signal, sig, handler, res)
-#define fbt_sigactionE(sig, act, oldact, res) \
+#define fbt_access(path, mode, res) _syscall2(access, path, mode, res)
+#define fbt_close(fd, res) _syscall1(close, fd, res)
+#define fbt_lseek(fd, offset, whence, res) \
+  _syscall3(lseek, fd, offset, whence, res)
+#define fbt_getpid(res) _syscall(getpid, res)
+#define fbt_gettid(res) _syscall(gettid, res)
+#define fbt_fstat64(fd, stat, res) _syscall2(fstat64, fd, stat, res)
+#define fbt_stat64(path, stat, res) _syscall2(stat64, path, stat, res)
+#define fbt_fstat(fd, stat, res) _syscall2(fstat, fd, stat, res)
+#define fbt_mmap(addr, length, prot, flags, fd, offset, res) \
+  _syscall6(mmap, addr, length, prot, flags, fd, offset, res)
+#define fbt_munmap(addr, length, res) _syscall2(munmap, addr, length, res)
+#define fbt_mprotect(addr, len, prot, res) \
+  _syscall3(mprotect, addr, len, prot, res)
+#define fbt_signal(sig, handler, res) _syscall2(signal, sig, handler, res)
+#define fbt_sigaction(sig, act, oldact, res) \
   _syscall3(sigaction, sig, act, oldact, res)
-#define fbt_sigaction(sig, act, oldact, res, errstr) \
-  do { \
-    _syscall3(sigaction, sig, act, oldact, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_clone(flags, stack, ptid, newtls, ctid, res, errstr) \
-  do { \
-    _syscall5(clone, flags, stack, ptid, newtls, ctid, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
-#define fbt_rt_sigactionE(sig, act, oldact, res) \
+#define fbt_clone(flags, stack, ptid, newtls, ctid, res) \
+  _syscall5(clone, flags, stack, ptid, newtls, ctid, res)
+#define fbt_rt_sigaction(sig, act, oldact, res) \
   _syscall3(rt_sigaction, sig, act, oldact, res)
-#define fbt_getcwd(str, len, res, errstr) \
-  do { \
-    _syscall2(getcwd, str, len, res); \
-    SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr); \
-  } while (0)
+#define fbt_getcwd(str, len, res) _syscall2(getcwd, str, len, res)
 #define fbt_readlink(src, dest, len, res) \
   _syscall3(readlink, src, dest, len, res)
 #define fbt_set_thread_area(uinfo, res) \

@@ -55,9 +55,9 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
   void *mem;
   if (tld == NULL) {
     fbt_mmap(NULL, SMALLOC_PAGES * PAGESIZE, PROT_READ|PROT_WRITE,
-             MAP_PRIVATE|MAP_ANONYMOUS, -1, 0, mem,
-             "BT failed to allocate memory (fbt_reinit_tls: "
-             "fbt_mem_mgmt.c)\n");
+             MAP_PRIVATE|MAP_ANONYMOUS, -1, 0, mem);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+        mem, "BT failed to allocate memory (fbt_reinit_tls: fbt_mem_mgmt.c)\n");
   } else {
     /* Free all the dynamic memory we have allocated. Note that this will
        leave us with the one single chunk that we initially allocated that
@@ -236,8 +236,9 @@ void fbt_mem_free(struct thread_local_data *tld) {
        problem and takes care of the last allocated chunk. */
     struct mem_info *next = chunk->next;
     kbfreed += chunk->size >> 10;
-    fbt_munmap(chunk->ptr, chunk->size, ret, "BT failed to deallocate memory "
-               "(fbt_mem_free: fbt_mem_mgmt.c)\n");
+    fbt_munmap(chunk->ptr, chunk->size, ret);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+        ret, "BT failed to deallocate memory (fbt_mem_free: fbt_mem_mgmt.c)\n");
     chunk = next;
   }
   tld->chunk = chunk;
@@ -279,9 +280,9 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
   }
 
   void *retval;
-  fbt_mmap(NULL, alloc_size, flags, MAP_PRIVATE|MAP_ANONYMOUS,  \
-           -1, 0, retval, "BT failed to allocate memory (fbt_lalloc: "
-           "fbt_mem_mgmt.c)\n");
+  fbt_mmap(NULL, alloc_size, flags, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0, retval);
+  SYSCALL_SUCCESS_OR_SUICIDE_STR(
+      retval, "BT failed to allocate memory (fbt_lalloc: fbt_mem_mgmt.c)\n");
 
   /* we do not track shared data, as it should never be freed */
   int track_chunk = 1;
@@ -314,8 +315,9 @@ void *fbt_smalloc(struct thread_local_data *tld, long size) {
   if (size > tld->smalloc_size) {
     void *mem;
     fbt_mmap(NULL, SMALLOC_PAGES * PAGESIZE, PROT_READ|PROT_WRITE,
-             MAP_PRIVATE|MAP_ANONYMOUS, -1, 0, mem,
-             "BT failed to allocate memory (fbt_smalloc: fbt_mem_mgmt.c)\n");
+             MAP_PRIVATE|MAP_ANONYMOUS, -1, 0, mem);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+        mem, "BT failed to allocate memory (fbt_smalloc: fbt_mem_mgmt.c)\n");
     tld->smalloc_size = SMALLOC_PAGES * PAGESIZE;
     tld->smalloc = mem;
 

@@ -92,8 +92,9 @@ void debug_start()
     fbt_open(DEBUG_FILE_NAME,
              O_CREAT | O_TRUNC | O_WRONLY,
              S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH |  \
-             S_IWOTH, debugStream,
-             "Could not open debug file (debug_start: fbt_debug.c).\n");
+             S_IWOTH, debugStream);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+      debugStream, "Could not open debug file (debug_start: fbt_debug.c).\n");
   }
   fllprintf(debugStream, "Start debugging\n\n");
   if (pthread_key_create(&thread_debug, NULL) != 0) {
@@ -128,8 +129,9 @@ void debug_end()
     //pthread_mutex_destroy(&debug_mutex);
     fllprintf(old_debug_stream, "\nStop debugging\n");
     int ret;
-    fbt_close(old_debug_stream, ret,
-              "BT failed to close debug file (debug_end: fbt_debug.c)\n");
+    fbt_close(old_debug_stream, ret);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+        ret, "BT failed to close debug file (debug_end: fbt_debug.c)\n");
     pthread_key_delete(thread_debug);
   }
 }
@@ -248,15 +250,17 @@ void debug_dump_start()
     fbt_open(CODE_DUMP_FILE_NAME,
              O_CREAT | O_TRUNC | O_WRONLY,
              S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-             dumpCodeStream,
-             "Could not open dump file (debug_dump_start: fbt_debuc.c)\n");
+             dumpCodeStream);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+        dumpCodeStream, "Could not open dump file (debug_dump_start: fbt_debuc.c)\n");
   }
   if (dumpJmpTableStream == 0) {
     fbt_open(JMP_TABLE_DUMP_FILE_NAME,
              O_CREAT | O_TRUNC | O_WRONLY,
              S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-             dumpJmpTableStream,
-             "Could not open jmptable file (debug_dump_start: fbt_debuc.c)\n");
+             dumpJmpTableStream);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+        dumpJmpTableStream, "Could not open jmptable file (debug_dump_start: fbt_debuc.c)\n");
   }
   pthread_mutex_unlock(&dump_mutex);
 }
@@ -271,10 +275,12 @@ void debug_dump_end()
   if (destroy) {
     //pthread_mutex_destroy(&dump_mutex);
     int ret;
-    fbt_close(dumpCodeStream, ret,
-              "Could not close code dump file (debug_dump_end: fbt_debug.c)\n");
-    fbt_close(dumpJmpTableStream, ret,
-              "Could not close jmptable file (debug_dump_end: fbt_debug.c)\n");
+    fbt_close(dumpCodeStream, ret);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+        ret, "Could not close code dump file (debug_dump_end: fbt_debug.c)\n");
+    fbt_close(dumpJmpTableStream, ret);
+    SYSCALL_SUCCESS_OR_SUICIDE_STR(
+        ret, "Could not close jmptable file (debug_dump_end: fbt_debug.c)\n");
     dumpCodeStream = 0;
     dumpJmpTableStream = 0;
   }
