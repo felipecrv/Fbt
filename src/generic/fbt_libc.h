@@ -34,11 +34,7 @@
 #endif
 
 /* include ugliness of system call definition */
-#ifdef __i386__
-# include "../ia32/fbt_syscalls_impl.h"
-#else
-# include "../arm/fbt_syscalls_impl.h"
-#endif
+#include "fbt_syscalls_impl.h"
 
 #define MAP_FAILED      ((void *)-1)
 

@@ -36,7 +36,7 @@
 #include "fbt_code_cache.h"
 #include "fbt_debug.h"
 #include "fbt_datatypes.h"
-#include "ia32/fbt_syscalls_impl.h"
+#include "generic/fbt_syscalls_impl.h"
 #include "fbt_translate.h"
 #include "fbt_mem_mgmt.h"
 #include "generic/fbt_libc.h"
