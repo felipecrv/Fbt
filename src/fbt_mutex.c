@@ -29,7 +29,7 @@
 
 #include "fbt_datatypes.h"
 #include "fbt_mutex.h"
-#include "fbt_syscalls_impl.h"
+#include "ia32/fbt_syscalls_impl.h"
 
 #include <stdlib.h>
 #include <linux/futex.h>
