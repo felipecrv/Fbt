@@ -29,7 +29,9 @@
 #ifndef FBT_LIBC_H
 #define FBT_LIBC_H
 
-#include <stdlib.h> /* for NULL */
+#ifndef NULL
+# define NULL ((void*)0)
+#endif
 
 /* include ugliness of system call definition */
 #ifdef __i386__
