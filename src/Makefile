@@ -15,10 +15,11 @@ SHELL := /bin/bash -e
 # object files for IA32
 IA32_FILES += libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_actions.c \
 	generic/fbt_llio.c generic/fbt_libc.c fbt_debug.c fbt_trampoline.c fbt_syscall.c \
-	fbt_mutex.c generic/fbt_algorithms.c fbt_mem_pool.c
+	generic/fbt_mutex.c generic/fbt_algorithms.c fbt_mem_pool.c
 
 # object files for ARM
-ARM_FILES += libfastbt.c generic/fbt_algorithms.c generic/fbt_libc.c generic/fbt_llio.c
+ARM_FILES += libfastbt.c generic/fbt_algorithms.c generic/fbt_libc.c generic/fbt_llio.c \
+						 generic/fbt_mutex.c
 
 # object files for the ARM disassembler
 ARM_DISASSEMBLER_FILES=generic/fbt_llio.c generic/fbt_libc.c \

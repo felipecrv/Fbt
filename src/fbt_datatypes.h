@@ -37,7 +37,7 @@ struct ia32_opcode;
 struct dso_chain;
 #if defined(SHARED_DATA)
 struct shared_data;
-#include "fbt_mutex.h"
+#include "generic/fbt_mutex.h"
 #endif
 
 #if defined(ICF_PREDICT)

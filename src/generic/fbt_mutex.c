@@ -27,13 +27,12 @@
  * MA  02110-1301, USA.
  */
 
-#include "fbt_datatypes.h"
+#include "../fbt_datatypes.h"
+#include "fbt_libc.h"  // for NULL
 #include "fbt_mutex.h"
-#include "generic/fbt_syscalls_impl.h"
+#include "fbt_syscalls_impl.h"
 
-#include <stdlib.h>
 #include <linux/futex.h>
-#include <sys/syscall.h>
 
 #define FUTEX_INVALID -1
 #define FUTEX_UNLOCKED 0

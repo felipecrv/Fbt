@@ -79,7 +79,7 @@
   _syscall_enter_kernel("r"(_r0), "r"(_r1), "r"(_r2), "r"(_r3), "r"(_r4)); \
   res = _r0;
 
-#define _syscal6_asm(name, arg0, arg1, arg2, arg3, arg4, arg5, res) \
+#define _syscall6_asm(name, arg0, arg1, arg2, arg3, arg4, arg5, res) \
   _syscall_set_code(name); \
   _syscall_set_reg(r0, arg0); \
   _syscall_set_reg(r1, arg1); \
@@ -137,7 +137,7 @@ static type fbt_syscall_##name(type0 arg0, type1 arg1, type2 arg2, type3 arg3, t
 #define _syscall6_fn(type, name, type0, arg0, type1, arg1, type2, arg2, type3, arg3, type4, arg4, type5, arg5) \
 static type fbt_syscall_##name(type0 arg0, type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5) { \
   long res; \
-  _syscall5_asm(name, arg0, arg1, arg2, arg3, arg4, arg5, res); \
+  _syscall6_asm(name, arg0, arg1, arg2, arg3, arg4, arg5, res); \
   _syscall_return(type, res); \
 }
 
@@ -150,7 +150,7 @@ _syscall5_fn(long, clone, unsigned long, flags, void*, child_stack,
                           void *, ptid, void*, ctid,
                           void*, regs)
 
-// long read(int fd, void *buf, unsigned long count)
+// long fbt_syscall_read(int fd, void *buf, unsigned long count)
 _syscall3_fn(long, read, int, fd, void*, buf, unsigned long, count)
 
 // long fbt_syscall_write(int fd, const char *buf, unsigned long count)
@@ -158,6 +158,11 @@ _syscall3_fn(long, write, int, fd, const char*, buf, unsigned long, count)
 
 // int fbt_syscall_open(const char *pathname, int flags, mode_t mode)
 _syscall3_fn(int, open, const char*, pathname, int, flags, char *, mode)
+
+// int fbt_syscall_futex(int *uaddr, int op, int val,
+//                       const struct timespec *timeout, int *uaddr2, int val3);
+_syscall6_fn(int, futex, int *, uaddr, int, op, int, val,
+             long *, timeout, int *, uaddr2, int, val3)
 
 
 // fbt_suicide() is used in syscall error handling code
