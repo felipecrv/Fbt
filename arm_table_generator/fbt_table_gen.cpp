@@ -120,7 +120,7 @@ void generate_tables(ofstream& out, string prefix) {
   out << "}" << endl;
   out << endl;
 
-  out << "ARMOpcode opcode_table[] = {" << endl;
+  out << "struct arm_opcode opcode_table[] = {" << endl;
   for (unsigned int i = 0; i <= 0xDF; i++) {
     stringstream temp;
     temp << hex << (i >> 4);

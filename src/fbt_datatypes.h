@@ -28,16 +28,25 @@
 #ifndef FBT_DATATYPES_H
 #define FBT_DATATYPES_H
 
+#if defined(SHARED_DATA)
+# include "generic/fbt_mutex.h"  // for fbt_mutex_t
+#endif
+
 typedef unsigned long ulong_t;
 
 /* forward declare these structs */
+#if defined(__i386__)
+struct ia32_opcode;
+typedef struct ia32_opcode ArchOpcode;
+#elif defined(__arm__)
+struct arm_opcode;
+typedef struct arm_opcode ArchOpcode;
+#endif
 struct mem_info;
 struct trampoline;
-struct ia32_opcode;
 struct dso_chain;
 #if defined(SHARED_DATA)
 struct shared_data;
-#include "generic/fbt_mutex.h"
 #endif
 
 #if defined(ICF_PREDICT)
@@ -60,7 +69,7 @@ struct translate {
   /** pointer to the instruction that is currently being translated */
   unsigned char *cur_instr;
   /** information about the current instruction (or NULL) */
-  const struct ia32_opcode *cur_instr_info;
+  const ArchOpcode *cur_instr_info;
   /** pointer into the instruction to the first byte of the data/imm values */
   unsigned char *first_byte_after_opcode;
   /** number of prefixes for this instruction */

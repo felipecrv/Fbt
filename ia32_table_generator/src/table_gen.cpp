@@ -122,7 +122,7 @@ void generateTables(std::ofstream& out, std::string prefix)
     generateOpcodeTable(out, prefix, "table for three byte opcodes with 0xF2 (Operand-size override) PREFIX (0F38xx)", 0xF20F3800, 256, 0x01);
     generateOpcodeTable(out, prefix, "table for three byte opcodes with 0x0F38", 0x0F3800, 256, 0x01);
     generateOpcodeTable(out, prefix, "table for three byte opcodes with 0x0F3A", 0x0F3A00, 256, 0x01);
-	
+
     generateOpcodeTable(out, prefix, "table for two byte opcodes with 0x66 (Operand-size override) PREFIX", 0x660F00, 256, 0x01);
     generateOpcodeTable(out, prefix, "table for two byte opcodes with 0xF2 (REPZ override) PREFIX", 0xF20F00, 256, 0x01);
     generateOpcodeTable(out, prefix, "table for two byte opcodes with 0xF3 (REPZ override) PREFIX", 0xF30F00, 256, 0x01);
@@ -641,7 +641,7 @@ std::string flag2string(const unsigned int flags)
     case EXECUTE:
 	result = "EXECUTE";
 	break;
-    default: 
+    default:
 	std::cout << "Unsupported RWX type!" << std::endl;
     case 0:
 	addPipe = false;
@@ -734,7 +734,7 @@ std::string flag2string(const unsigned int flags)
 	result += "ADDRM_UM";
 	break;
     default:
-	std::cout << "Unsupported ADDRM type! (" << (flags & OP_ADDRM_MASK) << ")" <<std::endl;		
+	std::cout << "Unsupported ADDRM type! (" << (flags & OP_ADDRM_MASK) << ")" <<std::endl;
     case 0:
 	addPipe = false;
 	break;
@@ -812,7 +812,7 @@ std::string flag2string(const unsigned int flags)
 	result += "OPT_fst";
 	break;
     default:
-	std::cout << "Unsupported OPT type!" << std::endl;		
+	std::cout << "Unsupported OPT type!" << std::endl;
     case 0:
 	addPipe = false;
 	break;

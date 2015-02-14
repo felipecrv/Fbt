@@ -242,7 +242,7 @@
 #ifndef ARM_TABLE_GENERATOR
 
 /* entry for opcode table */
-struct arm_opcode_s {
+struct arm_opcode {
   unsigned int opcode_flags;
   unsigned int operand_flags;
 
@@ -255,7 +255,6 @@ struct arm_opcode_s {
   const char* mnemonic;
   //#endif
 };
-typedef struct arm_opcode_s ARMOpcode;
 
 #endif  // !ARM_TABLE_GENERATOR
 

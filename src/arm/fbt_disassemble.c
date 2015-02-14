@@ -50,7 +50,7 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
   for (uint32_t instr_idx = 0; instr_idx < size; instr_idx++) {
     uint32_t binary_instr = instr_stream[instr_idx];
     uint32_t opcode_table_key = ((binary_instr >> 16) & 0xFF0) | ((binary_instr >> 4) & 0xF);
-    ARMOpcode *opcode = &opcode_table[opcode_table_key];
+    struct arm_opcode *opcode = &opcode_table[opcode_table_key];
     uint32_t cond = (binary_instr >> 28) & 0xF;
 
 #define EMIT_TEXT_INSTRF(fmt, args...) \

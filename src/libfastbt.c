@@ -36,14 +36,18 @@
 #include "fbt_trampoline.h"
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
-#include "ia32/fbt_x86_opcode.h"
+#if defined(__i386__)
+# include "ia32/fbt_x86_opcode.h"
+#elif defined(__arm__)
+# include "arm/fbt_arm_opcode.h"
+#endif
 
 #if defined(FBT_STATISTIC)
 #include "fbt_statistic.h"
 #endif
 
 /* forward declaration for the default opcode table */
-extern struct ia32_opcode opcode_table_onebyte[];
+extern ArchOpcode opcode_table_onebyte[];
 
 #if defined(HIJACKCONTROL)
 static struct thread_local_data *tld;
@@ -69,7 +73,7 @@ void _fini() {
 #endif
 
 /* this function is called in fbt_asm_functions.S, .section .init */
-struct thread_local_data* fbt_init(struct ia32_opcode *opcode_table) {
+struct thread_local_data* fbt_init(ArchOpcode *opcode_table) {
   DUMP_START();
   DEBUG_START();
 
@@ -85,8 +89,7 @@ struct thread_local_data* fbt_init(struct ia32_opcode *opcode_table) {
    * the position of the table_onebyte does not change in memory and therefore
    * the address can be hardcoded at compile time */
   if (opcode_table != NULL) {
-    fbt_memcpy(opcode_table_onebyte, opcode_table,
-               0x100 * sizeof(struct ia32_opcode));
+    fbt_memcpy(opcode_table_onebyte, opcode_table, 0x100 * sizeof(ArchOpcode));
   }
 
 #if defined(AUTHORIZE_SYSCALLS)

@@ -46,7 +46,7 @@ extern "C" {
  * default table. If NULL is passed the default table is used.
  */
 __attribute__((visibility("default"))) struct thread_local_data*
-fbt_init(struct ia32_opcode *opcode_table);
+fbt_init(ArchOpcode *opcode_table);
 
 /**
  * Shuts the BT down.

@@ -440,6 +440,5 @@ struct ia32_opcode {
   //#endif
 
 };
-typedef struct ia32_opcode ia32_opcode_t;
 
 #endif  /* FBT_X86_OPCODE_H */
