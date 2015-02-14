@@ -29,6 +29,7 @@
  */
 
 #include <assert.h>
+#include <stdint.h>
 
 #include "fbt_code_cache.h"
 #include "ia32/fbt_asm_macros.h"

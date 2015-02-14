@@ -31,6 +31,7 @@
 
 #include <assert.h>
 #include <stddef.h> /* offsetof */
+#include <stdint.h>
 
 #include "ia32/fbt_asm_macros.h"
 #include "fbt_code_cache.h"

@@ -27,6 +27,7 @@
  */
 
 #include <assert.h>
+#include <stdint.h>
 
 #include "fbt_translate.h"
 #include "fbt_actions.h"
