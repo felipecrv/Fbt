@@ -29,18 +29,11 @@
 #ifndef FBT_SYSCALLS_H
 #define FBT_SYSCALLS_H
 
-#if defined(__x86_64__)
-/* 64b syscall numbers needed here */
-#define SYS_exit     60
-#define SYS_write     1
-#define SYS_open      2
-#define SYS_close     3
-#define SYS_lseek     8
-#define SYS_mmap      9
-#define SYS_munmap   11
-#define SYS_mprotect 10
+#include <sys/syscall.h>
 
+#if defined(__x86_64__)
 #define __syscall_clobber "r11","rcx","memory"
+
 #define _syscall1(name,arg1,__res)                                      \
     __asm__ volatile ("syscall;"                                        \
                       : "=a"(__res)                                     \
@@ -73,50 +66,12 @@
                         "g"((long)(arg6))                               \
                       : __syscall_clobber );
 
-#else  /* i386+ mode */
+#define SYS_unused1 222
+#define SYS_unused2 223
+#define SYS_unused3 251
+#define SYS_sys_setaltroot 285
 
-#define I386_NR_SYSCALLS 341  /* total # of system calls */
-
-#define SYS_exit           1  /* ensure that we close BT */
-#define SYS_fork           2
-#define SYS_read           3
-#define SYS_write          4
-#define SYS_open           5
-#define SYS_close          6
-#define SYS_creat          8
-#define SYS_execve        11  /* redirected to auth_execve */
-#define SYS_lseek         19
-#define SYS_getpid        20
-#define SYS_ptrace        26  /* deny */
-#define SYS_signal        48  /* installs a new signal handler (deprecated) */
-#define SYS_sigaction     67  /* installs a new signal handler */
-#define SYS_readlink      85
-#define SYS_mmap          90  /* redirected to auth_mmap */
-#define SYS_munmap        91  /* TODO */
-#define SYS_fstat        108  /* old fstat syscall, used by fbt_dso.c */
-#define SYS_stat64       195  /* use new fstat syscall */
-#define SYS_fstat64      197  /* use new fstat syscall */
-#define SYS_sigreturn    119  /* we should never see this syscall */
-#define SYS_clone        120  /* initializes a new thread */
-#define SYS_mprotect     125  /* redirect to auth_mprotect */
-#define SYS_rt_sigreturn 173  /* we should never see this syscall */
-#define SYS_rt_sigaction 174  /* install a new signal handler */
-#define SYS_rt_sigprocmask 175 /* change the list of currently blocked signals */
-#define SYS_getcwd       183  /* get current wd */
-#define SYS_mmap2        192  /* redirected to auth_mmap */
-#define SYS_unused1      222  /* deny */
-#define SYS_unused2      223  /* deny */
-#define SYS_gettid       224  /* get thread identification (Linux-specific) */
-#define SYS_futex        240
-#define SYS_set_thread_area 243 /* set_thread_area */
-#define SYS_get_thread_area 244 /* get_thread_area */
-#define SYS_unused3      251  /* deny */
-#define SYS_exit_group   252  /* ensure that we close BT */
-#define SYS_sys_setaltroot 285  /* deny */
-
-#define SYS_openat       295
-#define SYS_faccessat    307
-#define SYS_access        33
+#else
 
 /* fast or slow system call? */
 //#if defined(__i686__)

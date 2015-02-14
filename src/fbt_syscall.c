@@ -45,6 +45,37 @@
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
 
+/*
+      sycall code    |          Remark
+---------------------+--------------------------------------------
+SYS_exit               ensure that we close BT
+SYS_execve             redirected to auth_execve
+SYS_ptrace             deny
+SYS_signal             installs a new signal handler (deprecated)
+SYS_sigaction          installs a new signal handler
+SYS_mmap               redirected to auth_mmap
+SYS_munmap             TODO
+SYS_fstat              old fstat syscall, used by fbt_dso.c
+SYS_stat64             use new fstat syscall
+SYS_fstat64            use new fstat syscall
+SYS_sigreturn          we should never see this syscall
+SYS_clone              initializes a new thread
+SYS_mprotect           redirect to auth_mprotect
+SYS_rt_sigreturn       we should never see this syscall
+SYS_rt_sigaction       install a new signal handler
+SYS_rt_sigprocmask     change the list of currently blocked signals
+SYS_getcwd             get current wd
+SYS_mmap2              redirected to auth_mmap
+SYS_gettid             get thread identification (Linux-specific)
+SYS_set_thread_area    set_thread_area
+SYS_get_thread_area    get_thread_area
+SYS_exit_group         ensure that we close BT
+SYS_sys_setaltroot     deny
+SYS_unused1            deny
+SYS_unused2            deny
+SYS_unused3            deny
+*/
+
 #if defined(AUTHORIZE_SYSCALLS)
 /*
  * System call authorization functions must ensure a couple of things:
@@ -712,7 +743,7 @@ auth_mprotect(struct thread_local_data *tld, ulong_t syscall_nr,
 void fbt_init_syscalls(struct thread_local_data *tld) {
   ulong_t i;
   PRINT_DEBUG("Syscall table: %p %p\n", tld->syscall_table, debug_syscall);
-  for (i = 0; i <= I386_NR_SYSCALLS; ++i) {
+  for (i = 0; i <= NR_syscalls; ++i) {
     /* allow_syscall for production, debug_syscall for testing */
     tld->syscall_table[i] = &allow_syscall;
   }
@@ -723,10 +754,14 @@ void fbt_init_syscalls(struct thread_local_data *tld) {
   tld->syscall_table[SYS_ptrace] = &deny_syscall;
   tld->syscall_table[SYS_sigreturn] = &deny_syscall;
   tld->syscall_table[SYS_rt_sigreturn] = &deny_syscall;
+#ifdef SYS_unused1
   tld->syscall_table[SYS_unused1] = &deny_syscall;
   tld->syscall_table[SYS_unused2] = &deny_syscall;
   tld->syscall_table[SYS_unused3] = &deny_syscall;
+#endif
+#ifdef SYS_sys_setaltroot
   tld->syscall_table[SYS_sys_setaltroot] = &deny_syscall;
+#endif
 
   /* special handling for special system calls */
   tld->syscall_table[SYS_execve] = &auth_execve;

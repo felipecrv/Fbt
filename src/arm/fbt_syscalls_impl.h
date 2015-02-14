@@ -1,9 +1,7 @@
 #ifndef ARM_FBT_SYSCALLS_IMPL_H
 #define ARM_FBT_SYSCALLS_IMPL_H
 
-//#include <features.h>
 #include <errno.h>
-//#include <sys/types.h>
 #include <sys/syscall.h>
 
 // Only the newer Thumb/ARM EABI calling convetions are supported

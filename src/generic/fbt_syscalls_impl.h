@@ -7,6 +7,21 @@
 # include "../arm/fbt_syscalls_impl.h"
 #endif
 
+// total number of system calls (size of the syscall table)
+#ifndef NR_syscalls
+# ifdef __NR_syscalls
+#  define NR_syscalls __NR_syscalls
+# else
+#  if defined(__i386__)
+#   define NR_syscalls 356
+#  elif defined(__x86_64__)
+#   define NR_syscalls 319
+#  elif defined(__arm__)
+#   define NR_syscalls 388
+#  endif
+# endif
+#endif
+
 #define fbt_read(fd, buf, count, res) _syscall3(read, (fd), (buf), (count), (res))
 #define fbt_write(fd, buf, count, res) _syscall3(write, (fd), (buf), (count), (res))
 #define fbt_open(pathname, flags, mode, res) \
