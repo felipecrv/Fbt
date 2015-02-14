@@ -18,7 +18,7 @@ IA32_FILES += libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_ac
 	fbt_mutex.c generic/fbt_algorithms.c fbt_mem_pool.c
 
 # object files for ARM
-ARM_FILES += libfastbt.c generic/fbt_algorithms.c #generic/fbt_libc.c generic/fbt_llio.c
+ARM_FILES += libfastbt.c generic/fbt_algorithms.c generic/fbt_libc.c generic/fbt_llio.c
 
 # object files for the ARM disassembler
 ARM_DISASSEMBLER_FILES=generic/fbt_llio.c generic/fbt_libc.c \
@@ -61,7 +61,7 @@ $(ARM_LIBNAME).so: *.h arm/*.h generic/*.h $(ARM_FILES)
 	$(CC) -shared -Wl,-soname,$(ARM_LIBNAME).so.$(LIBVERS) \
 		-o $(ARM_LIBNAME).so *.o $(LDFLAGS)
 
-$(LIBNAME).a:
+$(LIBNAME).a: $(LIBNAME).so
 	ar cru $(LIBNAME).a libfastbt.o
 
 arm/fbt_opcode_tables.h: arm/fbt_arm_opcode.h
@@ -75,6 +75,5 @@ arm_disassembler: $(ARM_DISASSEMBLER_FILES) *.h arm/*.h generic/*.h arm/fbt_opco
 clean:
 	rm -rf $(GEN_DIR)
 	rm -f *.o *.lo *.la *~ *.as *.out
-	rm -f $(IA32_LIBNAME).a $(ARM_LIBNAME).a
-	rm -f $(IA32_LIBNAME).so $(ARM_LIBNAME).a
+	rm -f *.a *.so
 	rm -f arm_disassembler

@@ -150,7 +150,7 @@ void fbt_start_transaction(struct thread_local_data *tld,
   *((ulong_t*)__builtin_frame_address(0)+1) = (ulong_t)tld->ret2app_trampoline;
   PRINT_DEBUG_FUNCTION_END(" ");
   /* avoid tail-call optimization (-foptimize-sibling-calls) for RIP change */
-  asm volatile("" : : : "cc", "memory");
+  __asm__ volatile("" : : : "cc", "memory");
 }
 
 void fbt_commit_transaction() {
