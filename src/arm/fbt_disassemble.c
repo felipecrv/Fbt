@@ -3,9 +3,10 @@
 #include <assert.h>
 
 #include "../generic/fbt_llio.h"
-#include "../fbt_translate.h"
-#include "fbt_arm_opcode.h"
 #include "fbt_disassemble.h"
+
+// inclusion of the fbt_opcode_tables.h
+#include "fbt_arm_opcode.h"  // for struct arm_opcode and definitions
 #include "fbt_opcode_tables.h"
 
 static char register_names[][4] = {

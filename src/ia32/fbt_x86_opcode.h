@@ -29,6 +29,8 @@
 #ifndef FBT_X86_OPCODE_H
 #define FBT_X86_OPCODE_H
 
+#include "../fbt_translate.h"  // for actionFunP_t
+
 /* REX bits */
 #define REXW 0x8
 

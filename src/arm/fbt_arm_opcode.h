@@ -1,6 +1,8 @@
 #ifndef FBT_ARM_OPCODE
 #define FBT_ARM_OPCODE
 
+#include "../fbt_translate.h"  // for actionFunP_t
+
 /* no flag */
 #define NONE       0x00000000
 

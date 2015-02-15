@@ -15,7 +15,7 @@ SHELL := /bin/bash -e
 # object files for IA32
 IA32_FILES += libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_actions.c \
 	generic/fbt_llio.c generic/fbt_libc.c fbt_debug.c fbt_trampoline.c fbt_syscall.c \
-	generic/fbt_mutex.c generic/fbt_algorithms.c fbt_mem_pool.c
+	generic/fbt_mutex.c generic/fbt_algorithms.c fbt_mem_pool.c ia32/fbt_disassemble.c
 
 # object files for ARM
 ARM_FILES += libfastbt.c generic/fbt_algorithms.c generic/fbt_libc.c generic/fbt_llio.c \
@@ -41,6 +41,7 @@ all: $(LIBNAME).so $(LIBNAME).a
 $(IA32_LIBNAME).so: *.h ia32/*.h generic/*.h $(IA32_FILES)
 	mkdir -p $(GEN_DIR)
 	mkdir -p $(GEN_DIR)/generic
+	mkdir -p $(GEN_DIR)/ia32
 	
 	for file in $(IA32_FILES); do \
 		$(CC) ${CFLAGS} -E $$file > $(GEN_DIR)/$$file; \
@@ -52,8 +53,9 @@ $(IA32_LIBNAME).so: *.h ia32/*.h generic/*.h $(IA32_FILES)
 	
 	cp *.h $(GEN_DIR)
 	cp generic/*.h $(GEN_DIR)/generic
+	cp ia32/*.h $(GEN_DIR)/ia32
 
-	$(CC) $(CFLAGS) $(LIBFLAGS) generated/*.c generated/generic/*.c
+	$(CC) $(CFLAGS) $(LIBFLAGS) generated/generic/*.c generated/ia32/*.c generated/*.c
 	$(CC) -shared -Wl,-soname,$(IA32_LIBNAME).so.$(LIBVERS) \
 		-o $(IA32_LIBNAME).so *.o $(LDFLAGS)
 

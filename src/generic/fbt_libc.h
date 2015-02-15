@@ -36,6 +36,8 @@
 /* include ugliness of system call definition */
 #include "fbt_syscalls_impl.h"
 
+#include "fbt_llio.h"  // for fllwrite() in fbt_suicide_str()
+
 #define MAP_FAILED      ((void *)-1)
 
 /**
