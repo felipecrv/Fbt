@@ -190,9 +190,9 @@ _syscall2_fn(int, munmap, void*, addr, unsigned long, length)
     } while(0)
 
 #define SYSCALL_SUCCESS_OR_SUICIDE(res, err) \
-    if ((res) < 0) { fbt_suicide(err); }
+    if (((long)res) < 0) { fbt_suicide(err); }
 #define SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr) \
-    if ((res) < 0) { fbt_suicide_str(errstr); }
+    if (((long)res) < 0) { fbt_suicide_str(errstr); }
 
 
 // Macros used to define the public interface in generic/fbt_syscalls_impl.h

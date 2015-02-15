@@ -26,13 +26,13 @@
  * MA  02110-1301, USA.
  */
 
+#include <assert.h>
+#include <asm-generic/mman.h>
+
 #include "fbt_mem_mgmt.h"
 #include "fbt_mem_pool.h"
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
-
-#include <assert.h>
-#include <asm-generic/mman.h>
 
 static void mem_pool_map(struct mem_pool *mp, long size);
 static void mem_pool_add_info_node(struct mem_pool *mp, char *mem, long size);

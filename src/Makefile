@@ -19,18 +19,11 @@ IA32_FILES += libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_ac
 
 # object files for ARM
 ARM_FILES += libfastbt.c generic/fbt_algorithms.c generic/fbt_libc.c generic/fbt_llio.c \
-						 generic/fbt_mutex.c arm/fbt_disassemble.c
+						 generic/fbt_mutex.c arm/fbt_disassemble.c fbt_mem_mgmt.c fbt_mem_pool.c
 
 # object files for the ARM disassembler
 ARM_DISASSEMBLER_FILES=generic/fbt_llio.c generic/fbt_libc.c \
 											 arm/fbt_disassemble.c arm/arm_disassembler.c
-
-# we include some kernel stuff as we directly call system calls.
-ifeq ($(TARGET_ARCH),ia32)
-  CFLAGS += -I/lib/modules/$(shell uname -r)/build/arch/x86/include
-else # ARM
-  CFLAGS += -I/lib/modules/$(shell uname -r)/build/arch/arm/include
-endif
 
 .PHONY: all clean
 

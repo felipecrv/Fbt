@@ -30,9 +30,9 @@
 #include "fbt_mem_mgmt.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <asm-generic/mman.h>
 
-#include "ia32/fbt_asm_macros.h"
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"

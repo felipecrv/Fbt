@@ -39,14 +39,24 @@
 #define fbt_fstat64(fd, stat, res) _syscall2(fstat64, (fd), (stat), (res))
 #define fbt_stat64(path, stat, res) _syscall2(stat64, (path), (stat), (res))
 #define fbt_fstat(fd, stat, res) _syscall2(fstat, (fd), (stat), (res))
+
 #ifdef SYS_mmap
 # define fbt_mmap(addr, length, prot, flags, fd, offset, res) \
    _syscall6(mmap, (addr), (length), (prot), (flags), (fd), (offset), (res))
 #endif  // SYS_mmap
+
 #ifdef SYS_mmap2
 #define fbt_mmap2(addr, length, prot, flags, fd, pgoffset, res) \
    _syscall6(mmap2, (addr), (length), (prot), (flags), (fd), (pgoffset), (res))
 #endif  // SYS_mmap2
+
+// If there's only mmap2, we define fbt_mmap() using fbt_mmap2()
+#if !defined(SYS_mmap) && defined(SYS_mmap2)
+# define fbt_mmap(addr, length, prot, flags, fd, offset, res) \
+   assert((offset) / 4096 == 0); \
+   fbt_mmap2((addr), (length), (prot), (flags), (fd), (offset) / 4096, (res))
+#endif
+
 #define fbt_munmap(addr, length, res) _syscall2(munmap, (addr), (length), (res))
 #define fbt_mprotect(addr, len, prot, res) \
   _syscall3(mprotect, (addr), (len), (prot), (res))
