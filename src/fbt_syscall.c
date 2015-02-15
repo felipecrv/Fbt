@@ -65,7 +65,7 @@ SYS_rt_sigreturn       we should never see this syscall
 SYS_rt_sigaction       install a new signal handler
 SYS_rt_sigprocmask     change the list of currently blocked signals
 SYS_getcwd             get current wd
-SYS_mmap2              redirected to auth_mmap
+SYS_mmap2              redirected to auth_mmap2
 SYS_gettid             get thread identification (Linux-specific)
 SYS_set_thread_area    set_thread_area
 SYS_get_thread_area    get_thread_area
@@ -137,6 +137,7 @@ static enum syscall_auth_response auth_execve(struct thread_local_data *tld,
                                               ulong_t is_sysenter,
                                               ulong_t *retval);
 
+#ifdef SYS_mmap
 /**
  * Checks the parameters of an mmap and ensures that the region does not overlap
  * with any BT region. It also checks if new code is marked executable.
@@ -149,6 +150,22 @@ static enum syscall_auth_response auth_mmap(struct thread_local_data *tld,
                                             ulong_t *arg6,
                                             ulong_t is_sysenter,
                                             ulong_t *retval);
+#endif  // SYS_mmap
+
+#ifdef SYS_mmap2
+/**
+ * Checks the parameters of an mmap2 and ensures that the region does not overlap
+ * with any BT region. It also checks if new code is marked executable.
+ * @return Allows the system call if parameters are OK.
+ */
+static enum syscall_auth_response auth_mmap2(struct thread_local_data *tld,
+                                             ulong_t syscall_nr, ulong_t arg1,
+                                             ulong_t arg2, ulong_t arg3,
+                                             ulong_t arg4, ulong_t arg5,
+                                             ulong_t *arg6,
+                                             ulong_t is_sysenter,
+                                             ulong_t *retval);
+#endif  // SYS_mmap2
 
 /**
  * Checks the parameters of an mprotect and ensures that the application does
@@ -650,6 +667,7 @@ auth_execve(struct thread_local_data *tld __attribute__((unused)),
   return result;
 }
 
+#if defined(SYS_mmap)
 static enum syscall_auth_response
 auth_mmap(struct thread_local_data *tld __attribute__((unused)),
           ulong_t syscall_nr, ulong_t arg1, ulong_t arg2,
@@ -659,9 +677,7 @@ auth_mmap(struct thread_local_data *tld __attribute__((unused)),
           ulong_t *arg6 __attribute__((unused)),
           ulong_t is_sysenter __attribute__((unused)),
           ulong_t *retval __attribute__((unused))) {
-  /* In this function mmap and mmap2 are treated equally, so the last parameter
-     must be checked independently. */
-  if (syscall_nr != SYS_mmap && syscall_nr != SYS_mmap2) {
+  if (syscall_nr != SYS_mmap) {
     fbt_suicide_str("Invalid system call number in mmap (fbt_syscall.c).");
   }
 #if defined(SECU_ALLOW_RUNTIME_ALLOC)
@@ -695,6 +711,54 @@ auth_mmap(struct thread_local_data *tld __attribute__((unused)),
   }
   return SYSCALL_AUTH_GRANTED;
 }
+#endif  // SYS_mmap
+
+#if defined(SYS_mmap2)
+static enum syscall_auth_response
+auth_mmap2(struct thread_local_data *tld __attribute__((unused)),
+           ulong_t syscall_nr, ulong_t arg1, ulong_t arg2,
+           ulong_t arg3 __attribute__((unused)),
+           ulong_t arg4 __attribute__((unused)),
+           ulong_t arg5 __attribute__((unused)),
+           ulong_t *arg6 __attribute__((unused)),
+           ulong_t is_sysenter __attribute__((unused)),
+           ulong_t *retval __attribute__((unused))) {
+  if (syscall_nr != SYS_mmap2) {
+    fbt_suicide_str("Invalid system call number in mmap (fbt_syscall.c).");
+  }
+#if defined(SECU_ALLOW_RUNTIME_ALLOC)
+  /* TODO: secu allow runtime code alloc */
+  if ((arg3 & PROT_EXEC) && (arg4 & MAP_ANONYMOUS)) {
+    /* runtime allocation of executable memory without file backing */
+    fbt_mmap2((void*) arg1, arg2, arg3, arg4 & (~MAP_FIXED), arg5, arg6, retval);
+    fbt_memprotect_add_valid((void*) retval, arg2);
+    return SYSCALL_AUTH_FAKE;
+  }
+#endif  /* SECU_ALLOW_RUNTIME_ALLOC */
+
+  /* TODO: add check for regions of elf files */
+  // TODO(philix): extract the common code from auth_mmap and auth_mmap2
+
+  /* ensure we don't remap memory structures of the BT */
+  struct mem_info *mem_info = tld->chunk;
+  void *startptr = (void*)arg1;
+  ulong_t size = arg2;
+  if (startptr != NULL) {
+    while (mem_info != NULL) {
+      if (OVERLAPPING_REGIONS(startptr, size, mem_info->ptr, mem_info->size)) {
+        PRINT_DEBUG("Application got access to internal data and tries to " \
+                    "mmap  our memory. Access rejected. Address: %p, length: " \
+                    "%d\nMem_info: %p, length: %d\n", (void*)arg1, arg2,
+                    mem_info->ptr, mem_info->size);
+        fbt_suicide_str("Application tried to mmap internal BT data! "  \
+                        "(fbt_syscall.c)\n");
+      }
+      mem_info = mem_info->next;
+    }
+  }
+  return SYSCALL_AUTH_GRANTED;
+}
+#endif  // SYS_mmap2
 
 static enum syscall_auth_response
 auth_mprotect(struct thread_local_data *tld, ulong_t syscall_nr,
@@ -765,8 +829,12 @@ void fbt_init_syscalls(struct thread_local_data *tld) {
 
   /* special handling for special system calls */
   tld->syscall_table[SYS_execve] = &auth_execve;
+#ifdef SYS_mmap
   tld->syscall_table[SYS_mmap] = &auth_mmap;
-  tld->syscall_table[SYS_mmap2] = &auth_mmap;
+#endif
+#ifdef SYS_mmap2
+  tld->syscall_table[SYS_mmap2] = &auth_mmap2;
+#endif
   tld->syscall_table[SYS_mprotect] = &auth_mprotect;
 
 #if defined(HANDLE_SIGNALS)

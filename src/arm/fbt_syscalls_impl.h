@@ -150,7 +150,7 @@ _syscall5_fn(long, clone, unsigned long, flags, void*, child_stack,
                           void *, ptid, void*, ctid,
                           void*, regs)
 
-// long fbt_syscall_read(int fd, void *buf, unsigned long count)
+// long fbt_syscall_read(int fd, void *buf, size_t count)
 _syscall3_fn(long, read, int, fd, void*, buf, unsigned long, count)
 
 // long fbt_syscall_write(int fd, const char *buf, unsigned long count)
@@ -163,6 +163,23 @@ _syscall3_fn(int, open, const char*, pathname, int, flags, char *, mode)
 //                       const struct timespec *timeout, int *uaddr2, int val3);
 _syscall6_fn(int, futex, int *, uaddr, int, op, int, val,
              long *, timeout, int *, uaddr2, int, val3)
+
+#ifdef SYS_mmap
+// void *fbt_syscall_mmap(void *addr, size_t length, int prot, int flags,
+//                        int fd, off_t offset)
+_syscall6_fn(void *, mmap, void *, addr, unsigned long, length, int, prot, int, flags,
+             int, fd, long, offset)
+#endif  // SYS_mmap
+
+#ifdef SYS_mmap2
+// void *fbt_syscall_mmap2(void *addr, size_t length, int prot, int flags,
+//                        int fd, off_t pgoffset)
+_syscall6_fn(void *, mmap2, void *, addr, unsigned long, length, int, prot, int, flags,
+             int, fd, long, pgoffset)
+#endif  // SYS_mmap2
+
+// int fbt_syscall_munmap(void *addr, size_t length)
+_syscall2_fn(int, munmap, void*, addr, unsigned long, length)
 
 
 // fbt_suicide() is used in syscall error handling code

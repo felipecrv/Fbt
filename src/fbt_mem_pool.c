@@ -142,7 +142,7 @@ void fbt_mem_pool_free(struct mem_pool *mp) {
     #endif /* DEBUG */
 
     long ret;
-    fbt_munmap(current->mem, current->size, ret)
+    fbt_munmap(current->mem, current->size, ret);
     SYSCALL_SUCCESS_OR_SUICIDE_STR(
         ret, "BT failed to deallocate memory (fbt_mem_pool_free: fbt_mem_mgmt.c)\n");
     current = next;
