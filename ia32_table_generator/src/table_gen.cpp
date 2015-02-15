@@ -129,6 +129,8 @@ void generateTables(std::ofstream& out, std::string prefix)
     generateOpcodeTable(out, prefix, "table for two byte opcodes", 0x0F00, 256, 0x01);
     generateOpcodeTable(out, prefix, "table for one byte opcodes", 0x00, 256, 0x01);
 
+    out << "struct ia32_opcode *default_opcode_table = opcode_table_onebyte;" << std::endl;
+    out << std::endl;
 
     /* close the ifdef from the begining */
     out << "#endif  /* " << PREFIX << "_OPCODE_TABLES_H */" << std::endl << std::endl;

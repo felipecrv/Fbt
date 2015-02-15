@@ -130,6 +130,9 @@ void generate_tables(ofstream& out, string prefix) {
   }
   out << "};" << endl << endl;
 
+  out << "struct arm_opcode *default_opcode_table = opcode_table;" << std::endl;
+  out << std::endl;
+
   /* close the ifdef from the beginning */
   out << "#endif  /* " << PREFIX << "_OPCODE_TABLES_H */" << endl << endl;
 }

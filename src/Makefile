@@ -65,9 +65,13 @@ $(ARM_LIBNAME).so: *.h arm/*.h generic/*.h $(ARM_FILES)
 $(LIBNAME).a: $(LIBNAME).so
 	ar cru $(LIBNAME).a libfastbt.o
 
+ia32/fbt_opcode_tables.h: ia32/fbt_x86_opcode.h
+	make -C ../ia32_table_generator fbt_opcode_tables.h
+	mv ../ia32_table_generator/fbt_opcode_tables.h ia32/
+
 arm/fbt_opcode_tables.h: arm/fbt_arm_opcode.h
 	make -C ../arm_table_generator fbt_opcode_tables.h
-	cp ../arm_table_generator/fbt_opcode_tables.h arm/
+	mv ../arm_table_generator/fbt_opcode_tables.h arm/
 
 arm_disassembler: $(ARM_DISASSEMBLER_FILES) *.h arm/*.h generic/*.h arm/fbt_opcode_tables.h
 	$(CC) $(CFLAGS) $(EXTRA_ARM_DISASSEMBLER_CFLAGS) -c $(ARM_DISASSEMBLER_FILES)

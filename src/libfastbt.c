@@ -47,7 +47,7 @@
 #endif
 
 /* forward declaration for the default opcode table */
-extern ArchOpcode opcode_table_onebyte[];
+extern ArchOpcode default_opcode_table[];
 
 #if defined(HIJACKCONTROL)
 static struct thread_local_data *tld;
@@ -86,10 +86,10 @@ struct thread_local_data* fbt_init(ArchOpcode *opcode_table) {
 
   /* if the user program specifies a custom opcode table we overwrite the
    * default table overwriting is done because of performance reasons. this way
-   * the position of the table_onebyte does not change in memory and therefore
+   * the position of the default_opcode_table does not change in memory and therefore
    * the address can be hardcoded at compile time */
   if (opcode_table != NULL) {
-    fbt_memcpy(opcode_table_onebyte, opcode_table, 0x100 * sizeof(ArchOpcode));
+    fbt_memcpy(default_opcode_table, opcode_table, 0x100 * sizeof(ArchOpcode));
   }
 
 #if defined(AUTHORIZE_SYSCALLS)

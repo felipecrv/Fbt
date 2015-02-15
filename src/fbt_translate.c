@@ -261,7 +261,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
 
 void fbt_disasm_instr(struct translate *ts) {
-  const struct ia32_opcode *opcode, *opcode_table = opcode_table_onebyte;
+  const struct ia32_opcode *opcode, *opcode_table = default_opcode_table;
   int bytes_argument;
 
   unsigned char *cur = (ts->cur_instr = ts->next_instr);
@@ -314,12 +314,12 @@ void fbt_disasm_instr(struct translate *ts) {
       }
       prefix = *cur;
       /* go back to the first table if it is not a special escape prefix! */
-      opcode_table = opcode_table_onebyte;
+      opcode_table = default_opcode_table;
       cur++;
       continue;  /* do one more iteration */
 
 #ifdef __LP64__
-    } else if (*cur>=0x40 && *cur<=0x4f && opcode_table==opcode_table_onebyte) {
+    } else if (*cur>=0x40 && *cur<=0x4f && opcode_table==default_opcode_table) {
       rex = *cur;
       cur++;
       continue;
