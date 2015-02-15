@@ -19,7 +19,7 @@ IA32_FILES += libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_ac
 
 # object files for ARM
 ARM_FILES += libfastbt.c generic/fbt_algorithms.c generic/fbt_libc.c generic/fbt_llio.c \
-						 generic/fbt_mutex.c
+						 generic/fbt_mutex.c arm/fbt_disassemble.c
 
 # object files for the ARM disassembler
 ARM_DISASSEMBLER_FILES=generic/fbt_llio.c generic/fbt_libc.c \
@@ -32,28 +32,26 @@ else # ARM
   CFLAGS += -I/lib/modules/$(shell uname -r)/build/arch/arm/include
 endif
 
-GEN_DIR=generated
-
 .PHONY: all clean
 
 all: $(LIBNAME).so $(LIBNAME).a
 
 $(IA32_LIBNAME).so: *.h ia32/*.h generic/*.h $(IA32_FILES)
-	mkdir -p $(GEN_DIR)
-	mkdir -p $(GEN_DIR)/generic
-	mkdir -p $(GEN_DIR)/ia32
+	mkdir -p generated
+	mkdir -p generated/generic
+	mkdir -p generated/ia32
 	
 	for file in $(IA32_FILES); do \
-		$(CC) ${CFLAGS} -E $$file > $(GEN_DIR)/$$file; \
+		$(CC) ${CFLAGS} -E $$file > generated/$$file; \
 	done
 
 	for file in $(IA32_FILES); do \
-		$(DSL_PATH) $(GEN_DIR)/$$file $(GEN_DIR)/$$file ; \
+		$(DSL_PATH) generated/$$file generated/$$file ; \
 	done
 	
-	cp *.h $(GEN_DIR)
-	cp generic/*.h $(GEN_DIR)/generic
-	cp ia32/*.h $(GEN_DIR)/ia32
+	cp *.h generated
+	cp generic/*.h generated/generic
+	cp ia32/*.h generated/ia32
 
 	$(CC) $(CFLAGS) $(LIBFLAGS) generated/generic/*.c generated/ia32/*.c generated/*.c
 	$(CC) -shared -Wl,-soname,$(IA32_LIBNAME).so.$(LIBVERS) \
@@ -80,7 +78,7 @@ arm_disassembler: $(ARM_DISASSEMBLER_FILES) *.h arm/*.h generic/*.h arm/fbt_opco
 	$(CC) $(CFLAGS) $(EXTRA_ARM_DISASSEMBLER_CFLAGS) *.o -o $@
 
 clean:
-	rm -rf $(GEN_DIR)
+	rm -rf generated
 	rm -f *.o *.lo *.la *~ *.as *.out
 	rm -f *.a *.so
 	rm -f arm_disassembler
