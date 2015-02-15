@@ -19,7 +19,7 @@ IA32_FILES += libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c fbt_ac
 
 # object files for ARM
 ARM_FILES += libfastbt.c generic/fbt_algorithms.c generic/fbt_libc.c generic/fbt_llio.c \
-						 generic/fbt_mutex.c arm/fbt_disassemble.c fbt_mem_mgmt.c fbt_mem_pool.c
+						 generic/fbt_mutex.c arm/fbt_disassemble.c fbt_syscall.c fbt_mem_mgmt.c fbt_mem_pool.c
 
 # object files for the ARM disassembler
 ARM_DISASSEMBLER_FILES=generic/fbt_llio.c generic/fbt_libc.c \

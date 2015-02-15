@@ -119,7 +119,7 @@ CFLAGS+= -DHIJACKCONTROL
 # Additionally this is useful in implementing security extensions.
 #
 # default: CFLAGS += -DAUTHORIZE_SYSCALLS
-# status: unimplemented for ARM
+# status: partially implemented for ARM
 CFLAGS += -DAUTHORIZE_SYSCALLS
 
 # Check signals as well

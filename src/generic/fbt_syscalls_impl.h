@@ -60,7 +60,11 @@
 #define fbt_munmap(addr, length, res) _syscall2(munmap, (addr), (length), (res))
 #define fbt_mprotect(addr, len, prot, res) \
   _syscall3(mprotect, (addr), (len), (prot), (res))
-#define fbt_signal(sig, handler, res) _syscall2(signal, (sig), (handler), (res))
+
+#ifdef SYS_signal
+# define fbt_signal(sig, handler, res) _syscall2(signal, (sig), (handler), (res))
+#endif  // SYS_signal
+
 #define fbt_sigaction(sig, act, oldact, res) \
   _syscall3(sigaction, (sig), (act), (oldact), (res))
 #define fbt_clone(flags, stack, ptid, newtls, ctid, res) \

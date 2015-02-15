@@ -26,13 +26,21 @@
  * MA  02110-1301, USA.
  */
 #define _GNU_SOURCE
+
 #include "fbt_syscall.h"
+
+typedef long __syscall_slong_t;
 
 #include <assert.h>
 #include <stddef.h>
+
+#ifndef __THROWNL
+# define __THROWNL
+# include <ucontext.h>
+# undef __THROWNL
+#endif
 #include <ucontext.h>
 
-//#define size_t __kernel_size_t
 //#include <asm-generic/signal.h>
 #include <linux/sched.h>
 
@@ -299,11 +307,17 @@ static enum syscall_auth_response auth_signal(struct thread_local_data *tld,
                                               ulong_t *arg6,
                                               ulong_t is_sysenter,
                                               ulong_t *retval) {
-  if (syscall_nr != SYS_signal && syscall_nr != SYS_sigaction &&
-      syscall_nr != SYS_rt_sigaction) {
-    fbt_suicide_str("Invalid system call number in signal auth (fbt_syscall.c).");
+#ifdef SYS_signal
+  if (syscall_nr != SYS_signal) {
+#endif
+    if (syscall_nr != SYS_sigaction && syscall_nr != SYS_rt_sigaction) {
+      fbt_suicide_str("Invalid system call number in signal auth (fbt_syscall.c).");
+    }
+#ifdef SYS_signal
   }
+#endif
 
+#ifdef SYS_signal
   /* arg1: signal number
      arg2: { const struct sigaction *act | sighandler_t }
    */
@@ -325,6 +339,7 @@ static enum syscall_auth_response auth_signal(struct thread_local_data *tld,
     }
     return SYSCALL_AUTH_FAKE;
   }
+#endif
 
   if (syscall_nr == SYS_sigaction || syscall_nr == SYS_rt_sigaction) {
     *retval = 0x0;
@@ -378,6 +393,7 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
 #if defined(DEBUG)
     llprintf("Syscall granted (fork through clone)\n");
 #endif
+#if defined(__i386__)
     __asm__ __volatile__("pushl %%ebx\n"
                          "movl %1, %%ebx\n"
                          "movl %2, %%ecx\n"
@@ -393,6 +409,10 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
                            "rmi"(arg5)
                          : "memory", "cc", "eax", "ecx", "edx", "esi", "edi"
                          );
+#elif defined(__arm__)
+    // TODO(philix): defined the ARM assembly code for cloning
+    local_ret = 0;
+#endif
     *retval = local_ret;
 #if defined(DEBUG)
     if (local_ret != 0) {
@@ -441,6 +461,7 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
     /* start the new thread (execute system call) */
     /* the stack of the child is invalid after this system call,
        so better fix it! */
+#if defined(__i386__)
     __asm__ __volatile__("pushl %%ebx\n"
                          "movl %2, %%ecx\n"
                          "leal -4(%%ecx), %%ecx\n"
@@ -463,6 +484,10 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
                            "m"(arg3), "m"(arg4), "m"(arg5)
                          : "memory", "cc", "eax", "ecx", "edx", "esi", "edi"
                          );
+#elif defined(__arm__)
+    // TODO(philix): define the ARM code for thread creation
+    local_ret = 0;
+#endif
 
     /* we are the parent thread, let's return the result from the clone syscall */
     *retval = local_ret;
@@ -538,6 +563,7 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
      stack is no longer valid, so we need to keep all data that we need after
      that syscall in registers. */
   /* this system call will never return, so don't bother about a clean stack */
+#if defined(__i386__)
   if (syscall_nr == SYS_exit) {
     __asm__ __volatile__("movl %0, %%eax\n"
                          "movl %1, %%ebx\n"
@@ -565,7 +591,9 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
                          "m"(tld->chunk->size), "i"(SYS_exit_group), "r"(arg1)
                          : "memory", "eax", "ecx");
   }
-
+#elif defined(__arm__)
+  // TODO(philix): free the last bit of memory on the ARM translator
+#endif
 
   fbt_suicide_str("Failed to exit thread/process (fbt_syscall.c)\n");
   return SYSCALL_AUTH_FAKE;
@@ -840,7 +868,9 @@ void fbt_init_syscalls(struct thread_local_data *tld) {
 #if defined(HANDLE_SIGNALS)
   /* redirect system calls that change the system call handlers to our
      validation functions */
+# ifdef SYS_signal
   tld->syscall_table[SYS_signal] = &auth_signal;
+#endif
   tld->syscall_table[SYS_sigaction] = &auth_signal;
   tld->syscall_table[SYS_rt_sigaction] = &auth_signal;
   init_signal_handlers(tld);

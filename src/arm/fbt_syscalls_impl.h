@@ -123,7 +123,7 @@ static type fbt_syscall_##name(type0 arg0, type1 arg1, type2 arg2) { \
 #define _syscall4_fn(type, name, type0, arg0, type1, arg1, type2, arg2, type3, arg3) \
 static type fbt_syscall_##name(type0 arg0, type1 arg1, type2 arg2, type3 arg3) { \
   long res; \
-  _syscall4(name, arg0, arg1, arg2, arg3, res); \
+  _syscall4_asm(name, arg0, arg1, arg2, arg3, res); \
   _syscall_return(type, res); \
 }
 
@@ -180,6 +180,20 @@ _syscall6_fn(void *, mmap2, void *, addr, unsigned long, length, int, prot, int,
 
 // int fbt_syscall_munmap(void *addr, size_t length)
 _syscall2_fn(int, munmap, void*, addr, unsigned long, length)
+
+// int fbt_syscall_sigaction(int signum, const struct sigaction *act,
+//                           struct sigaction *oldact)
+_syscall3_fn(int, sigaction, int, signum, void *, act, void *, oldact)
+
+// long fbt_syscall_rt_sigaction(int sig, const struct sigaction *act,
+//                               struct sigaction *oact);
+_syscall3_fn(long, rt_sigaction, int, sig, void *, act,
+             void *, oact)
+
+#ifdef SYS_signal
+// sighandler_t fbt_syscall_signal(int signum, sighandler_t handler)
+_syscall2_fn(void *, signal, int, signum, void *, handler)
+#endif  // SYS_signal
 
 
 // fbt_suicide() is used in syscall error handling code
