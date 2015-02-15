@@ -29,6 +29,7 @@
 #ifndef FBT_SYSCALLS_H
 #define FBT_SYSCALLS_H
 
+#include <errno.h>
 #include <sys/syscall.h>
 
 #if defined(__x86_64__)
@@ -66,12 +67,12 @@
                         "g"((long)(arg6))                               \
                       : __syscall_clobber );
 
+#else
+
 #define SYS_unused1 222
 #define SYS_unused2 223
 #define SYS_unused3 251
 #define SYS_sys_setaltroot 285
-
-#else
 
 /* fast or slow system call? */
 //#if defined(__i686__)
@@ -79,12 +80,21 @@
 //#else
 #define ENTER_KERNEL "int $0x80 ;"
 //#endif  /* __i686__ */
+//
+#define _syscall_return(type,res) \
+    do { \
+      if ((unsigned long)(res) >= (unsigned long)(-(128 + 1))) { \
+        errno = -((long)(res)); \
+        res = -1; \
+      } \
+    } while(0)
+
 
 #define _syscall(name,__res)                                            \
   __asm__ volatile (ENTER_KERNEL                                        \
                     : "=a"(__res)                                       \
                     : "0"(SYS_##name)                                   \
-                    : "memory");
+                    : "memory")
 
 
 #define _syscall1(name,arg1,__res)                                      \
@@ -94,8 +104,7 @@
                     "pop %%ebx"                                         \
                     : "=a"(__res)                                       \
                     : "0"(SYS_##name), "ri"((long)(arg1))               \
-                    : "memory");
-
+                    : "memory")
 
 #define _syscall2(name,arg1,arg2,__res)                                 \
   __asm__ volatile ("push %%ebx ; "                                     \
@@ -105,7 +114,7 @@
                     : "=a"(__res)                                       \
                     : "0"(SYS_##name), "ri"((long)(arg1)),              \
                       "c"((long)(arg2))                                 \
-                    : "memory");
+                    : "memory")
 
 #define _syscall3(name,arg1,arg2,arg3,__res)                            \
   __asm__ volatile ("push %%ebx ;"                                      \
@@ -115,7 +124,7 @@
                     : "=a"(__res)                                       \
                     : "0"(SYS_##name), "ri"((long)(arg1)),              \
                       "c"((long)(arg2)), "d"((long)(arg3))              \
-                    : "memory");
+                    : "memory")
 
 #define _syscall4(name,arg1,arg2,arg3,arg4,__res)                       \
   __asm__ volatile ("pushl %%ebx ;"                                     \
@@ -127,7 +136,7 @@
                     : "i"(SYS_##name), "ri"((long)(arg1)),              \
                       "c"((long)(arg2)), "d"((long)(arg3)),             \
                       "S"((long)(arg4))                                 \
-                    : "memory");
+                    : "memory")
 
 #define _syscall5(name,arg1,arg2,arg3,arg4,arg5,__res)                  \
   __asm__ volatile ("pushl %%ebx ;"                                     \
@@ -139,7 +148,7 @@
                     : "i"(SYS_##name), "ri"((long)(arg1)),              \
                       "c"((long)(arg2)), "d"((long)(arg3)),             \
                       "S"((long)(arg4)), "D"((long)(arg5))              \
-                    : "memory");
+                    : "memory")
 
 #define _syscall6(name,arg1,arg2,arg3,arg4,arg5,arg6,__res)             \
   __asm__ volatile("pushl %%ebx ;"                                      \
