@@ -1,6 +1,10 @@
 #ifndef FBT_ARM_DISASSEMBLE
 #define FBT_ARM_DISASSEMBLE
 
+#ifndef FBT_DISASSEMBLE_H
+# error "Don't include arm/fbt_disassemble.h directly, use fbt_disassemble.h"
+#endif
+
 #include <stdint.h>
 
 #include "../generic/fbt_llio.h"
