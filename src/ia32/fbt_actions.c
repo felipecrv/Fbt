@@ -1,15 +1,10 @@
 /**
  * @file fbt_actions.c
  * This module defines some generic default actions that are used to translate
- * specific machine codes.
+ * specific IA32 machine codes.
  *
  * Copyright (c) 2011 ETH Zurich
  * @author Mathias Payer <mathias.payer@nebelwelt.net>
- *
- * $Date: 2013-02-13 23:03:12 +0100 (Wed, 13 Feb 2013) $
- * $LastChangedDate: 2013-02-13 23:03:12 +0100 (Wed, 13 Feb 2013) $
- * $LastChangedBy: payerm $
- * $Revision: 1591 $
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,22 +22,19 @@
  * MA  02110-1301, USA.
  */
 
-#include "fbt_actions.h"
-
 #include <assert.h>
-#include <stddef.h> /* offsetof */
 #include <stdint.h>
 
-#include "ia32/fbt_asm_macros.h"
-#include "fbt_code_cache.h"
-#include "fbt_debug.h"
-#include "fbt_datatypes.h"
-#include "generic/fbt_syscalls_impl.h"
-#include "fbt_translate.h"
-#include "fbt_mem_mgmt.h"
-#include "generic/fbt_libc.h"
-#include "generic/fbt_llio.h"
-#include "ia32/fbt_x86_opcode.h"
+#include "../generic/fbt_libc.h"
+#include "../generic/fbt_llio.h"
+#include "../fbt_actions.h"
+#include "../fbt_datatypes.h"
+#include "../fbt_debug.h"
+#include "../fbt_code_cache.h"
+#include "../fbt_mem_mgmt.h"
+#include "../fbt_translate.h"
+#include "fbt_x86_opcode.h"
+#include "fbt_asm_macros.h"
 
 enum translation_state action_none(struct translate *ts __attribute__((unused))) {
   PRINT_DEBUG_FUNCTION_START("action_none(*ts=%p)", ts);
@@ -611,7 +603,7 @@ enum translation_state action_call_indirect(struct translate *ts) {
       /* 4B displacement with %esp -> call *0xaabbccdd(%esp) */
       if (((modrm>>6)&0x3)==2) {
         /* just change the following displacement and add 4 to it! */
-        assert((*((long*)(transl_addr-4))) < ((*((long*)(transl_addr-4)))+4));
+        //assert((*((long*)(transl_addr-4))) < ((*((long*)(transl_addr-4)))+4));
         *((long*)(transl_addr-4)) = (*((long*)(transl_addr-4)))+4;
       }
       /* Mod=11 with SIB not handled for calls -> assert & die */
