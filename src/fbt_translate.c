@@ -37,12 +37,18 @@
 #include "fbt_debug.h"
 #include "fbt_disassemble.h"
 #include "fbt_mem_mgmt.h"
-#include "ia32/fbt_x86_opcode.h"
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
 
-#if defined(FBT_STATISTIC)
-#include "fbt_statistic.h"
+#if defined(__i386__)
+# include "ia32/fbt_x86_opcode.h"
+
+# define JUMP_RELATIVE32 JMP_REL32
+#elif defined(__arm__)
+# include "arm/fbt_arm_opcode.h"
+
+// TODO(philix): add relative ARM jump
+# define JUMP_RELATIVE32(dst, rel32)
 #endif
 
 #if defined(INLINE_CALLS)
@@ -121,7 +127,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
     /* add a jmp connect old and new tcache memory blocks */
     if (prev_transl_instr != NULL) {
-      JMP_REL32(prev_transl_instr, ts->transl_instr);
+      JUMP_RELATIVE32(prev_transl_instr, ts->transl_instr);
     }
   }
   PRINT_DEBUG("tld->ts.transl_instr: %p", ts->transl_instr);
@@ -164,7 +170,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
     unsigned char *dst=NULL;
     if (((dst=tcache_find(tld, ts->next_instr))!=NULL) &&
         dst!=ts->transl_instr && ts->inlined_frames==NULL) {
-      JMP_REL32(ts->transl_instr, (int32_t)dst);
+      JUMP_RELATIVE32(ts->transl_instr, (int32_t)dst);
       tu_state = CLOSE;
       break;
     }
@@ -230,7 +236,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
                                                       (void*)ts->next_instr,
                                                       ts->transl_instr+1,
                                                       ORIGIN_RELATIVE);
-    JMP_REL32(ts->transl_instr, trampo->code);
+    JUMP_RELATIVE32(ts->transl_instr, trampo->code);
   }
 
   /* make sure that we always stay in the limits, even if we overwrite the
@@ -278,7 +284,11 @@ static ulong_t check_inline(struct translate *ts) {
 
   /* extract relative call target from call. */
   /* we assume that this call will not have any prefixes */
+#if defined(__i386__)
   assert(!HAS_PREFIX(*(myts.cur_instr)));
+#elif defined(__arm__)
+  // TODO(philix): port check_inline() to ARM
+#endif
   myts.next_instr = (unsigned char*)(*((int32_t*)(myts.cur_instr + 1)) +
                                      (int32_t)myts.cur_instr + 5);
 

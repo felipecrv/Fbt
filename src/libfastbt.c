@@ -42,10 +42,6 @@
 # include "arm/fbt_arm_opcode.h"
 #endif
 
-#if defined(FBT_STATISTIC)
-#include "fbt_statistic.h"
-#endif
-
 /* forward declaration for the default opcode table */
 extern ArchOpcode default_opcode_table[];
 
