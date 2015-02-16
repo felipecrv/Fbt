@@ -31,17 +31,19 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "generic/fbt_libc.h"
+#include "generic/fbt_llio.h"
 #include "fbt_code_cache.h"
-#include "ia32/fbt_asm_macros.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
 #include "fbt_mem_mgmt.h"
 #include "fbt_mem_pool.h"
 #include "fbt_syscall.h"
-#include "libfastbt.h"
 #include "fbt_trampoline.h"
-#include "generic/fbt_libc.h"
-#include "generic/fbt_llio.h"
+#include "libfastbt.h"
+#if defined(__i386__)
+# include "ia32/fbt_asm_macros.h"
+#endif
 
 struct ccache_entry {
   ulong_t *src;
@@ -252,9 +254,13 @@ struct trampoline *fbt_create_trampoline(struct thread_local_data *tld,
               trampo->target, trampo->origin);
 
   /* write code to trampoline */
+#if defined(__i386__)
   MOV_ESP_MEM32(code, (tld->stack-1));  /* 6 bytes long */
   MOV_IMM32_ESP(code, (tld->stack-1));  /* 5 bytes long */
   CALL_REL32(code, tld->unmanaged_code_trampoline); /* 5 bytes long */
+#elif defined(__arm__)
+  // TODO(philix): write code to ARM trampoline
+#endif
 
   return trampo;
 }
