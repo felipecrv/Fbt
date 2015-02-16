@@ -11,7 +11,7 @@ SHELL := /bin/bash -e
 
 # object files for IA32
 IA32_FILES += libfastbt.c fbt_mem_mgmt.c fbt_translate.c fbt_code_cache.c ia32/fbt_actions.c \
-	generic/fbt_llio.c generic/fbt_libc.c fbt_debug.c fbt_trampoline.c fbt_syscall.c \
+	generic/fbt_llio.c generic/fbt_libc.c fbt_debug.c ia32/fbt_trampoline.c fbt_syscall.c \
 	generic/fbt_mutex.c generic/fbt_algorithms.c fbt_mem_pool.c ia32/fbt_disassemble.c \
 	ia32/fbt_ia32_debug.c
 

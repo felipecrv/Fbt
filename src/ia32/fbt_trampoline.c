@@ -5,11 +5,6 @@
  * Copyright (c) 2011 ETH Zurich
  * @author Mathias Payer <mathias.payer@nebelwelt.net>
  *
- * $Date: 2012-01-11 11:21:20 +0100 (Wed, 11 Jan 2012) $
- * $LastChangedDate: 2012-01-11 11:21:20 +0100 (Wed, 11 Jan 2012) $
- * $LastChangedBy: kravinae $
- * $Revision: 1154 $
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -27,16 +22,16 @@
  */
 #include <stddef.h> /* offsetof */
 
-#include "fbt_trampoline.h"
-#include "ia32/fbt_asm_macros.h"
-#include "fbt_code_cache.h"
-#include "fbt_datatypes.h"
-#include "fbt_debug.h"
-#include "fbt_translate.h"
-#include "fbt_mem_mgmt.h"
-#include "fbt_syscall.h"
-#include "generic/fbt_libc.h"
-#include "generic/fbt_llio.h"
+#include "../fbt_trampoline.h"
+#include "../fbt_datatypes.h"
+#include "../fbt_code_cache.h"
+#include "../fbt_debug.h"
+#include "../fbt_translate.h"
+#include "../fbt_mem_mgmt.h"
+#include "../fbt_syscall.h"
+#include "../generic/fbt_libc.h"
+#include "../generic/fbt_llio.h"
+#include "fbt_asm_macros.h"
 
 // TODO: conditional
 #define _GNU_SOURCE
