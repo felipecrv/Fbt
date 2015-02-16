@@ -56,7 +56,7 @@ $(ARM_LIBNAME).so: *.h arm/*.h generic/*.h $(ARM_FILES)
 		-o $(ARM_LIBNAME).so *.o
 
 $(LIBNAME).a: $(LIBNAME).so
-	ar cru $(LIBNAME).a libfastbt.o
+	ar cru $(LIBNAME).a *.o
 
 ia32/fbt_opcode_tables.h: ia32/fbt_x86_opcode.h
 	make -C ../ia32_table_generator fbt_opcode_tables.h

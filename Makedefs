@@ -105,10 +105,12 @@ CFLAGS += -DFAST_CACHE_LOOKUP
 # ===============================================
 #
 # Enable automatic control-flow hi-jacking whenever a program loads
-# (this function uses the LD_PRELOAD facilities of the dynamic loader)
+# (this function uses the LD_PRELOAD facilities of the dynamic loader).
 #
-# default: CFLAGS += -DHIJACKCONTROL
-CFLAGS+= -DHIJACKCONTROL
+# Should be disabled when building the static library.
+#
+# default: # CFLAGS += -DHIJACKCONTROL
+#CFLAGS+= -DHIJACKCONTROL
 
 # Redirect system calls to the authorization framework
 # ====================================================
