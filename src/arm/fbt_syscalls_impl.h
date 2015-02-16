@@ -157,7 +157,10 @@ _syscall3_fn(long, read, int, fd, void*, buf, unsigned long, count)
 _syscall3_fn(long, write, int, fd, const char*, buf, unsigned long, count)
 
 // int fbt_syscall_open(const char *pathname, int flags, mode_t mode)
-_syscall3_fn(int, open, const char*, pathname, int, flags, char *, mode)
+_syscall3_fn(int, open, const char*, pathname, int, flags, int, mode)
+
+// int fbt_syscall_close(int fd)
+_syscall1_fn(int, close, int, fd)
 
 // int fbt_syscall_futex(int *uaddr, int op, int val,
 //                       const struct timespec *timeout, int *uaddr2, int val3);
