@@ -45,28 +45,63 @@
 /* forward declaration for the default opcode table */
 extern ArchOpcode default_opcode_table[];
 
-#if defined(HIJACKCONTROL)
+/* Starting the BT with LD_PRELOAD
+
+   By using `LD_PRELOAD=./src/libarmfbt.so executable` on the terminal we can
+   redefine the executable's `_init` and `_fini` symbols. By providing our own
+   `_fini` we can take control of the execution.
+
+   _fini(); // called by Linux when starting the process
+    |- tld = fbt_init(NULL);
+    |         \- initialize thread-local store and trampolines
+    |            (fbt_initialize_trampolines())
+    |
+    \- fbt_start_transaction(tld, fbt_commit_transaction);
+        |- fbt_transaction_init(tld, commit_transaction = fbt_commit_transaction);
+        |   \- Adds an entry to the code cache to map `fbt_commit_transaction`
+        |      to `fbt_end_transaction`. Then when `fbt_commit_transaction`
+        |      would execute in `_fini`, the BT jumps to `fbt_end_transaction`
+        |      which does nothing instead of printing an error message as
+        |      `fbt_commit_transaction` whould do.
+        |
+        |- finds out the return address of fbt_start_transaction() and tranlates code
+        |  from this address.
+        |
+        \- overwrite the return address in the stack to an address in the
+           translated code so that execution continues from the translated code
+           once fbt_start_transaction() returns.
+
+*/
+
+#ifdef HIJACKCONTROL
 static struct thread_local_data *tld;
+
 void _init() {
-#if defined(DEBUG) && !defined(SILENT_STARTUP)
+# if defined(DEBUG) && !defined(SILENT_STARTUP)
   llprintf("Starting BT\n");
   llprintf("This is a debug build, so do not expect stellar performance!\n");
-#endif
+# endif
 
   //sleep(5);
   tld = fbt_init(NULL);
 
   fbt_start_transaction(tld, fbt_commit_transaction);
+  // -> return address of fbt_start_transaction()
+  //
+  // fbt_start_transaction() finds out this address and start translating
+  // code from here (i.e. it starts translating the executable's code).
 }
 
 void _fini() {
-#if defined(DEBUG) && !defined(SILENT_STARTUP)
+  // If everything goes well, _fini should be executed inside the translator.
+# if defined(DEBUG) && !defined(SILENT_STARTUP)
   llprintf("Stopping BT\n");
-#endif /* DEBUG */
-  fbt_commit_transaction();
+# endif /* DEBUG */
+  fbt_commit_transaction(); // This will be redirected to fbt_end_transaction()
+                            // by the translator.
   fbt_exit(tld);
 }
-#endif
+#endif // HIJACKCONTROL
 
 /* this function is called in fbt_asm_functions.S, .section .init */
 struct thread_local_data* fbt_init(ArchOpcode *opcode_table) {
@@ -108,7 +143,7 @@ void fbt_exit(struct thread_local_data *tld) {
 }
 
 void fbt_transaction_init(struct thread_local_data *tld,
-                                void (*commit_function)()) {
+                          void (*commit_function)()) {
   /* set memory address of the stub of fbt_commit_transaction in the client
      program */
   fbt_ccache_add_entry(tld, (void*)commit_function, (void*)fbt_end_transaction);

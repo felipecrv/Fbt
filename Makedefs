@@ -173,9 +173,10 @@ else
 endif
 CFLAGS += $(I386)
 
-# the new ARM code tries to be C99 compatible (experimental)
 ifeq ($(TARGET_ARCH),arm)
-	CFLAGS += -std=c99 -Wno-unused-but-set-variable -Wno-unused-function
+  # the new ARM code tries to be C99 compatible (experimental)
+	CFLAGS += -std=c99
+	CFLAGS += -Wno-unused-but-set-variable -Wno-unused-function
 endif
 EXTRA_ARM_DISASSEMBLER_CFLAGS += -std=c99 -DARM_DISASSEMBLER
 

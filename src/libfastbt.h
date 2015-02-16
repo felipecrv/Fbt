@@ -33,14 +33,15 @@ extern "C" {
 #endif
 
 #ifdef __i386__
-# define LIBNAME "./src/libia32fbt.so.0.3.1"
+# define LIBNAME "./src/libia32fbt.so"
 #else
-# define LIBNAME "./src/libarmfbt.so.0.3.1"
+# define LIBNAME "./src/libarmfbt.so"
 #endif
 #define LIBLEN sizeof(LIBNAME) /* length of LIBNAME +1 */
 
 /**
  * Initialzes the binary translator.
+ *
  * Must be called once, before any other call to the binary translator
  * @param opcode_table user defined opcode table to be used instead of the
  * default table. If NULL is passed the default table is used.
@@ -50,6 +51,7 @@ fbt_init(ArchOpcode *opcode_table);
 
 /**
  * Shuts the BT down.
+ *
  * Must be called once for each thread.
  * @param tld pointer to thread local data
  */
@@ -58,6 +60,7 @@ fbt_exit(struct thread_local_data *tld);
 
 /**
  * Initialize the transaction
+ *
  * @param tld pointer to thread local data
  * @param commit_function a function pointer to the function which indicates
  * end of transaction
@@ -68,6 +71,7 @@ void fbt_transaction_init(struct thread_local_data *tld,
 /**
  * Start a transaction.
  * The tansaction stops when a call 'commit function' is reached
+ *
  * @param tld pointer to thread local data
  * @param commit_function a function pointer to the function which indicates the
  * end of the transaction
@@ -83,6 +87,7 @@ __attribute__((visibility("default"))) void fbt_commit_transaction();
 /**
  * Last function called in a transaction (right after finishing the
  * transaction).
+ *
  * The contents of this function are still executed in transactional mode but as
  * soon as this function returns we return to untranslated/unsandboxed code.
  */
