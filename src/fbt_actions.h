@@ -69,6 +69,7 @@ enum translation_state action_warn(struct translate *ts);
  */
 enum translation_state action_fail(struct translate *ts);
 
+#if defined(__i386__)
 
 /**
  * Handles relative jump instructions.
@@ -102,6 +103,10 @@ enum translation_state action_jmp_indirect(struct translate *ts);
  * instruction
  */
 enum translation_state action_jcc(struct translate *ts);
+
+#elif defined(__arm__)
+// TODO: declare ARM actions
+#endif
 
 /**
  * Handles call instructions to relative memory addresses.

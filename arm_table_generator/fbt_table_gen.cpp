@@ -115,9 +115,6 @@ void generate_tables(ofstream& out, string prefix) {
   out << endl;
   out << "#include \"../fbt_translate.h\"" << endl;
   out << endl;
-  out << "enum translation_state action_copy(struct translate *ts) {" << endl;
-  out << "  // TODO: implement ARM actions" << endl;
-  out << "}" << endl;
   out << endl;
 
   out << "struct arm_opcode opcode_table[] = {" << endl;

@@ -8,6 +8,7 @@
 
 // inclusion of the fbt_opcode_tables.h
 #include "fbt_arm_opcode.h"  // for struct arm_opcode and definitions
+#include "../fbt_actions.h"  // for the actions
 #include "fbt_opcode_tables.h"
 
 static char register_names[][4] = {
