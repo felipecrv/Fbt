@@ -19,9 +19,9 @@ CC ?= gcc
 # Production build: produces an optimized version without assertions.
 #
 # options: set either 'DEBUG = 1' or 'PRODUCTION = 1'
-# default: PRODUCTION = 1
-PRODUCTION = 1
-#DEBUG = 1
+# default: DEBUG = 1
+#PRODUCTION = 1
+DEBUG = 1
 
 # IA32 or ARM?
 # ==========================

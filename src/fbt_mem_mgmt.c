@@ -41,11 +41,6 @@
 #include "generic/fbt_libc.h"
 #include "generic/fbt_llio.h"
 
-#if defined(DEBUG)
-#include <sys/stat.h>
-#include <stdarg.h>
-#endif /* DEBUG */
-
 struct thread_local_data *fbt_init_tls() {
   return fbt_reinit_tls(NULL);
 }
@@ -160,9 +155,7 @@ void fbt_reinit_new_process(struct thread_local_data *tld) {
   fbt_mutex_init(&sd->threads_mutex);
   tld->shared_data = sd;
   #endif /* SHARED_DATA */
-
 }
-
 
 void fbt_allocate_new_code_cache(struct thread_local_data *tld) {
   void *mem = fbt_lalloc(tld, CODE_CACHE_ALLOC_PAGES, MT_CODE_CACHE);
