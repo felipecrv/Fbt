@@ -6,9 +6,6 @@ CFLAGS += -fno-stack-protector -fno-omit-frame-pointer
 # relro with global offset table protection
 LDFLAGS += -Wl,-z,relro,-z,now,-z,initfirst $(I386)
 
-# flags for position independent code in object files
-LIBFLAGS=-fpic -c
-
 # Make sure we fail if anything fails in a loop
 SHELL := /bin/bash -e
 
@@ -48,14 +45,14 @@ $(IA32_LIBNAME).so: *.h ia32/*.h generic/*.h $(IA32_FILES)
 	cp generic/*.h generated/generic
 	cp ia32/*.h generated/ia32
 
-	$(CC) $(CFLAGS) $(LIBFLAGS) generated/generic/*.c generated/ia32/*.c generated/*.c
+	$(CC) $(CFLAGS) -fpic -c generated/generic/*.c generated/ia32/*.c generated/*.c
 	$(CC) -shared -Wl,-soname,$(IA32_LIBNAME).so.$(LIBVERS) \
 		-o $(IA32_LIBNAME).so *.o $(LDFLAGS)
 
 $(ARM_LIBNAME).so: *.h arm/*.h generic/*.h $(ARM_FILES)
-	$(CC) $(CFLAGS) $(LIBFLAGS) $(ARM_FILES)
-	$(CC) -shared -Wl,-soname,$(ARM_LIBNAME).so.$(LIBVERS) \
-		-o $(ARM_LIBNAME).so *.o $(LDFLAGS)
+	$(CC) $(CFLAGS) -fpic -c $(ARM_FILES)
+	$(CC) $(LDFLAGS) -shared -Wl,-soname,$(ARM_LIBNAME).so.$(LIBVERS) \
+		-o $(ARM_LIBNAME).so *.o
 
 $(LIBNAME).a: $(LIBNAME).so
 	ar cru $(LIBNAME).a libfastbt.o
