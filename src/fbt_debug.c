@@ -27,24 +27,11 @@
  */
 #ifdef DEBUG
 
-#include <sys/cdefs.h>  // for __THROW*
-# ifndef __THROWNL
-#  if !defined __cplusplus && __GNUC_PREREQ (3, 3)
-#   define __THROWNL __attribute__ ((__nothrow__))
-#  else
-#   if defined __cplusplus && __GNUC_PREREQ (2,8)
-#    define __THROWNL  throw ()
-#   else
-#    define __THROWNL
-#   endif
-#  endif
-# endif
-#include <unistd.h>
-#include <pthread.h>
-
 #include <asm-generic/fcntl.h>
-#include <sys/stat.h>
+#include <pthread.h>
 #include <stdarg.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "fbt_debug.h"
 #include "fbt_code_cache.h"

@@ -29,19 +29,9 @@
 
 #include "fbt_syscall.h"
 
-typedef long __syscall_slong_t;
-
 #include <assert.h>
 #include <stddef.h>
-
-#ifndef __THROWNL
-# define __THROWNL
-# include <ucontext.h>
-# undef __THROWNL
-#endif
 #include <ucontext.h>
-
-//#include <asm-generic/signal.h>
 #include <linux/sched.h>
 
 #include "fbt_code_cache.h"
