@@ -4,6 +4,7 @@
 
 #include "../generic/fbt_llio.h"
 #include "../fbt_disassemble.h"
+#include "../fbt_datatypes.h"
 
 // inclusion of the fbt_opcode_tables.h
 #include "fbt_arm_opcode.h"  // for struct arm_opcode and definitions
@@ -38,6 +39,10 @@ static char textual_conds[16][5] = {
 // *** "lo" (unsigned lower) = "cc"
 
 static char shift_types[4][4] = {"lsl", "lsr", "asr", "ror"};
+
+void fbt_disasm_instr(struct translate *ts) {
+  // TODO(philix): define fbt_disasm_instr() for ARM
+}
 
 void fbt_disassemble_to_text(uint32_t *instr_stream,
                              uint32_t size,
