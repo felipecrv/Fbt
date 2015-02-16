@@ -48,6 +48,14 @@ extern "C" {
 #endif
 
 #ifdef DEBUG
+
+/**
+ * The file names for the output
+ */
+#define DEBUG_FILE_NAME	"debug.txt"
+#define CODE_DUMP_FILE_NAME "code_dump.txt"
+#define JMP_TABLE_DUMP_FILE_NAME "jmpTable_dump.txt"
+
 /* forward declare translate_t */
 struct translate;
 
@@ -79,28 +87,14 @@ char* printnbytes(unsigned char *addr, unsigned int n);
 #define MEMDUMP(...)
 #endif
 
-#ifdef DUMP_GENERATED_CODE
-/* dump generated code */
-void debug_dump_start();
-void debug_dump_end();
-void debug_dump_code(struct translate *ts, int instr_len, int transl_len);
-void debug_dump_jmptable(char *orig_addr, char *transl_addr);
-#define DUMP_START() debug_dump_start()
-#define DUMP_END() debug_dump_end()
-#define DUMP_CODE(ts, instr_len, transl_len) \
-  debug_dump_code(ts, instr_len, transl_len)
-#define DUMP_JMP_TABLE_ENTRY(org_addr, transl_addr) \
-  debug_dump_jmptable(org_addr, transl_addr)
-#else
-/* do not dump generated code */
-#define DUMP_START()
-#define DUMP_END()
-#define DUMP_CODE(ts, instr_len, transl_len)
-#define DUMP_JMP_TABLE_ENTRY(org_addr, transl_addr)
-#endif
-
 #ifdef __cplusplus
 }
+#endif
+
+#if defined(__i386__)
+# include "ia32/fbt_ia32_debug.h"
+#elif defined(__arm__)
+# include "arm/fbt_arm_debug.h"
 #endif
 
 #endif  /* FBT_DEBUG_H */
