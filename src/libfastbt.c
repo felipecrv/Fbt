@@ -49,9 +49,9 @@ extern ArchOpcode default_opcode_table[];
 
    By using `LD_PRELOAD=./src/libarmfbt.so executable` on the terminal we can
    redefine the executable's `_init` and `_fini` symbols. By providing our own
-   `_fini` we can take control of the execution.
+   `_init` we can take control of the execution.
 
-   _fini(); // called by Linux when starting the process
+   _init(); // called by Linux when starting the process
     |- tld = fbt_init(NULL);
     |         \- initialize thread-local store and trampolines
     |            (fbt_initialize_trampolines())
