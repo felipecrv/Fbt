@@ -33,15 +33,15 @@ $(IA32_LIBNAME).so: *.h ia32/*.h generic/*.h $(IA32_FILES)
 	mkdir -p generated
 	mkdir -p generated/generic
 	mkdir -p generated/ia32
-	
+
 	for file in $(IA32_FILES); do \
 		$(CC) ${CFLAGS} -E $$file > generated/$$file; \
 	done
 
 	for file in $(IA32_FILES); do \
-		$(DSL_PATH) generated/$$file generated/$$file ; \
+		$(DSL_PATH) -c ia32 generated/$$file generated/$$file ; \
 	done
-	
+
 	cp *.h generated
 	cp generic/*.h generated/generic
 	cp ia32/*.h generated/ia32
@@ -51,7 +51,23 @@ $(IA32_LIBNAME).so: *.h ia32/*.h generic/*.h $(IA32_FILES)
 		-o $(IA32_LIBNAME).so *.o $(LDFLAGS)
 
 $(ARM_LIBNAME).so: *.h arm/*.h generic/*.h $(ARM_FILES)
-	$(CC) $(CFLAGS) -fpic -c $(ARM_FILES)
+	mkdir -p generated
+	mkdir -p generated/generic
+	mkdir -p generated/arm
+
+	for file in $(ARM_FILES); do \
+		$(CC) ${CFLAGS} -E $$file > generated/$$file; \
+	done
+
+	for file in $(ARM_FILES); do \
+		$(DSL_PATH) -c arm generated/$$file generated/$$file ; \
+	done
+	
+	cp *.h generated
+	cp generic/*.h generated/generic
+	cp arm/*.h generated/arm
+
+	$(CC) $(CFLAGS) -fpic -c generated/generic/*.c generated/arm/*.c generated/*.c
 	$(CC) $(LDFLAGS) -shared -Wl,-soname,$(ARM_LIBNAME).so.$(LIBVERS) \
 		-o $(ARM_LIBNAME).so *.o
 
