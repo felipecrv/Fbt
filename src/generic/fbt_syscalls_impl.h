@@ -53,8 +53,7 @@
 // If there's only mmap2, we define fbt_mmap() using fbt_mmap2()
 #if !defined(SYS_mmap) && defined(SYS_mmap2)
 # define fbt_mmap(addr, length, prot, flags, fd, offset, res) \
-   assert((offset) / 4096 == 0); \
-   fbt_mmap2((addr), (length), (prot), (flags), (fd), (offset) / 4096, (res))
+   fbt_mmap2((addr), (length), (prot), (flags), (fd), ((offset) >> 12), (res))
 #endif
 
 #define fbt_munmap(addr, length, res) _syscall2(munmap, (addr), (length), (res))

@@ -84,8 +84,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
   /* if the target is already translated then we return the cached version  */
   void *already_translated = fbt_ccache_find(tld, orig_address);
   if (already_translated != NULL) {
-    PRINT_DEBUG_FUNCTION_END("already translated -> %p",
-                             already_translated);
+    PRINT_DEBUG_FUNCTION_END("already translated -> %p", already_translated);
     return already_translated;
   }
 

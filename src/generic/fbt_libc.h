@@ -38,7 +38,9 @@
 
 #include "fbt_llio.h"  // for fllwrite() in fbt_suicide_str()
 
-#define MAP_FAILED      ((void *)-1)
+#ifndef MAP_FAILED
+# define MAP_FAILED      ((void *)-1)
+#endif
 
 /**
  * Local implementation of memcpy. Copies one memory region to another address.

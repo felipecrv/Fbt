@@ -25,8 +25,8 @@
       : "memory")
 
 #define _syscall_return(type, res) \
-  if((unsigned long)(res) >= (unsigned long)(-125)) { \
-    (*__errno_location()) = -(res); \
+  if ((unsigned long)(res) >= 0xfffff001u) { \
+    errno = -(res); \
     res = -1; \
   } \
   return (type)(res);
@@ -206,10 +206,29 @@ _syscall2_fn(void *, signal, int, signum, void *, handler)
       _syscall1_asm(exit, exitnr, res); \
     } while(0)
 
-#define SYSCALL_SUCCESS_OR_SUICIDE(res, err) \
-    if (((long)res) < 0) { fbt_suicide(err); }
-#define SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr) \
-    if (((long)res) < 0) { fbt_suicide_str(errstr); }
+#ifdef DEBUG
+# define SYSCALL_SUCCESS_OR_SUICIDE(res, err) \
+    if (((long)res) == -1) { \
+      int _errno = errno; \
+      fllprintf(1, "sycall failed with errno: %d\n", _errno); \
+      fbt_suicide(err); \
+    }
+# define SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr) \
+    if (((long)res) == -1) { \
+      int _errno = errno; \
+      fllprintf(1, "sycall failed with errno: %d\n", _errno); \
+      fbt_suicide_str(errstr); \
+    }
+#else
+# define SYSCALL_SUCCESS_OR_SUICIDE(res, err) \
+    if (((long)res) == -1) { \
+      fbt_suicide(err); \
+    }
+# define SYSCALL_SUCCESS_OR_SUICIDE_STR(res, errstr) \
+    if (((long)res) == -1) { \
+      fbt_suicide_str(errstr); \
+    }
+#endif // DEBUG
 
 
 // Macros used to define the public interface in generic/fbt_syscalls_impl.h
