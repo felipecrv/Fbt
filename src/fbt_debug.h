@@ -73,7 +73,7 @@ char* debug_memdump(unsigned char *addr, unsigned int n);
 #define PRINT_DEBUG(...) debug_print(__VA_ARGS__)
 #define PRINT_DEBUG_FUNCTION_START(...) debug_print_function_start(__VA_ARGS__)
 #define PRINT_DEBUG_FUNCTION_END(...) debug_print_function_end(__VA_ARGS__)
-#define MEMDUMP(addr, n) debug_memdump(addr, n)
+#define MEMDUMP(addr, n) debug_memdump(((unsigned char*)(addr)), n)
 
 /* todo remove */
 char* printnbytes(unsigned char *addr, unsigned int n);
