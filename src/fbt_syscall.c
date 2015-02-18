@@ -401,6 +401,7 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
                          );
 #elif defined(__arm__)
     // TODO(philix): defined the ARM assembly code for cloning
+    fbt_suicide_str(__func__);
     local_ret = 0;
 #endif
     *retval = local_ret;
@@ -476,6 +477,7 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
                          );
 #elif defined(__arm__)
     // TODO(philix): define the ARM code for thread creation
+    fbt_suicide(__func__);
     local_ret = 0;
 #endif
 
@@ -583,6 +585,7 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
   }
 #elif defined(__arm__)
   // TODO(philix): free the last bit of memory on the ARM translator
+  fbt_suicide(__func__);
 #endif
 
   fbt_suicide_str("Failed to exit thread/process (fbt_syscall.c)\n");
@@ -755,7 +758,7 @@ auth_mmap2(struct thread_local_data *tld __attribute__((unused)),
 #endif  /* SECU_ALLOW_RUNTIME_ALLOC */
 
   /* TODO: add check for regions of elf files */
-  // TODO(philix): extract the common code from auth_mmap and auth_mmap2
+  // TODO(philix): extract the common code from auth_mmap and auth_mmap2;
 
   /* ensure we don't remap memory structures of the BT */
   struct mem_info *mem_info = tld->chunk;

@@ -260,6 +260,7 @@ struct trampoline *fbt_create_trampoline(struct thread_local_data *tld,
   CALL_REL32(code, tld->unmanaged_code_trampoline); /* 5 bytes long */
 #elif defined(__arm__)
   // TODO(philix): write code to ARM trampoline
+  fbt_suicide_str(__func__);
 #endif
 
   return trampo;

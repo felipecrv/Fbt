@@ -48,7 +48,8 @@
 # include "arm/fbt_arm_opcode.h"
 
 // TODO(philix): add relative ARM jump
-# define JUMP_RELATIVE32(dst, rel32)
+# define JUMP_RELATIVE32(dst, rel32) \
+  fbt_suicide("JUMP_RELATIVE32() unimplemented")
 #endif
 
 #if defined(INLINE_CALLS)
