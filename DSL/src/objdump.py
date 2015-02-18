@@ -90,7 +90,6 @@ def objdump(path, variables, arch):
             for mcode in machine_code:
                 if len(mcode) > 2:
                     for byte in map(''.join, zip(*[iter(mcode)] * 2)):
-                        print "byte entering: ", byte
                         machine_code_bytes.append(byte)
                 else:
                     machine_code_bytes.append(mcode)
