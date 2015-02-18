@@ -150,6 +150,10 @@ enum syscall_auth_response {
 struct thread_local_data {
   /** mapping table between code cache and program */
   void *mappingtable;
+#ifdef __arm__
+  /** mapping table between translated code's PC and program's PC */
+  void *pc_mappingtable;
+#endif
   /** this pointer points to a target in the code cache. optimizations and
       stack guards use this variable to hide locations from the translated
       program. trampolines use this value as a branch target */

@@ -83,6 +83,9 @@ struct icf_prediction;
 enum mem_type {
   MT_CODE_CACHE,  /**< code cache (RX[W]) */
   MT_MAPPING_TABLE,  /**< mapping table (R[W]) */
+#ifdef __arm__
+  MT_PC_MAPPING_TABLE,  /**< PC mapping table (R[W]) */
+#endif
 #if defined(AUTHORIZE_SYSCALLS)
   MT_SYSCALL_TABLE, /**< syscall table (R[W]) */
 #endif  /* AUTHORIZE_SYSCALLS */

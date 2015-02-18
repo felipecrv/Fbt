@@ -34,6 +34,9 @@
 #include <asm-generic/mman.h>
 
 #include "fbt_code_cache.h"
+#ifdef __arm__
+# include "arm/fbt_pc_cache.h"
+#endif
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
 #include "fbt_mem_pool.h"
@@ -97,18 +100,25 @@ struct thread_local_data *fbt_reinit_tls(struct thread_local_data *tld) {
 
   /* starting from this point we can use our internal memory allocation */
 
-  /* allocate memory for hashtable.
+  /* allocate memory for hashtable(s).
      lalloc uses mmap and map_anonymous, so the table is initialized with 0x0
      therefore we don't need to memset the whole table+4 for 0x1 guard for
      tcache_find_fast asm function */
   tld->mappingtable = fbt_lalloc(tld, (MAPPINGTABLE_SIZE / PAGESIZE) + 1,
                                  MT_MAPPING_TABLE);
+#ifdef __arm__
+  tld->pc_mappingtable = fbt_lalloc(tld, (PC_MAPPINGTABLE_SIZE / PAGESIZE) + 1,
+                                    MT_PC_MAPPING_TABLE);
+#endif
   /* guard for find_fast-wraparound used in optimizations */
-  *(long*)((long)(tld->mappingtable)+MAPPINGTABLE_SIZE) = 0x1;
+  *(long*)((long)(tld->mappingtable) + MAPPINGTABLE_SIZE) = 0x1;
 
   PRINT_DEBUG("allocated mappingtable: %p -> %p",
               tld->mappingtable, tld->mappingtable + MAPPINGTABLE_SIZE);
-
+#ifdef __arm__
+  PRINT_DEBUG("allocated pc_mappingtable: %p -> %p",
+              tld->pc_mappingtable, tld->pc_mappingtable + PC_MAPPINGTABLE_SIZE);
+#endif
 
   /* initialize trampolines */
   tld->ret2app_trampoline = NULL;
@@ -254,6 +264,7 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
   switch (type) {
     case MT_INTERNAL:
     case MT_MAPPING_TABLE:
+    case MT_PC_MAPPING_TABLE:
 #if defined(SHARED_DATA)
     case MT_SHARED_DATA:
 #endif /* SHARED_DATA */
