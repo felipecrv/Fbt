@@ -10,6 +10,8 @@
 
 #include "../generic/fbt_llio.h"
 
+#define DECODE_COND(x) ((x >> 28) & 0xF)
+
 #define DECODE_REG(lowest_bit, x)    (((x) >> (lowest_bit)) & 0x0F)
 
 #define DECODE_IMM5(lowest_bit, x)   (((x) >> (lowest_bit)) & 0x1F)
@@ -17,6 +19,7 @@
 #define DECODE_IMM24(x)              ((x) & 0xFFFFFF)
 
 #define DECODE_SHIFT_TYPE(x)         (((x) >> 5) & 0x3)
+
 
 #define SIGN_EXTEND_32(x, len) \
   do { \

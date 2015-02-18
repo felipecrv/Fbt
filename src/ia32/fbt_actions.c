@@ -44,8 +44,8 @@ enum translation_state action_none(struct translate *ts __attribute__((unused)))
 }
 
 enum translation_state action_copy(struct translate *ts) {
-  unsigned char *addr = ts->cur_instr;
-  unsigned char* transl_addr = ts->transl_instr;
+  Code *addr = ts->cur_instr;
+  Code* transl_addr = ts->transl_instr;
   long length = ts->next_instr - ts->cur_instr;
 
   PRINT_DEBUG_FUNCTION_START("action_copy(*addr=%p, *transl_addr=%p, "
@@ -53,7 +53,6 @@ enum translation_state action_copy(struct translate *ts) {
   /* copy instruction verbatim to translated version */
   fbt_memcpy(transl_addr, addr, length);
 
-  PRINT_DEBUG_FUNCTION_END("-> neutral, transl_length=%i", length);
   ts->transl_instr += length;
   if (*(ts->cur_instr) == 0xcc || *(ts->cur_instr) == 0xcd ||
       *(ts->cur_instr) == 0xce) {
@@ -87,9 +86,12 @@ enum translation_state action_copy(struct translate *ts) {
      * issue some glue code to restart the translation if we resume after the
      * int itself
      */
-    PRINT_DEBUG("Encountered an interrupt - closing TU with some glue code\n");
+    PRINT_DEBUG("Encountered an interrupt - closing TU with some glue code");
+    PRINT_DEBUG_FUNCTION_END("-> CLOSE_GLUE");
     return CLOSE_GLUE;
   }
+
+  PRINT_DEBUG_FUNCTION_END("-> neutral, transl_length=%i", length);
   return NEUTRAL;
 }
 

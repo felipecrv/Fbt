@@ -44,8 +44,23 @@ enum translation_state action_none(struct translate *ts __attribute__((unused)))
 }
 
 enum translation_state action_copy(struct translate *ts) {
-  // TODO(philix): implement action_copy for ARM
-  fbt_suicide_str(__func__);
+  Code *addr = ts->cur_instr;
+  Code* transl_addr = ts->transl_instr;
+
+  PRINT_DEBUG_FUNCTION_START(
+      "action_copy(*addr=%p, *transl_addr=%p)", addr, transl_addr);
+
+  /* copy instruction verbatim to translated version */
+  *(transl_addr++) = *addr;
+
+  if ((ts->cur_instr_info->opcode_flags & 0x1FFF) == (SWI)) {
+    PRINT_DEBUG("Encountered an interrupt - closing TU with some glue code");
+    PRINT_DEBUG_FUNCTION_END("-> CLOSE_GLUE");
+    return CLOSE_GLUE;
+  }
+
+  PRINT_DEBUG_FUNCTION_END("-> NEUTRAL");
+  return NEUTRAL;
 }
 
 enum translation_state action_warn(struct translate *ts) {

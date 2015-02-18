@@ -43,9 +43,29 @@ static char textual_conds[16][5] = {
 
 static char shift_types[4][4] = {"lsl", "lsr", "asr", "ror"};
 
+static struct arm_opcode *fbt_opcode_table_lookup(uint32_t binary_instr);
+
+static struct arm_opcode *fbt_opcode_table_lookup(uint32_t binary_instr) {
+  uint32_t opcode_table_key =
+    ((binary_instr >> 16) & 0xFF0) | ((binary_instr >> 4) & 0xF);
+  return &default_opcode_table[opcode_table_key];
+}
+
 void fbt_disasm_instr(struct translate *ts) {
-  // TODO(philix): define fbt_disasm_instr() for ARM
-  fbt_suicide_str(__func__);
+  PRINT_DEBUG_FUNCTION_START("fbt_disasm_instr(*ts=%p)", ts);
+
+  Code *cur = (ts->cur_instr = ts->next_instr);
+
+  uint32_t binary_instr = *cur;
+  const struct arm_opcode *opcode = fbt_opcode_table_lookup(binary_instr);
+
+  PRINT_DEBUG("Disassembling %p: %p -- a '%s'", cur, binary_instr, opcode->mnemonic);
+
+  /* set the action */
+  ts->cur_instr_info = opcode;
+
+  ts->next_instr = cur + 1;
+  PRINT_DEBUG_FUNCTION_END("");
 }
 
 void fbt_disassemble_to_text(uint32_t *instr_stream,
@@ -60,9 +80,8 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
 
   for (uint32_t instr_idx = 0; instr_idx < size; instr_idx++) {
     uint32_t binary_instr = instr_stream[instr_idx];
-    uint32_t opcode_table_key = ((binary_instr >> 16) & 0xFF0) | ((binary_instr >> 4) & 0xF);
-    struct arm_opcode *opcode = &opcode_table[opcode_table_key];
-    uint32_t cond = (binary_instr >> 28) & 0xF;
+    struct arm_opcode *opcode = fbt_opcode_table_lookup(binary_instr);
+    uint32_t cond = DECODE_COND(binary_instr);
 
 #define EMIT_TEXT_INSTRF(fmt, args...) \
     EMIT_TEXT_CODEF("%x:  %.8x    %s%s\t" fmt, \

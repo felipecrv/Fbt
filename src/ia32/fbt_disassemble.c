@@ -46,11 +46,12 @@
  */
 static ulong_t fbt_operand_size(ulong_t operandFlags, unsigned char prefix);
 
+
 void fbt_disasm_instr(struct translate *ts) {
   const struct ia32_opcode *opcode, *opcode_table = default_opcode_table;
   int bytes_argument;
 
-  unsigned char *cur = (ts->cur_instr = ts->next_instr);
+  Code *cur = (ts->cur_instr = ts->next_instr);
   ts->num_prefixes = 0;
 
   /* 0x1 - operand overwrite */
