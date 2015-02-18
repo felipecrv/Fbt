@@ -39,7 +39,11 @@ TARGET_ARCH ?= ia32
 # mapping for each translated basic block from original to translated IP.
 #
 # default: # CLAGS += -DDUMP_GENERATED_CODE
-#CFLAGS += -DDUMP_GENERATED_CODE
+ifdef DEBUG
+	CFLAGS += -DDUMP_GENERATED_CODE
+else
+	#CFLAGS += -DDUMP_GENERATED_CODE
+endif
 
 # Sleep a couple of secs if we fail (debugging option)
 # ====================================================
@@ -72,7 +76,9 @@ TARGET_ARCH ?= ia32
 #
 # default: CFLAGS += -DINLINE_CALLS
 # status: unimplemented for ARM
-CFLAGS += -DINLINE_CALLS
+ifeq ($(ARCH),ia32)
+	CFLAGS += -DINLINE_CALLS
+endif
 
 # Add a predictor for indirect control flow transfers
 # ===================================================
