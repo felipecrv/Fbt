@@ -23,7 +23,8 @@ ARM_FILES += libfastbt.c generic/fbt_algorithms.c generic/fbt_libc.c generic/fbt
 
 # object files for the ARM disassembler
 ARM_DISASSEMBLER_FILES=generic/fbt_llio.c generic/fbt_libc.c \
-											 arm/fbt_disassemble.c arm/arm_disassembler.c
+											 arm/fbt_disassemble.c arm/arm_disassembler.c \
+											 arm/fbt_actions.c fbt_debug.c
 
 .PHONY: all clean
 
@@ -62,7 +63,7 @@ $(ARM_LIBNAME).so: *.h arm/*.h generic/*.h $(ARM_FILES)
 	for file in $(ARM_FILES); do \
 		$(DSL_PATH) -c arm generated/$$file generated/$$file ; \
 	done
-	
+
 	cp *.h generated
 	cp generic/*.h generated/generic
 	cp arm/*.h generated/arm
@@ -84,7 +85,7 @@ arm/fbt_opcode_tables.h: arm/fbt_arm_opcode.h
 
 arm_disassembler: $(ARM_DISASSEMBLER_FILES) *.h arm/*.h generic/*.h arm/fbt_opcode_tables.h
 	$(CC) $(CFLAGS) $(EXTRA_ARM_DISASSEMBLER_CFLAGS) -c $(ARM_DISASSEMBLER_FILES)
-	$(CC) $(CFLAGS) $(EXTRA_ARM_DISASSEMBLER_CFLAGS) *.o -o $@
+	$(CC) $(CFLAGS) -lpthread $(EXTRA_ARM_DISASSEMBLER_CFLAGS) *.o -o $@
 
 clean:
 	rm -rf generated

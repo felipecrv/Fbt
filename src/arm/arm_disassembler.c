@@ -1,4 +1,7 @@
+#include <stdbool.h>
+
 #include "../fbt_disassemble.h"
+#include "../fbt_actions.h"
 
 int main(int argc, char *argv[]) {
   uint32_t stream[] = {

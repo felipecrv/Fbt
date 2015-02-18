@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#include "../generic/fbt_libc.h"
 #include "../generic/fbt_llio.h"
 #include "../fbt_disassemble.h"
 #include "../fbt_datatypes.h"
