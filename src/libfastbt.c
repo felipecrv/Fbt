@@ -65,7 +65,31 @@ extern ArchOpcode default_opcode_table[];
         |      `fbt_commit_transaction` whould do.
         |
         |- finds out the return address of fbt_start_transaction() and translates code
-        |  from this address.
+        |  from this address -- orig_begin.
+        |    |
+        |    \- fbt_translate_noexecute(orig_begin)
+        |        |
+        |        |- checks whether orig_begin is already in the code cache. If not, the
+        |        |  translated code pointer is added to cached and translation starts.
+        |        |
+        |        |- loop in the programs instruction stream:
+        |        |   |- fbt_disasm_instr()
+        |        |   |  \- Set the current binary instruction being translated.
+        |        |   |
+        |        |   \- action_*()
+        |        |       \- The action_*() functions generate translated code
+        |        |          for specific instructions as specified in the opcode table.
+        |        |
+        |        |- the result of the action_*() call indicates if the
+        |        |  translation unit should be closed. If yes the loop breaks.
+        |        |
+        |        |- fbt_create_trampoline()
+        |        |   \- Create a trampoline that returns control to the BT code.
+        |        |
+        |        \- generate code that jumps to the trampoline that was created. This way,
+        |           execution of translated code will go back to BT code at the end of the
+        |           translation unit.
+        |
         |
         \- overwrite the return address in the stack to an address in the
            translated code so that execution continues from the translated code

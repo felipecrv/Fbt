@@ -164,7 +164,7 @@ struct thread_local_data {
   /** trampolines set up the secure stack and the unmanaged_code_trampoline
       handles the translation and lookup of the code and transfer the control
       back to the newly translated code */
-  void *unmanaged_code_trampoline;
+  Code *unmanaged_code_trampoline;
   /** this trampoline points to a fast, thread-local version of the indirect
       jump optimization that looks up a given PC in the mapping table and
       transfers control to the translated fragment. */

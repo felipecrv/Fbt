@@ -264,7 +264,9 @@ void *fbt_lalloc(struct thread_local_data *tld, int pages,
   switch (type) {
     case MT_INTERNAL:
     case MT_MAPPING_TABLE:
+#ifdef __arm__
     case MT_PC_MAPPING_TABLE:
+#endif
 #if defined(SHARED_DATA)
     case MT_SHARED_DATA:
 #endif /* SHARED_DATA */

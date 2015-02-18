@@ -31,7 +31,6 @@
 
 #include "fbt_translate.h"
 #include "fbt_actions.h"
-#include "ia32/fbt_asm_macros.h"
 #include "fbt_code_cache.h"
 #include "fbt_datatypes.h"
 #include "fbt_debug.h"
@@ -42,14 +41,14 @@
 
 #if defined(__i386__)
 # include "ia32/fbt_x86_opcode.h"
+# include "ia32/fbt_asm_macros.h"
 
-# define JUMP_RELATIVE32 JMP_REL32
+# define JUMP_TO    JMP_REL32
 #elif defined(__arm__)
 # include "arm/fbt_arm_opcode.h"
+# include "arm/fbt_asm_macros.h"
 
-// TODO(philix): add relative ARM jump
-# define JUMP_RELATIVE32(dst, rel32) \
-  fbt_suicide("JUMP_RELATIVE32() unimplemented")
+# define JUMP_TO    GEN_B_ABS
 #endif
 
 #if defined(INLINE_CALLS)
@@ -127,7 +126,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
     /* add a jmp connect old and new tcache memory blocks */
     if (prev_transl_instr != NULL) {
-      JUMP_RELATIVE32(prev_transl_instr, ts->transl_instr);
+      JUMP_TO(prev_transl_instr, ts->transl_instr);
     }
   }
   PRINT_DEBUG("tld->ts.transl_instr: %p", ts->transl_instr);
@@ -170,7 +169,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
     Code *dst = NULL;
     if (((dst=tcache_find(tld, ts->next_instr))!=NULL) &&
         dst!=ts->transl_instr && ts->inlined_frames==NULL) {
-      JUMP_RELATIVE32(ts->transl_instr, (int32_t)dst);
+      JUMP_TO(ts->transl_instr, (int32_t)dst);
       tu_state = CLOSE;
       break;
     }
@@ -236,7 +235,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
                                                       (void*)ts->next_instr,
                                                       ts->transl_instr+1,
                                                       ORIGIN_RELATIVE);
-    JUMP_RELATIVE32(ts->transl_instr, trampo->code);
+    JUMP_TO(ts->transl_instr, trampo->code);
   }
 
   /* make sure that we always stay in the limits, even if we overwrite the

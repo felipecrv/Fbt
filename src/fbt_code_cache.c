@@ -43,6 +43,9 @@
 #include "libfastbt.h"
 #if defined(__i386__)
 # include "ia32/fbt_asm_macros.h"
+#elif defined(__arm__)
+# include "arm/fbt_arm_opcode.h"
+# include "arm/fbt_asm_macros.h"
 #endif
 
 struct ccache_entry {
@@ -241,27 +244,27 @@ struct trampoline *fbt_create_trampoline(struct thread_local_data *tld,
     fbt_allocate_new_trampolines(tld);
   }
 
-  struct trampoline *trampo = tld->trans.trampos;
+  struct trampoline *trampos = tld->trans.trampos;
   tld->trans.trampos = tld->trans.trampos->next;
 
-  trampo->target = call_target;
-  trampo->origin = origin;
-  trampo->origin_t = origin_t;
+  trampos->target = call_target;
+  trampos->origin = origin;
+  trampos->origin_t = origin_t;
 
-  unsigned char *code = (unsigned char*)&(trampo->code);
+  Code *code = (Code *)&(trampos->code);
 
-  PRINT_DEBUG("allocated trampoline: %p, target: %p, origin: %p", trampo,
-              trampo->target, trampo->origin);
+  PRINT_DEBUG("allocated trampolines: %p, target: %p, origin: %p", trampos,
+              trampos->target, trampos->origin);
 
   /* write code to trampoline */
 #if defined(__i386__)
-  MOV_ESP_MEM32(code, (tld->stack-1));  /* 6 bytes long */
-  MOV_IMM32_ESP(code, (tld->stack-1));  /* 5 bytes long */
+  MOV_ESP_MEM32(code, (tld->stack - 1));  /* 6 bytes long */
+  MOV_IMM32_ESP(code, (tld->stack - 1));  /* 5 bytes long */
   CALL_REL32(code, tld->unmanaged_code_trampoline); /* 5 bytes long */
 #elif defined(__arm__)
-  // TODO(philix): write code to ARM trampoline
-  fbt_suicide_str(__func__);
+  GEN_LDR_IMM32(code, SP, (uint32_t)(tld->stack - 1));
+  GEN_B_ABS(code, tld->unmanaged_code_trampoline);
 #endif
 
-  return trampo;
+  return trampos;
 }
