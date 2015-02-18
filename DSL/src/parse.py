@@ -24,14 +24,15 @@ from objdump import objdump
 class AssemblyRewriter(object):
     def __init__(self, arch):
         self.arch = arch
-        self.magic_number = int('13370000', 16)
         if self.arch.is_x86():
+            self.magic_number = int('13370000', 16)
             self.macros = {
                 'call_abs': CallAbsMacro,
                 'jmp_abs': JmpAbsMacro,
                 'store_label': StoreLabelMacro
             }
         elif self.arch.is_arm():
+            self.magic_number = int('99', 16)
             self.macros = {}
         self.marker = ['BEGIN_ASM', 'END_ASM']
         self.macro_instances = None
@@ -92,7 +93,7 @@ class AssemblyRewriter(object):
                 self.macro_instances += [macro]
 
             # Does this line contain a variable?
-            pattern = r'\{(.*?)\}'
+            pattern = r'\{\{(.*?)\}\}' if self.arch.is_arm else r'\{(.*?)\}'
             match = re.search(pattern, line)
             while match:
                 var_name = match.groups()[0]
@@ -149,7 +150,7 @@ class AssemblyRewriter(object):
                 offsets[offset] = variable
 
         # Generate source code
-        writer = BatchedWriter(CWriter(original_target))
+        writer = BatchedWriter(CWriter(original_target, self.arch))
         offset = 0
 
         while offset < len(obj.bytes):
@@ -176,7 +177,6 @@ class AssemblyRewriter(object):
               if offset in offsets:
                   writer.write_expression(offsets[offset])
                   offset += 4
-
               else:
                   writer.write_byte(byte)
                   offset += 1

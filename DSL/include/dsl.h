@@ -14,6 +14,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
- 
-#define BEGIN_ASM(target)
-#define END_ASM
+
+//#define BEGIN_ASM(target)
+//#define END_ASM
+
+#ifdef __i386__
+typedef char Code;
+#elif defined(__arm__)
+// Code is 4-byte aligned on ARM
+typedef long Code;
+#endif

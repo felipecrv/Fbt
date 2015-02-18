@@ -83,7 +83,17 @@ def objdump(path, variables, arch):
             if len(columns) == 3:
                 result.code[int(offset.strip(':'), 16)] = columns[2]
 
-            machine_code_bytes = instructions.strip().split(' ')
+            # The ARM disassembler doesn't put spaces between byte like the x86
+            # disassembler. We should check the size of the code.
+            machine_code = instructions.strip().split(' ')
+            machine_code_bytes = []
+            for mcode in machine_code:
+                if len(mcode) > 2:
+                    for byte in map(''.join, zip(*[iter(mcode)] * 2)):
+                        print "byte entering: ", byte
+                        machine_code_bytes.append(byte)
+                else:
+                    machine_code_bytes.append(mcode)
 
             result.bytes += machine_code_bytes
         else:
