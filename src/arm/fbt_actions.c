@@ -99,16 +99,16 @@ enum translation_state action_fail(struct translate *ts __attribute__((unused)))
 // TODO: the equivalent of action_jmp_indirect on ARM
 // TODO: the equivalent of action_jmp_jcc on ARM
 
-enum translation_state action_call(struct translate *ts) {
-  // TODO(philix): implement action_call for ARM
+enum translation_state action_branch(struct translate *ts) {
+  // TODO(philix): implement action_branch for ARM
   fbt_suicide_str(__func__);
-  return OPEN;
+  return CLOSE;
 }
 
-enum translation_state action_call_indirect(struct translate *ts) {
-  // TODO(philix): implement action_call for ARM
+enum translation_state action_branch_and_link(struct translate *ts) {
+  // TODO(philix): implement action_branch_and_link for ARM
   fbt_suicide_str(__func__);
-  return OPEN;
+  return CLOSE;
 }
 
 enum translation_state action_sysenter(struct translate *ts) {

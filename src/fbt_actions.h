@@ -104,10 +104,6 @@ enum translation_state action_jmp_indirect(struct translate *ts);
  */
 enum translation_state action_jcc(struct translate *ts);
 
-#elif defined(__arm__)
-// TODO: declare ARM actions
-#endif
-
 /**
  * Handles call instructions to relative memory addresses.
  * Copies the call instruction, but changes the target address such that the
@@ -129,6 +125,12 @@ enum translation_state action_call(struct translate *ts);
  */
 enum translation_state action_call_indirect(struct translate *ts);
 
+#elif defined(__arm__)
+enum translation_state action_branch(struct translate *ts);
+
+enum translation_state action_branch_and_link(struct translate *ts);
+#endif
+
 /**
  * This function translates a sysenter instruction.
  * @param ts is a pointer to the translation struct of the current thread
@@ -138,10 +140,13 @@ enum translation_state action_call_indirect(struct translate *ts);
 enum translation_state action_sysenter(struct translate *ts);
 
 /**
- * Handles ret instructions.
+ * Handles ret instructions. On ARM it handles instructions that load LR into
+ * the PC.
+ *
  * @param ts is a pointer to the translation struct of the current thread
  * @return enum that determines if the TU shall be finalized after this
  * instruction (in this case: YES).
  */
 enum translation_state action_ret(struct translate *ts);
+
 #endif  /* FBT_ACTIONS_H */
