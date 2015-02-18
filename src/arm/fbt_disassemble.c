@@ -50,7 +50,8 @@ void fbt_disasm_instr(struct translate *ts) {
 void fbt_disassemble_to_text(uint32_t *instr_stream,
                              uint32_t size,
                              uint32_t start_addr,
-                             int out) {
+                             int out,
+                             bool with_sugar) {
 #define EMIT_TEXT_CODE(code) fllwrite(out, (code))
 #define EMIT_TEXT_CODEF(fmt, args...) fllprintf(out, (fmt), ##args)
 
@@ -400,7 +401,7 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
 
         bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
 
-        if (Rn == SP && !write_back) {
+        if (with_sugar && Rn == SP && write_back) {
           switch (opcode->opcode_flags) {
           case LDMIA:
             EMIT_TEXT_PSEUDO_INSTRF("pop", "");

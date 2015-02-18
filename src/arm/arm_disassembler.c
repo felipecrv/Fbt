@@ -647,7 +647,8 @@ int main(int argc, char *argv[]) {
   };
 
   uint32_t size = sizeof(stream) / sizeof(stream[0]);
-  fbt_disassemble_to_text(stream, size, 0x83b8, 1);
+  bool with_sugar = (argc > 1 && strcmp(argv[1], "--sugar") == 0);
+  fbt_disassemble_to_text(stream, size, 0x83b8, 1, with_sugar);
 
   return 0;
 }

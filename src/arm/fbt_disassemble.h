@@ -6,6 +6,7 @@
 #endif
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "../generic/fbt_llio.h"
 
@@ -37,11 +38,13 @@ static inline uint32_t fbt_imm12_to_const(uint32_t imm12) {
  * @param size
  * @param start_addr the address of the first instruction in the stream
  * @param out fd where output should be written to
+ * @param with_sugar add syntax sugar (e.g. convert some stores to push)
  */
 void fbt_disassemble_to_text(uint32_t *instr_stream,
                              uint32_t size,
                              uint32_t start_addr,
-                             int out);
+                             int out,
+                             bool with_sugar);
 
 
 #endif  /* FBT_ARM_DISASSEMBLE */
