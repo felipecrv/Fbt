@@ -115,12 +115,12 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
   int bytes_translated = 0;
   struct translate *ts = &(tld->trans);
-  ts->next_instr = (unsigned char*)orig_address;
+  ts->next_instr = (Code*)orig_address;
 
   /* check if more memory needs to be allocated for tcache */
   if ((long)(ts->code_cache_end - ts->transl_instr) < MAX_BLOCK_SIZE) {
     PRINT_DEBUG("Not enough memory for new code block - allocating more!");
-    unsigned char *prev_transl_instr = ts->transl_instr;
+    Code *prev_transl_instr = ts->transl_instr;
 
     fbt_allocate_new_code_cache(tld);
 
@@ -166,7 +166,7 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
 
 #if defined(FBT_CHECK_TRANSLATED)
     // current instr already translated?
-    unsigned char *dst=NULL;
+    Code *dst = NULL;
     if (((dst=tcache_find(tld, ts->next_instr))!=NULL) &&
         dst!=ts->transl_instr && ts->inlined_frames==NULL) {
       JUMP_RELATIVE32(ts->transl_instr, (int32_t)dst);
@@ -178,14 +178,14 @@ void *fbt_translate_noexecute(struct thread_local_data *tld,
     fbt_disasm_instr(ts);
     PRINT_DEBUG("translating a '%s'", ts->cur_instr_info->mnemonic);
 
-    unsigned char *old_transl_instr = ts->transl_instr;
+    Code *old_transl_instr = ts->transl_instr;
 #ifdef DEBUG
-    unsigned char *old_cur_instr = ts->cur_instr;
-    unsigned char *old_next_instr = ts->next_instr;
+    Code *old_cur_instr = ts->cur_instr;
+    Code *old_next_instr = ts->next_instr;
 #endif
 #ifdef DUMP_GENERATED_CODE
-    unsigned char *old_transl_instr_dump = ts->transl_instr;
-    unsigned char *old_next_instr_dump = ts->next_instr;
+    Code *old_transl_instr_dump = ts->transl_instr;
+    Code *old_next_instr_dump = ts->next_instr;
 #endif
 
 #if defined(INLINE_CALLS)
@@ -288,8 +288,8 @@ static ulong_t check_inline(struct translate *ts) {
 #elif defined(__arm__)
   // TODO(philix): port check_inline() to ARM
 #endif
-  myts.next_instr = (unsigned char*)(*((int32_t*)(myts.cur_instr + 1)) +
-                                     (int32_t)myts.cur_instr + 5);
+  myts.next_instr = (Code *)(*((int32_t*)(myts.cur_instr + 1)) +
+                             (int32_t)myts.cur_instr + 5);
 
   while (function_length < INLINE_MAX_LENGTH) {
     fbt_disasm_instr(&myts);

@@ -19,8 +19,8 @@
 //#define END_ASM
 
 #ifdef __i386__
-typedef char Code;
+typedef unsigned char Code;
 #elif defined(__arm__)
 // Code is 4-byte aligned on ARM
-typedef long Code;
+typedef unsigned long Code;
 #endif

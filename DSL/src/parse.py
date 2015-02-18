@@ -93,7 +93,7 @@ class AssemblyRewriter(object):
                 self.macro_instances += [macro]
 
             # Does this line contain a variable?
-            pattern = r'\{\{(.*?)\}\}' if self.arch.is_arm else r'\{(.*?)\}'
+            pattern = r'\{\{(.*?)\}\}' if self.arch.is_arm() else r'\{(.*?)\}'
             match = re.search(pattern, line)
             while match:
                 var_name = match.groups()[0]

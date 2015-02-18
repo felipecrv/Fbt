@@ -64,7 +64,7 @@ extern ArchOpcode default_opcode_table[];
         |      which does nothing instead of printing an error message as
         |      `fbt_commit_transaction` whould do.
         |
-        |- finds out the return address of fbt_start_transaction() and tranlates code
+        |- finds out the return address of fbt_start_transaction() and translates code
         |  from this address.
         |
         \- overwrite the return address in the stack to an address in the
@@ -177,8 +177,8 @@ void fbt_start_transaction(struct thread_local_data *tld,
   PRINT_DEBUG("starting transaction at %p (orig. addr: %p)\n",
               (long)transl_begin, (long)orig_begin);
 
-  /* use a jump-back trampoline to jump to the translated code in the code cache
-   */
+  /* the trampoline will jump back to tld->ind_target, set it to the address of
+   * translated code in the code cache */
   tld->ind_target = transl_begin;
   /* overwrite RIP to jump to tramp */
   *((ulong_t*)__builtin_frame_address(0)+1) = (ulong_t)tld->ret2app_trampoline;

@@ -29,8 +29,8 @@ class CWriter(object):
 
     def write_int32(self, value):
         self.write_line_number()
-        self.source += '*((long*)(%s)) = 0x%s;\n' % (self.target, value)
-        self.source += '(%s) = ((long*)(%s)) + 1;\n' % (self.target, self.target)
+        self.source += '*((unsigned long*)(%s)) = 0x%s;\n' % (self.target, value)
+        self.source += '(%s) += (sizeof(*%s) == 1) ? 4 : 1;\n' % (self.target, self.target)
 
     def write_expression(self, expression):
         self.write_line_number()

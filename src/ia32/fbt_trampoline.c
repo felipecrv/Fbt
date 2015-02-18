@@ -328,32 +328,33 @@ static void initialize_unmanaged_code_trampoline(struct thread_local_data *tld) 
 
   /* all trampolines transfer control to this unmanaged code trampoline */
 
-  /* Generate trampoline.
-   * The stack looks as follows:
+  /* Generate Trampoline Code
+   *
+   * The stack looks as follows (growing downwards):
    *   [ esp           ]
    *   [ rip (trampo)  ] <- removed by leal 4(%esp), %esp
-   *   [ flags         ]
-   *   [ 32b regs      ]
+   *   -----------------
+   *   [ flags         ] <- added by pushfl
+   *   [ 32b regs      ] <- added by pusha
    *   [ trampo        ] <-- removed by leal 8(%esp), %esp
    *   [ tld           ] <-/
    *   [ rip (to here) ]
-   * Prerequisites:
+   *
+   * Prerequisites to execute this trampoline:
    *   movl %esp, (tld->stack-1)
    *   movl tld->stack-1, %esp
-   *   call tld->umanaged_code_trampoline
+   *   call tld->unmanaged_code_trampoline
    */
   BEGIN_ASM(transl_instr)
     // save flags & registers
     pushfl
     pusha
 
-    // push target trampoline
+    // push target trampoline (second argument)
     pushl 36(%esp)
     addl $-16, (%esp)
-
-    // push pointer to thread local data
+    // push pointer to thread local data (first argument)
     pushl ${tld}
-
     // needs to figure out and free trampoline
     call_abs {translate_execute}
 
@@ -371,7 +372,6 @@ static void initialize_unmanaged_code_trampoline(struct thread_local_data *tld) 
     popl %esp
 
     jmp *{&tld->ind_target}
-
   END_ASM
 
   /* forward pointer */

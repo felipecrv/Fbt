@@ -53,6 +53,13 @@ struct shared_data;
 struct icf_prediction;
 #endif  /* ICF_PREDICT */
 
+#ifdef __i386__
+typedef unsigned char Code;
+#elif defined(__arm__)
+// Code is 4-byte aligned on ARM
+typedef unsigned long Code;
+#endif
+
 /**
  * This struct is used when a new instruction is parsed and translated.
  * The struct gets updated through the disassembling function and the
@@ -61,13 +68,13 @@ struct icf_prediction;
  */
 struct translate {
   /** points to the current position in the code cache */
-  unsigned char *transl_instr;
+  Code *transl_instr;
   /** points to the end of the code cache */
-  unsigned char *code_cache_end;
+  Code *code_cache_end;
   /** list of unused trampolines */
   struct trampoline *trampos;
   /** pointer to the instruction that is currently being translated */
-  unsigned char *cur_instr;
+  Code *cur_instr;
   /** information about the current instruction (or NULL) */
   const ArchOpcode *cur_instr_info;
   /** pointer into the instruction to the first byte of the data/imm values */
@@ -79,7 +86,7 @@ struct translate {
   unsigned char src_operand_size;
   unsigned char aux_operand_size;
   /** pointer to the next instruction (only valid after decoding) */
-  unsigned char *next_instr;
+  Code *next_instr;
 #if defined(INLINE_CALLS)
   /** Pointer to the return address of the upper call if we are currently
       inlining, NULL otherwise. */
@@ -271,9 +278,9 @@ struct trampoline {
       the tail of the code to jump into the BT */
   struct trampoline *next;
   /** origin in the code cache (to fix/backpatch the jump location) */
-  unsigned char *origin;
+  Code *origin;
   /** target in the untranslated code */
-  unsigned char *target;
+  Code *target;
   /** type of origin */
   enum origin_type origin_t;
 };
