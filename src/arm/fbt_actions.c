@@ -53,7 +53,7 @@ enum translation_state action_copy(struct translate *ts) {
   /* copy instruction verbatim to translated version */
   *(transl_addr++) = *addr;
 
-  if ((ts->cur_instr_info->opcode_flags & 0x1FFF) == (SWI)) {
+  if ((ts->cur_instr_info->opcode_flags & 0x1FFF) == SWI) {
     PRINT_DEBUG("Encountered an interrupt - closing TU with some glue code");
     PRINT_DEBUG_FUNCTION_END("-> CLOSE_GLUE");
     return CLOSE_GLUE;

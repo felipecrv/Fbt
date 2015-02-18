@@ -59,166 +59,166 @@
 #define OPND_WRITE_BACK                   0x0020
 
 /* DATA_OTHER group */
-#define MOV        DATA_OTHER | 0x00
-#define MVN        DATA_OTHER | 0x01
-#define MOVS       MOV | SET_APSR
-#define MVNS       MVN | SET_APSR
-#define CLZ        DATA_OTHER | 0x02 // FIX: doesn't belong to data?
+#define MOV        (DATA_OTHER | 0x00)
+#define MVN        (DATA_OTHER | 0x01)
+#define MOVS       (MOV | SET_APSR)
+#define MVNS       (MVN | SET_APSR)
+#define CLZ        (DATA_OTHER | 0x02) // FIX: doesn't belong to data?
 
 /* DATA_ARITH group */
-#define SUB        DATA_ARITH | 0x00
-#define RSB        DATA_ARITH | 0x01
-#define ADD        DATA_ARITH | 0x02
-#define ADC        DATA_ARITH | 0x03
-#define SBC        DATA_ARITH | 0x04
-#define RSC        DATA_ARITH | 0x05
+#define SUB        (DATA_ARITH | 0x00)
+#define RSB        (DATA_ARITH | 0x01)
+#define ADD        (DATA_ARITH | 0x02)
+#define ADC        (DATA_ARITH | 0x03)
+#define SBC        (DATA_ARITH | 0x04)
+#define RSC        (DATA_ARITH | 0x05)
 // ADR (not listed) is a pseudo instruction
-#define SUBS       SUB | SET_APSR
-#define RSBS       RSB | SET_APSR
-#define ADDS       ADD | SET_APSR
-#define ADCS       ADC | SET_APSR
-#define SBCS       SBC | SET_APSR
-#define RSCS       RSC | SET_APSR
+#define SUBS       (SUB | SET_APSR)
+#define RSBS       (RSB | SET_APSR)
+#define ADDS       (ADD | SET_APSR)
+#define ADCS       (ADC | SET_APSR)
+#define SBCS       (SBC | SET_APSR)
+#define RSCS       (RSC | SET_APSR)
 
 // FIX: doesn't belong to DATA?
 /* general multiply instructions */
-#define MLA        DATA_ARITH | 0x06
-#define MLS        DATA_ARITH | 0x07 // available in ARMv6T2, ARMv7
-#define MUL        DATA_ARITH | 0x08
-#define MLAS       MLA | SET_APSR
-#define MULS       MUL | SET_APSR
+#define MLA        (DATA_ARITH | 0x06)
+#define MLS        (DATA_ARITH | 0x07) // available in ARMv6T2, ARMv7
+#define MUL        (DATA_ARITH | 0x08)
+#define MLAS       (MLA | SET_APSR)
+#define MULS       (MUL | SET_APSR)
 
 // FIX: doesn't belong to DATA?
 /* Signed Multiply (halfwords) */
-#define SMLABB     DATA_ARITH | 0x09
-#define SMLABT     DATA_ARITH | 0x0A
-#define SMLATB     DATA_ARITH | 0x0B
-#define SMLATT     DATA_ARITH | 0x0C
+#define SMLABB     (DATA_ARITH | 0x09)
+#define SMLABT     (DATA_ARITH | 0x0A)
+#define SMLATB     (DATA_ARITH | 0x0B)
+#define SMLATT     (DATA_ARITH | 0x0C)
 /* Signed Multiply Accumulate Dual */
-#define SMLAD      DATA_ARITH | 0x0D // available in ARMv6* (TODO: add to tables)
+#define SMLAD      (DATA_ARITH | 0x0D // available in ARMv6* (TODO: add to tables))
 /* Signed Multiply Accumulate Long */
-#define SMLAL      DATA_ARITH | 0x0E
+#define SMLAL      (DATA_ARITH | 0x0E)
 /* Signed Multiply Accumulate Long (halfwords) */
-#define SMLALBB    DATA_ARITH | 0x0F
-#define SMLALBT    DATA_ARITH | 0x10
-#define SMLALTB    DATA_ARITH | 0x11
-#define SMLALTT    DATA_ARITH | 0x12
+#define SMLALBB    (DATA_ARITH | 0x0F)
+#define SMLALBT    (DATA_ARITH | 0x10)
+#define SMLALTB    (DATA_ARITH | 0x11)
+#define SMLALTT    (DATA_ARITH | 0x12)
 /* Signed Multiply Accumulate Long Dual */
-#define SMLALD     DATA_ARITH | 0x13 // available in ARMv6T2, ARMv7
+#define SMLALD     (DATA_ARITH | 0x13) // available in ARMv6T2, ARMv7
 /* Signed Multiply Accumulate (word by halfword) */
-#define SMLAWB     DATA_ARITH | 0x14
-#define SMLAWT     DATA_ARITH | 0x15
+#define SMLAWB     (DATA_ARITH | 0x14)
+#define SMLAWT     (DATA_ARITH | 0x15)
 /* Signed Multiply Subtract Dual */
-#define SMLSD      DATA_ARITH | 0x16 // available in ARMv6* (TODO: add to tables)
+#define SMLSD      (DATA_ARITH | 0x16) // available in ARMv6* (TODO: add to tables)
 /* Signed Multiply Subtract Lang Dual */
-#define SMLSLD     DATA_ARITH | 0x17 // available in ARMv6* (TODO: add to tables)
+#define SMLSLD     (DATA_ARITH | 0x17) // available in ARMv6* (TODO: add to tables)
 /* Signed Most Significant Word Multiply Accumulate */
-#define SMMLA      DATA_ARITH | 0x18 // available in ARMv6* (TODO: add to tables)
+#define SMMLA      (DATA_ARITH | 0x18) // available in ARMv6* (TODO: add to tables)
 /* Signed Most Significant Word Multiply Subtract */
-#define SMMLS      DATA_ARITH | 0x19 // available in ARMv6* (TODO: add to tables)
+#define SMMLS      (DATA_ARITH | 0x19) // available in ARMv6* (TODO: add to tables)
 /* Signed Most Significant Word Multiply */
-#define SMMUL      DATA_ARITH | 0x1A // available in ARMv6* (TODO: add to tables)
+#define SMMUL      (DATA_ARITH | 0x1A) // available in ARMv6* (TODO: add to tables)
 /* Signed Dual Multiply Add */
-#define SMUAD      DATA_ARITH | 0x1B // available in ARMv6* (TODO: add to tables)
+#define SMUAD      (DATA_ARITH | 0x1B) // available in ARMv6* (TODO: add to tables)
 /* Signed Multiply (halfwords) */
-#define SMULBB     DATA_ARITH | 0x1C
-#define SMULBT     DATA_ARITH | 0x1D
-#define SMULTB     DATA_ARITH | 0x1E
-#define SMULTT     DATA_ARITH | 0x1F
+#define SMULBB     (DATA_ARITH | 0x1C)
+#define SMULBT     (DATA_ARITH | 0x1D)
+#define SMULTB     (DATA_ARITH | 0x1E)
+#define SMULTT     (DATA_ARITH | 0x1F)
 /* Signed Multiply Long */
-#define SMULL      DATA_ARITH | 0x20
-#define SMULLS     SMULL | SET_APSR
+#define SMULL      (DATA_ARITH | 0x20)
+#define SMULLS     (SMULL | SET_APSR)
 /* Signed Multiply (word by halfword) */
-#define SMULWB     DATA_ARITH | 0x21
-#define SMULWT     DATA_ARITH | 0x22
+#define SMULWB     (DATA_ARITH | 0x21)
+#define SMULWT     (DATA_ARITH | 0x22)
 /* Signed Dual Multiply Subtract */
-#define SMUSD      DATA_ARITH | 0x23 // available in ARMv6* (TODO: add to tables)
+#define SMUSD      (DATA_ARITH | 0x23) // available in ARMv6* (TODO: add to tables)
 
 /* Unsigned Multiply Accumulate Accumulate Long */
-#define UMAAL      DATA_ARITH | 0x24 // available in ARMv6* (TODO: add to tables)
+#define UMAAL      (DATA_ARITH | 0x24) // available in ARMv6* (TODO: add to tables)
 /* Unsigned Multiply Accumulate Long */
-#define UMLAL      DATA_ARITH | 0x25
-#define UMLALS     UMLAL | SET_APSR
+#define UMLAL      (DATA_ARITH | 0x25)
+#define UMLALS     (UMLAL | SET_APSR)
 /* Unsigned Multiply Long */
-#define UMULL      DATA_ARITH | 0x26
-#define UMULLS     UMULL | SET_APSR
+#define UMULL      (DATA_ARITH | 0x26)
+#define UMULLS     (UMULL | SET_APSR)
 
 // FIX: doesn't belong to DATA?
 /* Saturating addition and subtraction instructions */
-#define QADD       DATA_ARITH | 0x27
-#define QSUB       DATA_ARITH | 0x28
-#define QDADD      DATA_ARITH | 0x29
-#define QDSUB      DATA_ARITH | 0x2A
+#define QADD       (DATA_ARITH | 0x27)
+#define QSUB       (DATA_ARITH | 0x28)
+#define QDADD      (DATA_ARITH | 0x29)
+#define QDSUB      (DATA_ARITH | 0x2A)
 
 /* DATA_LOGIC group */
-#define AND        DATA_LOGIC | 0x00
-#define EOR        DATA_LOGIC | 0x01
-#define ORR        DATA_LOGIC | 0x02
-#define BIC        DATA_LOGIC | 0x03
-#define ANDS       AND | SET_APSR
-#define EORS       EOR | SET_APSR
-#define ORRS       ORR | SET_APSR
-#define BICS       BIC | SET_APSR
+#define AND        (DATA_LOGIC | 0x00)
+#define EOR        (DATA_LOGIC | 0x01)
+#define ORR        (DATA_LOGIC | 0x02)
+#define BIC        (DATA_LOGIC | 0x03)
+#define ANDS       (AND | SET_APSR)
+#define EORS       (EOR | SET_APSR)
+#define ORRS       (ORR | SET_APSR)
+#define BICS       (BIC | SET_APSR)
 
 /* DATA_COND group */
-#define TST        DATA_COND | 0x00
-#define TEQ        DATA_COND | 0x02
-#define CMP        DATA_COND | 0x03
-#define CMN        DATA_COND | 0x04
-#define TSTS       TST | SET_APSR
-#define TEQS       TEQ | SET_APSR
-#define CMPS       CMP | SET_APSR
-#define CMNS       CMN | SET_APSR
+#define TST        (DATA_COND | 0x00)
+#define TEQ        (DATA_COND | 0x02)
+#define CMP        (DATA_COND | 0x03)
+#define CMN        (DATA_COND | 0x04)
+#define TSTS       (TST | SET_APSR)
+#define TEQS       (TEQ | SET_APSR)
+#define CMPS       (CMP | SET_APSR)
+#define CMNS       (CMN | SET_APSR)
 
 /* BRANCH group */
-#define B          BRANCH | 0x00
-#define BX         BRANCH | 0x01
-#define BL         BRANCH | 0x02
-#define BLX        BRANCH | 0x03
+#define B          (BRANCH | 0x00)
+#define BX         (BRANCH | 0x01)
+#define BL         (BRANCH | 0x02)
+#define BLX        (BRANCH | 0x03)
 
 /* LOAD_STORE group */
-#define STR        LOAD_STORE | 0x00 | INSTR_WORD_LS | INSTR_IS_STORE
-#define LDR        LOAD_STORE | 0x01 | INSTR_WORD_LS
-#define STRB       LOAD_STORE | 0x02 | INSTR_BYTE_LS | INSTR_IS_STORE
-#define LDRB       LOAD_STORE | 0x03 | INSTR_BYTE_LS
-#define STRT       LOAD_STORE | 0x04 | INSTR_WORD_LS | INSTR_IS_STORE
-#define LDRT       LOAD_STORE | 0x05 | INSTR_WORD_LS
-#define STRBT      LOAD_STORE | 0x06 | INSTR_BYTE_LS | INSTR_IS_STORE
-#define LDRBT      LOAD_STORE | 0x07 | INSTR_BYTE_LS
+#define STR        (LOAD_STORE | 0x00 | INSTR_WORD_LS | INSTR_IS_STORE)
+#define LDR        (LOAD_STORE | 0x01 | INSTR_WORD_LS)
+#define STRB       (LOAD_STORE | 0x02 | INSTR_BYTE_LS | INSTR_IS_STORE)
+#define LDRB       (LOAD_STORE | 0x03 | INSTR_BYTE_LS)
+#define STRT       (LOAD_STORE | 0x04 | INSTR_WORD_LS | INSTR_IS_STORE)
+#define LDRT       (LOAD_STORE | 0x05 | INSTR_WORD_LS)
+#define STRBT      (LOAD_STORE | 0x06 | INSTR_BYTE_LS | INSTR_IS_STORE)
+#define LDRBT      (LOAD_STORE | 0x07 | INSTR_BYTE_LS)
 
 /* LOAD_STORE_EXT group */
-#define STRH       LOAD_STORE_EXT | 0x08 | INSTR_HALFWORD_LS        | INSTR_IS_STORE
-#define LDRH       LOAD_STORE_EXT | 0x09 | INSTR_HALFWORD_LS
-#define STRD       LOAD_STORE_EXT | 0x0A | INSTR_WORD_LS            | INSTR_IS_STORE
-#define LDRD       LOAD_STORE_EXT | 0x0B | INSTR_DUAL_LS
-#define LDRSB      LOAD_STORE_EXT | 0x0C | INSTR_SIGNED_BYTE_LS
-#define LDRSH      LOAD_STORE_EXT | 0x0D | INSTR_SIGNED_HALFWORD_LS
+#define STRH       (LOAD_STORE_EXT | 0x08 | INSTR_HALFWORD_LS        | INSTR_IS_STORE)
+#define LDRH       (LOAD_STORE_EXT | 0x09 | INSTR_HALFWORD_LS)
+#define STRD       (LOAD_STORE_EXT | 0x0A | INSTR_WORD_LS            | INSTR_IS_STORE)
+#define LDRD       (LOAD_STORE_EXT | 0x0B | INSTR_DUAL_LS)
+#define LDRSB      (LOAD_STORE_EXT | 0x0C | INSTR_SIGNED_BYTE_LS)
+#define LDRSH      (LOAD_STORE_EXT | 0x0D | INSTR_SIGNED_HALFWORD_LS)
 
 /* MULTI_LOAD_STORE group */
-#define STM        MULTI_LOAD_STORE | 0x00 | INSTR_IS_STORE
-#define LDM        MULTI_LOAD_STORE | 0x01
-#define STMDA      MULTI_LOAD_STORE | 0x02 | INSTR_IS_STORE
-#define LDMDA      MULTI_LOAD_STORE | 0x03
-#define STMDB      MULTI_LOAD_STORE | 0x04 | INSTR_IS_STORE
-#define LDMDB      MULTI_LOAD_STORE | 0x05
-#define STMIA      MULTI_LOAD_STORE | 0x06 | INSTR_IS_STORE
-#define LDMIA      MULTI_LOAD_STORE | 0x07
-#define STMIB      MULTI_LOAD_STORE | 0x08 | INSTR_IS_STORE
-#define LDMIB      MULTI_LOAD_STORE | 0x09
+#define STM        (MULTI_LOAD_STORE | 0x00 | INSTR_IS_STORE)
+#define LDM        (MULTI_LOAD_STORE | 0x01)
+#define STMDA      (MULTI_LOAD_STORE | 0x02 | INSTR_IS_STORE)
+#define LDMDA      (MULTI_LOAD_STORE | 0x03)
+#define STMDB      (MULTI_LOAD_STORE | 0x04 | INSTR_IS_STORE)
+#define LDMDB      (MULTI_LOAD_STORE | 0x05)
+#define STMIA      (MULTI_LOAD_STORE | 0x06 | INSTR_IS_STORE)
+#define LDMIA      (MULTI_LOAD_STORE | 0x07)
+#define STMIB      (MULTI_LOAD_STORE | 0x08 | INSTR_IS_STORE)
+#define LDMIB      (MULTI_LOAD_STORE | 0x09)
 
 /* STATUS group */
-#define MRS        STATUS | 0x01
-#define MSR        STATUS | 0x02
+#define MRS        (STATUS | 0x01)
+#define MSR        (STATUS | 0x02)
 
 /* COPROCESSOR group */
-#define LDC        COPROCESSOR | 0x01
-#define STC        COPROCESSOR | 0x02
+#define LDC        (COPROCESSOR | 0x01)
+#define STC        (COPROCESSOR | 0x02)
 
 /* MISC group */
-#define SWP        MISC | 0x00
-#define SWPB       MISC | 0x01
-#define BKPT       MISC | 0x02
-#define SWI        MISC | 0x03
+#define SWP        (MISC | 0x00)
+#define SWPB       (MISC | 0x01)
+#define BKPT       (MISC | 0x02)
+#define SWI        (MISC | 0x03)
 
 /* registers */
 #define   R0       0x00000000
