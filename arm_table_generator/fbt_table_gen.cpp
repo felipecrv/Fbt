@@ -85,7 +85,7 @@ static void generate_opcode_table(ofstream& out,
     print_hex<8>(out, instr->operand_flags);
     out << ", {.handler = " << action << "}, ";
     out << "\"" << mnemonic << "\"" << "}";
-    if (i < 15 || opcode_major_bits < 0xDF) {
+    if (i < 15 || opcode_major_bits < 0xFF) {
       out << ",";
     }
 
@@ -118,7 +118,7 @@ void generate_tables(ofstream& out, string prefix) {
   out << endl;
 
   out << "struct arm_opcode opcode_table[] = {" << endl;
-  for (unsigned int i = 0; i <= 0xDF; i++) {
+  for (unsigned int i = 0; i <= 0xFF; i++) {
     stringstream temp;
     temp << hex << (i >> 4);
     temp << hex << (i & 0xF);
