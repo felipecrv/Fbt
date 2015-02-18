@@ -477,7 +477,7 @@ static enum syscall_auth_response auth_clone(struct thread_local_data *tld,
                          );
 #elif defined(__arm__)
     // TODO(philix): define the ARM code for thread creation
-    fbt_suicide(__func__);
+    fbt_suicide_str(__func__);
     local_ret = 0;
 #endif
 
@@ -585,7 +585,7 @@ static enum syscall_auth_response auth_exit(struct thread_local_data *tld,
   }
 #elif defined(__arm__)
   // TODO(philix): free the last bit of memory on the ARM translator
-  fbt_suicide(__func__);
+  fbt_suicide_str(__func__);
 #endif
 
   fbt_suicide_str("Failed to exit thread/process (fbt_syscall.c)\n");

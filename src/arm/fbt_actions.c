@@ -45,7 +45,7 @@ enum translation_state action_none(struct translate *ts __attribute__((unused)))
 
 enum translation_state action_copy(struct translate *ts) {
   // TODO(philix): implement action_copy for ARM
-  fbt_suicide(__func__);
+  fbt_suicide_str(__func__);
 }
 
 enum translation_state action_warn(struct translate *ts) {
@@ -86,7 +86,7 @@ enum translation_state action_fail(struct translate *ts __attribute__((unused)))
 
 enum translation_state action_call(struct translate *ts) {
   // TODO(philix): implement action_call for ARM
-  fbt_suicide(__func__);
+  fbt_suicide_str(__func__);
   return OPEN;
 }
 

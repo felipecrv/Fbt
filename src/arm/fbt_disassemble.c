@@ -6,6 +6,7 @@
 #include "../generic/fbt_llio.h"
 #include "../fbt_disassemble.h"
 #include "../fbt_datatypes.h"
+#include "../fbt_debug.h"
 
 // inclusion of the fbt_opcode_tables.h
 #include "fbt_arm_opcode.h"  // for struct arm_opcode and definitions
@@ -44,7 +45,7 @@ static char shift_types[4][4] = {"lsl", "lsr", "asr", "ror"};
 
 void fbt_disasm_instr(struct translate *ts) {
   // TODO(philix): define fbt_disasm_instr() for ARM
-  fbt_suicide(__func__);
+  fbt_suicide_str(__func__);
 }
 
 void fbt_disassemble_to_text(uint32_t *instr_stream,
