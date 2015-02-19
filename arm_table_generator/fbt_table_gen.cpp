@@ -113,8 +113,6 @@ void generate_tables(ofstream& out, string prefix) {
   out << "#ifndef " << PREFIX << "_OPCODE_TABLES_H" << endl;
   out << "#define " << PREFIX << "_OPCODE_TABLES_H" << endl;
   out << endl;
-  out << "#include \"../fbt_translate.h\"" << endl;
-  out << endl;
   out << endl;
 
   out << "struct arm_opcode opcode_table[] = {" << endl;

@@ -35,10 +35,11 @@
 typedef unsigned long ulong_t;
 
 /* forward declare these structs */
-#if defined(__i386__)
+#if defined(__i386__) && !defined(ARM_DISASSEMBLER)
 struct ia32_opcode;
 typedef struct ia32_opcode ArchOpcode;
-#elif defined(__arm__)
+#endif
+#if defined(__arm__) || defined(ARM_DISASSEMBLER)
 struct arm_opcode;
 typedef struct arm_opcode ArchOpcode;
 #endif

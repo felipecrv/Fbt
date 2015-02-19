@@ -6,11 +6,33 @@
 #include "../generic/fbt_llio.h"
 #include "../fbt_disassemble.h"
 #include "../fbt_datatypes.h"
-#include "../fbt_debug.h"
+#include "../fbt_translate.h"
+#ifdef ARM_DISASSEMBLER
+// Debugging is disabled for the ARM disassembler
+# define PRINT_DEBUG_FUNCTION_START(...)
+# define PRINT_DEBUG_FUNCTION_END(...)
+# define PRINT_DEBUG(...)
+#else
+# include "../fbt_debug.h"
+#endif
 
 // inclusion of the fbt_opcode_tables.h
 #include "fbt_arm_opcode.h"  // for struct arm_opcode and definitions
-#include "../fbt_actions.h"  // for the actions
+#ifdef ARM_DISASSEMBLER
+// The disassembler doesn't call any action, so we simply define empty actions
+// to make the compiler happy.
+#define DEFINE_EMPTY_ACTION(action_name) \
+  static enum translation_state action_##action_name \
+  (struct translate *ts __attribute__((unused))) { \
+    return NEUTRAL; \
+  }
+DEFINE_EMPTY_ACTION(copy)
+DEFINE_EMPTY_ACTION(warn)
+DEFINE_EMPTY_ACTION(branch)
+DEFINE_EMPTY_ACTION(branch_and_link)
+#else
+# include "../fbt_actions.h"  // for the actions
+#endif
 #include "fbt_opcode_tables.h"
 
 static char register_names[][4] = {

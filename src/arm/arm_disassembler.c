@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <string.h>
 
 #include "../fbt_disassemble.h"
 #include "../fbt_actions.h"

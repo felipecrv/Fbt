@@ -186,7 +186,7 @@ ifeq ($(TARGET_ARCH),arm)
 	CFLAGS += -std=c99
 	CFLAGS += -Wno-unused-but-set-variable -Wno-unused-function
 endif
-EXTRA_ARM_DISASSEMBLER_CFLAGS += -std=c99 -DARM_DISASSEMBLER
+EXTRA_ARM_DISASSEMBLER_CFLAGS += -std=c99 -lpthread -DARM_DISASSEMBLER
 
 # Path to the assembly generation DSL preprocessing step
 DSL_PATH=../DSL/src/parse.py
