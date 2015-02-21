@@ -170,7 +170,7 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
           uint8_t shift_type = DECODE_SHIFT_TYPE(binary_instr);
 
           // <mnemonic>{S}{<c>}{<q>} {<Rd>,} <Rn>, <Rm>{, shift}
-          switch (opcode->opcode_flags & 0x1FFF) {
+          switch (opcode->opcode_flags & 0xFFF) {
             case TST:
             case TEQ:
             case CMP:
@@ -184,31 +184,36 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
               if (((uint8_t) ((binary_instr >> 5) & 0x7F)) == 0) { // imm5 . type == 0
                 EMIT_TEXT_INSTRF("%s, %s\n", register_names[Rd], register_names[Rm]);
               } else {
-                switch (shift_type) {
-                  case 0x0:
-                    EMIT_TEXT_PSEUDO_INSTRF(
-                        "lsl", "%s, %s, #%d\n",
-                        register_names[Rd], register_names[Rm], imm5);
-                    break;
-                  case 0x1:
-                    EMIT_TEXT_PSEUDO_INSTRF(
-                        "lsr", "%s, %s, #%d\n",
-                        register_names[Rd], register_names[Rm], (imm5 == 0) ? 32 : imm5);
-                    break;
-                  case 0x2:
-                    EMIT_TEXT_PSEUDO_INSTRF(
-                        "asr", "%s, %s, #%d\n",
-                        register_names[Rd], register_names[Rm], (imm5 == 0) ? 32 : imm5);
-                    break;
-                  case 0x3:
-                    if (imm5 == 0) {
-                      EMIT_TEXT_PSEUDO_INSTRF("rrx", "%s, %s\n", register_names[Rd], register_names[Rm]);
-                    } else {
+                if (with_sugar) {
+                  switch (shift_type) {
+                    case 0x0:
                       EMIT_TEXT_PSEUDO_INSTRF(
-                          "ror", "%s, %s, #%d\n",
+                          "lsl", "%s, %s, #%d\n",
                           register_names[Rd], register_names[Rm], imm5);
-                    }
-                    break;
+                      break;
+                    case 0x1:
+                      EMIT_TEXT_PSEUDO_INSTRF(
+                          "lsr", "%s, %s, #%d\n",
+                          register_names[Rd], register_names[Rm], (imm5 == 0) ? 32 : imm5);
+                      break;
+                    case 0x2:
+                      EMIT_TEXT_PSEUDO_INSTRF(
+                          "asr", "%s, %s, #%d\n",
+                          register_names[Rd], register_names[Rm], (imm5 == 0) ? 32 : imm5);
+                      break;
+                    case 0x3:
+                      if (imm5 == 0) {
+                        EMIT_TEXT_PSEUDO_INSTRF("rrx", "%s, %s\n", register_names[Rd], register_names[Rm]);
+                      } else {
+                        EMIT_TEXT_PSEUDO_INSTRF(
+                            "ror", "%s, %s, #%d\n",
+                            register_names[Rd], register_names[Rm], imm5);
+                      }
+                      break;
+                  }
+                } else {
+                  EMIT_TEXT_INSTRF("%s, %s", register_names[Rd], register_names[Rm]);
+                  EMIT_TEXT_SHIFT_BY_IMM("\n");
                 }
               }
               break;
@@ -228,7 +233,7 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
           uint32_t base_value = imm12 & 0xFF;
 
           // <mnemonic>{S}{<c>}{<q>} {<Rd>,} <Rn>, #<const>
-          switch (opcode->opcode_flags & 0x1FFF) {
+          switch (opcode->opcode_flags & 0xFFF) {
             case TST:
             case TEQ:
             case CMP:
@@ -254,7 +259,7 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
           uint8_t shift_type = DECODE_SHIFT_TYPE(binary_instr);
 
           // <mnemonic>{S}{<c>}{<q>} {<Rd>,} <Rn>, <Rm>, <type> <Rs>
-          switch (opcode->opcode_flags & 0x1FFF) {
+          switch (opcode->opcode_flags & 0xFFF) {
             case TST:
             case TEQ:
             case CMP:
@@ -286,7 +291,7 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
         break;
       }
       case BRANCH: {
-        switch (opcode->opcode_flags & 0x1FFF) {
+        switch (opcode->opcode_flags & 0xFFF) {
           case B:
           case BL: {
             uint32_t imm24 = DECODE_IMM24(binary_instr);
@@ -356,7 +361,11 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
             bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
 
             if (write_back) {
-              EMIT_TEXT_INSTRF("%s, [%s, #%d]!\n", register_names[Rt], register_names[Rn], imm12);
+              if (with_sugar && opcode->opcode_flags == STR && Rn == SP && !increment) {
+                EMIT_TEXT_PSEUDO_INSTRF("push", "{%s}\n", register_names[Rt]);
+              } else {
+                EMIT_TEXT_INSTRF("%s, [%s, #%d]!\n", register_names[Rt], register_names[Rn], imm12);
+              }
             } else {
               if (imm12 == 0) {
                 EMIT_TEXT_INSTRF("%s, [%s]\n", register_names[Rt], register_names[Rn]);
@@ -443,6 +452,7 @@ void fbt_disassemble_to_text(uint32_t *instr_stream,
 
         bool write_back = opcode->operand_flags & OPND_WRITE_BACK;
 
+        // TODO(philix): check if it's enough to turn the instr into a pop/push
         if (with_sugar && Rn == SP && write_back) {
           switch (opcode->opcode_flags) {
           case LDMIA:

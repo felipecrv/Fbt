@@ -118,10 +118,10 @@ imm = Immediate value
            |  type | by_reg
            | [6:5] |   4
 -----------+-------+--------
-  LSL Rs   |  0  0 |   1
-  LSR Rs   |  0  1 |   1
-  ASR Rs   |  1  0 |   1
-  ROR Rs   |  1  1 |   1
+  LSL <Rs> |  0  0 |   1
+  LSR <Rs> |  0  1 |   1
+  ASR <Rs> |  1  0 |   1
+  ROR <Rs> |  1  1 |   1
 
 ### Branches
 
