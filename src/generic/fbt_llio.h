@@ -52,6 +52,8 @@ int fllwrite(int fd, const char* str);
  */
 int fllprintf(int fd, const char *format, ...);
 
+void llsnprintf(char *buf, int size, const char* format, ...);
+
 #if defined(DEBUG)
 /**
  * Write a formatted string to the file descriptor fd (might use a buffer). Used

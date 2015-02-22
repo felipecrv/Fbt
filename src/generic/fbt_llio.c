@@ -38,6 +38,7 @@
 #if !defined(DEBUG)
 static int fllprintfva(int fd, const char* format, va_list ap);
 #endif
+static void llsnprintfva(char *buf, int size, const char* format, va_list app);
 
 /** minimum between two values */
 #define MIN(a,b) ((a)>(b)?(b):(a))
@@ -87,11 +88,22 @@ static
 int fllprintfva(int fd, const char* format, va_list app)
 {
   char buf[BUFSIZE_L + 1];
+  llsnprintfva(buf, BUFSIZE_L + 1, format, app);
+  return fllwrite(fd, buf);
+}
 
+void llsnprintf(char *buf, int size, const char* format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  llsnprintfva(buf, size, format, ap);
+  va_end(ap);
+}
+
+static void llsnprintfva(char *buf, int size, const char* format, va_list app) {
   int bi = 0;     // index in the output string
   int fi = 0;     // index in the format string
   int end = 0;
-  while ((bi < (BUFSIZE_L)) && !end) {
+  while ((bi < size - 1) && !end) {
     // parse format string and write contents to buffer
     switch (format[fi]) {
     case '%':
@@ -136,7 +148,7 @@ int fllprintfva(int fd, const char* format, va_list app)
             revbuf[--i] = '-';
         }
         // if enough space in large buffer copy all
-        length = MIN(BUFSIZE_L - bi, BUFSIZE_S - i);
+        length = MIN(size - 1 - bi, BUFSIZE_S - i);
         fbt_strncpy(&buf[bi], &revbuf[i], length);
         bi += length;
         break;
@@ -163,7 +175,7 @@ int fllprintfva(int fd, const char* format, va_list app)
           while (len>(BUFSIZE_S-i))
             revbuf[--i]='0';
         }
-        length = MIN(BUFSIZE_L - bi, BUFSIZE_S - i);
+        length = MIN(size - 1 - bi, BUFSIZE_S - i);
         if (length > len && len != 0) {
           /* ensure that we stay in buffer */
           i = BUFSIZE_S - len;
@@ -176,7 +188,7 @@ int fllprintfva(int fd, const char* format, va_list app)
       case 's':
         pointer = va_arg(app, char*);
         /* ensure that we stay in buffer */
-        int slen = fbt_strnlen(pointer, BUFSIZE_L - bi);
+        int slen = fbt_strnlen(pointer, size - 1 -bi);
         if (slen > len && len != 0)
           slen = len;
         fbt_strncpy(&buf[bi], pointer, slen);
@@ -207,6 +219,5 @@ int fllprintfva(int fd, const char* format, va_list app)
     }
     fi++;
   }
-  buf[BUFSIZE_L] = 0x0;  /* guard */
-  return fllwrite(fd, buf);
+  buf[size - 1] = 0x0;  /* guard */
 }
